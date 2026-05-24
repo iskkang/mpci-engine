@@ -87,10 +87,14 @@ def calc_delta_port(
     port_baseline: dict | None,
     carrier_bias: float,
 ) -> tuple[float, dict]:
-    """Estimate port delay from EconDB MPCI and turnaround only.
+    """Estimate port delay from EconDB MPCI and turnaround.
 
-    NOTE: Phase 1은 대기열(Erlang-C) 모델을 쓰지 않고 MPCI 버킷 + 회항시간으로만
-    추정한다. 그래서 debug에는 *실제로 계산된 값*(mpci, base_wait, turnaround)만 담는다.
+    야드 보강 (1편 산출물 활용):
+      - port_snapshot에 yard_congestion_index(0–100)가 있으면
+        search 기반 MPCI와 가중 평균(search 60 : yard 40)해 더 높은 confidence로 사용.
+      - 없으면(None) 기존 동작 100% 동일 → 회귀 없음.
+      - 새 confidence 티어: breakdown.yard_congestion_index 노출.
+      - 초기 가중치(60:40)는 초기 휴리스틱 — 운영 데이터로 보정 필요.
     """
     debug: dict = {
         "mpci_score": 0.0,
@@ -102,13 +106,31 @@ def calc_delta_port(
     if mpci is None:
         return 24.0 * carrier_bias, debug
 
-    debug["mpci_score"] = mpci
+    # ── 야드 적체 지수 교차검증 ──────────────────────────────────────────────
+    # yard_congestion_index: 항만 자기 이력 백분위(0–100), 1편 fetch_econdb_regions.py 산출.
+    # 상위 8개 항만만 채워짐. 없으면(None) effective_mpci = mpci → 기존 동작 그대로.
+    yard_idx: float | None = None
+    if port_snapshot:
+        raw_yard = port_snapshot.get("yard_congestion_index")
+        if raw_yard is not None:
+            try:
+                yard_idx = _clamp(float(raw_yard), 0.0, 100.0)
+            except (TypeError, ValueError):
+                yard_idx = None
 
-    if mpci >= 75:
+    # yard 없으면 기존 search 기반 MPCI 그대로 — 회귀 없음
+    effective_mpci = mpci
+    if yard_idx is not None:
+        # 초기 가중치: search 60%, yard 40% — 운영 데이터로 보정 필요
+        effective_mpci = _clamp(mpci * 0.60 + yard_idx * 0.40, 0.0, 100.0)
+
+    debug["mpci_score"] = effective_mpci
+
+    if effective_mpci >= 75:
         base_wait_h = 72.0
-    elif mpci >= 50:
+    elif effective_mpci >= 50:
         base_wait_h = 36.0
-    elif mpci >= 25:
+    elif effective_mpci >= 25:
         base_wait_h = 18.0
     else:
         base_wait_h = 8.0
@@ -118,6 +140,10 @@ def calc_delta_port(
 
     debug["base_wait_h"] = round(base_wait_h, 3)
     debug["turnaround_h"] = round(turnaround_h, 3)
+
+    # yard 있을 때만 breakdown에 노출 (없으면 ETABreakdown default=None)
+    if yard_idx is not None:
+        debug["yard_congestion_index"] = round(yard_idx, 1)
 
     delta_port = base_wait_h * 0.45 + turnaround_h * 0.55
     return max(delta_port, 1.0) * carrier_bias, debug

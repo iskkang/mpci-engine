@@ -22,10 +22,14 @@ class ETABreakdown(BaseModel):
     delta_port_hours: float
     delta_override_hours: float
     sigma_hours: float
-    mpci_score: float           # 계산 시점 MPCI
+    mpci_score: float           # 계산 시점 MPCI (야드 있으면 교차검증 적용값)
     base_wait_h: float          # MPCI 버킷 기반 기본 대기시간(시간)
     turnaround_h: float         # EconDB 회항시간(시간)
     carrier_bias_factor: float  # 선사 낙관 편향 계수
+    yard_congestion_index: Optional[float] = Field(
+        None,
+        description="항만 야드 적체 지수 0–100 (1편 EconDB region 수집). 상위 8개 항만만 존재; 나머지 None.",
+    )
 
 
 class ETAResponse(BaseModel):

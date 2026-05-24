@@ -141,6 +141,7 @@ section{margin-bottom:68px}
   <nav class="hdr-nav">
     <a href="#sec1" data-i18n="nav1">항만 현황</a>
     <a href="#sec2" data-i18n="nav2">권역별 혼잡도</a>
+    <a href="#sec-ra" data-i18n="nav_ra">권역 해운 지표</a>
     <a href="#sec3" data-i18n="nav3">주의 항만 TOP 5</a>
     <a href="#sec4" data-i18n="nav4">조기 경보</a>
     <a href="#sec5" data-i18n="nav5">해협 현황</a>
@@ -162,6 +163,13 @@ section{margin-bottom:68px}
   <div class="sec-title" data-i18n="s2ttl">🗺️ 권역별 혼잡도 지수</div>
   <div class="sec-desc" data-i18n="s2dsc">전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다</div>
   <div class="region-grid" id="region-grid"><div class="loading"><div class="spin"></div></div></div>
+</section>
+
+<section id="sec-ra">
+  <div class="sec-label" data-i18n="s_ra_lbl">EconDB 권역 지표</div>
+  <div class="sec-title" data-i18n="s_ra_ttl">📊 권역별 해운 지표</div>
+  <div class="sec-desc" data-i18n="s_ra_dsc">EconDB 야드 적체·블랭크세일링·선석 점유를 권역별로 집계한 <strong>지표</strong>입니다. 예측 모델이 아닌 실측 기반 지표이며, 임계값은 운영 데이터로 보정됩니다.</div>
+  <div class="region-grid" id="ra-grid"><div class="loading"><div class="spin"></div></div></div>
 </section>
 
 <section id="sec3">
@@ -256,7 +264,13 @@ dnd_body:"컨테이너 반납 기한이 <strong>%D%</strong> 이전이면 지체
 arr_dest:"도착 예상일",arr_approx:"도착 예상일 (추정)",
 s4_coming:"EconDB 이력 데이터 축적 후 제공됩니다. 데이터 수집 시작일로부터 약 7일 후 활성화됩니다.",
 eta_nodata:"해당 항만 EconDB 데이터 없음 — 기본값으로 계산됨",
-stale_warn:"⚠️ 데이터 오래됨",nodata:"데이터 없음"},
+stale_warn:"⚠️ 데이터 오래됨",nodata:"데이터 없음",
+nav_ra:"권역 해운 지표",
+s_ra_lbl:"EconDB 권역 지표",s_ra_ttl:"📊 권역별 해운 지표",
+s_ra_dsc:"EconDB 야드 적체·블랭크세일링·선석 점유를 권역별로 집계한 <strong>지표</strong>입니다. 예측 모델이 아닌 실측 기반 지표이며, 임계값은 운영 데이터로 보정됩니다.",
+fp_building:"운임 상승 압력",fp_neutral:"운임 중립",fp_easing:"운임 완화",
+dr_elevated:"지연 위험 ↑",dr_moderate:"지연 위험 중",dr_low:"지연 위험 낮음",
+lbl_yard_ci:"야드 적체",lbl_blank:"블랭크세일링",lbl_fwd:"향후 전망",lbl_yoy:"선석 YoY"},
 en:{brand:"MTL Port Congestion Monitor",brand_sub:"Global Port Real-time Congestion & ETA Service",
 nav1:"Port Status",nav2:"By Region",nav3:"Watch Ports TOP 5",nav4:"Early Warning",nav5:"Straits",nav6:"ETA Forecast",
 s1lbl:"Live Status",s1ttl:"🌏 Global Port Congestion Status",s1dsc:"EconDB-based · Ports without data shown as 'Collecting'",
@@ -285,10 +299,16 @@ dnd_body:"If container return deadline is before <strong>%D%</strong>, D&D charg
 arr_dest:"Estimated Arrival",arr_approx:"Estimated Arrival (Approximate)",
 s4_coming:"Will be available after 7 days of EconDB history data collection.",
 eta_nodata:"No EconDB data for this port — using defaults",
-stale_warn:"⚠️ Outdated",nodata:"No data"}
+stale_warn:"⚠️ Outdated",nodata:"No data",
+nav_ra:"Regional Indicators",
+s_ra_lbl:"EconDB Regional Indicators",s_ra_ttl:"📊 Regional Maritime Indicators",
+s_ra_dsc:"EconDB-based yard congestion, blank sailing and berth occupancy <strong>indicators</strong> by region. These are measured indicators, not forecasts. Thresholds are calibrated with operational data.",
+fp_building:"Freight Pressure Building",fp_neutral:"Freight Neutral",fp_easing:"Freight Easing",
+dr_elevated:"Delay Risk Elevated",dr_moderate:"Delay Risk Moderate",dr_low:"Delay Risk Low",
+lbl_yard_ci:"Yard Congestion",lbl_blank:"Blank Sailings",lbl_fwd:"Forward",lbl_yoy:"Berth YoY"}
 };
 const t=k=>(T[LANG]||T.ko)[k]||k;
-function setLang(l){LANG=l;document.getElementById('btn-ko').className=l==='ko'?'active':'';document.getElementById('btn-en').className=l==='en'?'active':'';document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(T[l][k]!==undefined)el.innerHTML=T[l][k]});if(window._snaps)renderAll(window._snaps,window._cps)}
+function setLang(l){LANG=l;document.getElementById('btn-ko').className=l==='ko'?'active':'';document.getElementById('btn-en').className=l==='en'?'active':'';document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(T[l][k]!==undefined)el.innerHTML=T[l][k]});if(window._snaps)renderAll(window._snaps,window._cps,window._ri)}
 
 const PM={KRPUS:{n:"Busan",nk:"부산",c:"대한민국",ce:"South Korea",r:"kr-jp"},KRKAN:{n:"Gwangyang",nk:"광양",c:"대한민국",ce:"South Korea",r:"kr-jp"},JPYOK:{n:"Yokohama",nk:"요코하마",c:"일본",ce:"Japan",r:"kr-jp"},JPOSA:{n:"Osaka",nk:"오사카",c:"일본",ce:"Japan",r:"kr-jp"},JPTYO:{n:"Tokyo",nk:"도쿄",c:"일본",ce:"Japan",r:"kr-jp"},CNSHA:{n:"Shanghai",nk:"상하이",c:"중국",ce:"China",r:"china"},CNNBO:{n:"Ningbo",nk:"닝보",c:"중국",ce:"China",r:"china"},CNSZX:{n:"Shenzhen",nk:"선전",c:"중국",ce:"China",r:"china"},CNQIN:{n:"Qingdao",nk:"칭다오",c:"중국",ce:"China",r:"china"},CNGZU:{n:"Guangzhou",nk:"광저우",c:"중국",ce:"China",r:"china"},HKHKG:{n:"Hong Kong",nk:"홍콩",c:"홍콩",ce:"Hong Kong",r:"china"},TWKHH:{n:"Kaohsiung",nk:"가오슝",c:"대만",ce:"Taiwan",r:"china"},SGSIN:{n:"Singapore",nk:"싱가포르",c:"싱가포르",ce:"Singapore",r:"sea"},MYPKG:{n:"Port Klang",nk:"포트클랑",c:"말레이시아",ce:"Malaysia",r:"sea"},MYTPP:{n:"Tg. Pelepas",nk:"탄중펠레파스",c:"말레이시아",ce:"Malaysia",r:"sea"},IDTPP:{n:"Tanjung Priok",nk:"탄중프리옥",c:"인도네시아",ce:"Indonesia",r:"sea"},VHSGN:{n:"Ho Chi Minh",nk:"호치민",c:"베트남",ce:"Vietnam",r:"sea"},THBKK:{n:"Bangkok",nk:"방콕",c:"태국",ce:"Thailand",r:"sea"},PHMNL:{n:"Manila",nk:"마닐라",c:"필리핀",ce:"Philippines",r:"sea"},INNSA:{n:"Nhava Sheva",nk:"나바셰바",c:"인도",ce:"India",r:"sa-me"},INCCU:{n:"Kolkata",nk:"콜카타",c:"인도",ce:"India",r:"sa-me"},PKKAR:{n:"Karachi",nk:"카라치",c:"파키스탄",ce:"Pakistan",r:"sa-me"},AEJEA:{n:"Jebel Ali",nk:"제벨알리",c:"UAE",ce:"UAE",r:"sa-me"},OMMSQ:{n:"Muscat",nk:"무스카트",c:"오만",ce:"Oman",r:"sa-me"},NLRTM:{n:"Rotterdam",nk:"로테르담",c:"네덜란드",ce:"Netherlands",r:"europe"},BEANR:{n:"Antwerp",nk:"앤트워프",c:"벨기에",ce:"Belgium",r:"europe"},DEHAM:{n:"Hamburg",nk:"함부르크",c:"독일",ce:"Germany",r:"europe"},GBFXT:{n:"Felixstowe",nk:"펠릭스토",c:"영국",ce:"UK",r:"europe"},ESBCN:{n:"Barcelona",nk:"바르셀로나",c:"스페인",ce:"Spain",r:"europe"},ITGOA:{n:"Genoa",nk:"제노바",c:"이탈리아",ce:"Italy",r:"europe"},USLAX:{n:"Los Angeles",nk:"로스앤젤레스",c:"미국",ce:"USA",r:"namerica"},USLGB:{n:"Long Beach",nk:"롱비치",c:"미국",ce:"USA",r:"namerica"},USNYC:{n:"New York",nk:"뉴욕",c:"미국",ce:"USA",r:"namerica"},USSAV:{n:"Savannah",nk:"사바나",c:"미국",ce:"USA",r:"namerica"},CAHAL:{n:"Halifax",nk:"핼리팩스",c:"캐나다",ce:"Canada",r:"namerica"},MXZLO:{n:"Manzanillo",nk:"만사니요",c:"멕시코",ce:"Mexico",r:"latam"},BRSAO:{n:"Santos",nk:"산토스",c:"브라질",ce:"Brazil",r:"latam"},ARBUE:{n:"Buenos Aires",nk:"부에노스아이레스",c:"아르헨티나",ce:"Argentina",r:"latam"},CLSAI:{n:"San Antonio",nk:"산안토니오",c:"칠레",ce:"Chile",r:"latam"},ZADUR:{n:"Durban",nk:"더반",c:"남아공",ce:"S. Africa",r:"africa"},EGPSD:{n:"Port Said",nk:"포트사이드",c:"이집트",ce:"Egypt",r:"africa"},NGAPP:{n:"Apapa",nk:"아파파",c:"나이지리아",ce:"Nigeria",r:"africa"},RUMME:{n:"Novorossiysk",nk:"노보로시스크",c:"러시아",ce:"Russia",r:"ru-cis"},RUVVO:{n:"Vladivostok",nk:"블라디보스토크",c:"러시아",ce:"Russia",r:"ru-cis"}};
 const REGS={"kr-jp":{ko:"동북아시아",en:"NE Asia"},"china":{ko:"중국·홍콩·대만",en:"Greater China"},"sea":{ko:"동남아시아",en:"SE Asia"},"sa-me":{ko:"남아시아·중동",en:"S.Asia & ME"},"europe":{ko:"유럽",en:"Europe"},"namerica":{ko:"북미",en:"N. America"},"latam":{ko:"중남미",en:"Latin America"},"africa":{ko:"아프리카",en:"Africa"}};
@@ -338,6 +358,12 @@ async function fetchCPs(){
   const ago=new Date(Date.now()-8*864e5).toISOString().split('T')[0];
   const{data,error}=await sb.from('chokepoint_daily').select('portid,recorded_date,n_container').gte('recorded_date',ago).order('recorded_date',{ascending:false});
   if(error){console.error(error);return[]}
+  return data||[];
+}
+async function fetchRegionIndex(){
+  // region_index 요약만 읽기 (무거운 주간 원본 직접 쿼리 금지)
+  const{data,error}=await sb.from('region_index').select('*').order('region');
+  if(error){console.error('region_index fetch error',error);return[]}
   return data||[];
 }
 
@@ -421,6 +447,53 @@ function renderS5(raw){
     const status=ratio===null?t('cp_ok'):ratio<.4?t('cp_alert'):ratio<.6?t('cp_caut'):t('cp_ok');
     const col=ratio===null?'var(--text)':ratio<.4?'var(--red)':ratio<.6?'var(--orange)':'var(--green)';
     return`<div class="cp-card"><div class="cp-name">${nm}</div><div class="cp-subdesc">${desc[0]}</div><div class="cp-vals"><div><div class="cp-val-lbl">${t('today_s')}</div><div class="cp-val-num" style="color:${col}">${today.n_container||0}</div></div><div><div class="cp-val-lbl">${t('avg7')}</div><div class="cp-val-num" style="color:var(--muted)">${Math.round(avg7)}</div></div></div><div class="cp-status">${status}</div><div class="cp-info">${desc[1]||''}</div></div>`;
+  }).join('');
+}
+
+function renderRegionAnalytics(rows){
+  const el=document.getElementById('ra-grid');
+  if(!el)return;
+  if(!rows||!rows.length){
+    el.innerHTML=`<div class="no-data" style="grid-column:1/-1">📡 ${LANG==='ko'?'권역 데이터 수집 중...':'Collecting regional data...'}</div>`;
+    return;
+  }
+  // 지표 뱃지 색상 — "지표(예측 아님)" 의미가 드러나게 텍스트에 명시
+  const fpColor={building:'var(--orange)',neutral:'var(--muted)',easing:'var(--green)'};
+  const fpBg={building:'rgba(249,115,22,.15)',neutral:'rgba(148,163,184,.1)',easing:'rgba(34,197,94,.15)'};
+  const drColor={elevated:'var(--red)',moderate:'var(--orange)',low:'var(--green)'};
+  const drBg={elevated:'rgba(239,68,68,.15)',moderate:'rgba(249,115,22,.15)',low:'rgba(34,197,94,.15)'};
+  const fmt1=v=>v!=null?v.toFixed(1):'--';
+  const fmtSign=v=>v!=null?(v>=0?'+':'')+v.toFixed(1):'--';
+  el.innerHTML=rows.map((r,i)=>{
+    const ci=r.congestion_index,ciPct=ci!=null?Math.min(100,Math.max(0,ci)):0;
+    const ciColor=ci>=75?'var(--red)':ci>=50?'var(--orange)':ci>=25?'var(--yellow)':'var(--green)';
+    const fp=r.freight_pressure||'neutral',dr=r.delay_risk||'low';
+    const fpLabel={building:t('fp_building'),neutral:t('fp_neutral'),easing:t('fp_easing')}[fp]||fp;
+    const drLabel={elevated:t('dr_elevated'),moderate:t('dr_moderate'),low:t('dr_low')}[dr]||dr;
+    const narrative=LANG==='ko'?(r.narrative_ko||''):(r.narrative_en||'');
+    const delay=`.${Math.min(i,8)*5+5}s`;
+    return`<div class="rc" style="animation-delay:${delay}">
+      <div class="rc-hdr">
+        <span class="rc-name">${r.region}</span>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end">
+          <span style="font-size:11px;padding:2px 7px;border-radius:20px;background:${fpBg[fp]};color:${fpColor[fp]}">${fpLabel}</span>
+          <span style="font-size:11px;padding:2px 7px;border-radius:20px;background:${drBg[dr]};color:${drColor[dr]}">${drLabel}</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('lbl_yard_ci')}${r.congestion_trend_pct!=null?` <span style="color:${r.congestion_trend_pct>=0?'var(--orange)':'var(--green)'}">${fmtSign(r.congestion_trend_pct)}%</span>`:''}</div>
+      <div class="prog-wrap"><div class="prog-fill" style="width:${ciPct}%;background:${ciColor}"></div></div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;color:${ciColor};line-height:1;margin-bottom:10px">${ci!=null?ci.toFixed(0):'--'}<span style="font-size:15px;color:var(--muted)"> /100</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:13px;margin-bottom:12px">
+        <div><div style="color:var(--muted);font-size:11px;margin-bottom:2px">${t('lbl_blank')}</div>
+          <div style="font-weight:600">${fmt1(r.blank_sailing_pct)}%${r.blank_sailing_trend_pp!=null?` <span style="color:var(--muted);font-size:11px">${fmtSign(r.blank_sailing_trend_pp)}pp</span>`:''}</div></div>
+        <div><div style="color:var(--muted);font-size:11px;margin-bottom:2px">${t('lbl_fwd')}</div>
+          <div style="font-weight:600">${fmt1(r.blank_sailing_fwd_pct)}%</div></div>
+        <div><div style="color:var(--muted);font-size:11px;margin-bottom:2px">${t('lbl_yoy')}</div>
+          <div style="font-weight:600;color:${r.schedule_yoy_pct>=0?'var(--mint)':'var(--orange)'}">${r.schedule_yoy_pct!=null?(r.schedule_yoy_pct>=0?'+':'')+r.schedule_yoy_pct.toFixed(1)+'%':'--'}</div></div>
+      </div>
+      ${narrative?`<div style="font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;line-height:1.6">${narrative}</div>`:''}
+      ${r.data_week?`<div style="font-size:10px;color:var(--border);margin-top:5px">${LANG==='ko'?'기준주':'Week'}: ${r.data_week}</div>`:''}
+    </div>`;
   }).join('');
 }
 
@@ -522,13 +595,13 @@ function showFallback(code,etd,nm){
   showResult({p10:p10.toISOString(),p50:p50.toISOString(),p90:p90.toISOString(),breakdown:{mpci_score:mpci}},code,true);
 }
 
-function renderAll(ports,cps){renderS1(ports);renderS2(ports);renderS3(ports);renderS4();renderS5(cps)}
+function renderAll(ports,cps,ri){renderS1(ports);renderS2(ports);renderS3(ports);renderS4();renderS5(cps);renderRegionAnalytics(ri||[])}
 
 async function init(){
   try{
-    const[ports,cps]=await Promise.all([fetchSnaps(),fetchCPs()]);
-    window._snaps=ports;window._cps=cps;
-    renderAll(ports,cps);
+    const[ports,cps,ri]=await Promise.all([fetchSnaps(),fetchCPs(),fetchRegionIndex()]);
+    window._snaps=ports;window._cps=cps;window._ri=ri;
+    renderAll(ports,cps,ri);
     buildEtaForm(ports);
   }catch(e){
     console.error('init error',e);
