@@ -3,122 +3,199 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MTL 항만 혼잡도 모니터</title>
+<title>MTL Port Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0f1e;--surface:#111827;--card:#1a2235;--border:#1e3a5f;--mint:#14b8a6;--red:#ef4444;--orange:#f97316;--yellow:#eab308;--green:#22c55e;--text:#f1f5f9;--muted:#94a3b8}
+:root{
+  --bg:#07111f;--surface:#0d1f33;--card:#0f2030;--card2:#122539;
+  --border:#1a3a5c;--border2:#0e2540;
+  --mint:#14b8a6;--mint-d:rgba(20,184,166,.1);--mint-b:rgba(20,184,166,.22);
+  --red:#ef4444;--red-d:rgba(239,68,68,.1);
+  --orange:#f97316;--orange-d:rgba(249,115,22,.1);
+  --yellow:#eab308;--yellow-d:rgba(234,179,8,.1);
+  --green:#22c55e;--green-d:rgba(34,197,94,.1);
+  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+  --ff-disp:'Bebas Neue',sans-serif;
+  --ff-mono:'Space Grotesk',sans-serif;
+  --ff-body:'Noto Sans KR',sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
-#hdr{position:sticky;top:0;z-index:1000;background:rgba(10,15,30,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
-.hdr-top{display:flex;align-items:center;justify-content:space-between;padding:13px 32px;border-bottom:1px solid rgba(30,58,95,.45)}
-.hdr-brand{display:flex;align-items:center;gap:10px}
-.brand-text{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:1.5px}
-.brand-sub{font-size:12px;color:var(--muted);margin-left:4px;font-family:'Space Grotesk',sans-serif}
-.hdr-right{display:flex;align-items:center;gap:18px}
-#utc{font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--muted)}
+body{background:var(--bg);color:var(--text);font-family:var(--ff-body);font-size:15px;line-height:1.65;min-height:100vh}
+
+/* ── HEADER ── */
+#hdr{position:sticky;top:0;z-index:1000;background:rgba(7,17,31,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;padding:12px 32px}
+.hdr-brand{display:flex;align-items:center;gap:12px}
+.brand-icon{font-size:20px;line-height:1}
+.brand-name{font-family:var(--ff-mono);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--text)}
+.brand-name span{color:var(--mint)}
+.brand-tag{font-family:var(--ff-mono);font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 8px;margin-left:6px}
+.hdr-right{display:flex;align-items:center;gap:16px}
+#utc{font-family:var(--ff-mono);font-size:12px;color:var(--muted2);letter-spacing:.5px}
 #utc .dot{color:var(--mint);animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .lang-btn{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px}
-.lang-btn button{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 10px;border-radius:4px;font-size:13px;font-family:'Space Grotesk',sans-serif;transition:all .2s}
-.lang-btn button.active{background:var(--mint);color:#000;font-weight:600}
-.hdr-nav{display:flex;padding:0 24px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.lang-btn button{background:none;border:none;color:var(--muted2);cursor:pointer;padding:3px 10px;border-radius:4px;font-size:12px;font-family:var(--ff-mono);font-weight:600;transition:all .2s}
+.lang-btn button.active{background:var(--mint);color:#000}
+.hdr-nav{display:flex;padding:0 20px;overflow-x:auto;gap:2px}
 .hdr-nav::-webkit-scrollbar{height:0}
-.hdr-nav a{color:var(--muted);text-decoration:none;font-size:13px;padding:10px 13px;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.hdr-nav a{color:var(--muted);text-decoration:none;font-size:12px;font-family:var(--ff-mono);font-weight:500;padding:9px 13px;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;letter-spacing:.3px}
 .hdr-nav a:hover{color:var(--text);border-bottom-color:var(--mint)}
-main{max-width:1280px;margin:0 auto;padding:44px 32px 80px}
-section{margin-bottom:68px}
-.sec-label{font-family:'Space Grotesk',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--mint);margin-bottom:7px}
-.sec-title{font-size:22px;font-weight:700;margin-bottom:4px}
-.sec-desc{font-size:14px;color:var(--muted);margin-bottom:26px}
-.sum-grid{display:grid;grid-template-columns:1fr 1fr 1fr 2fr;gap:16px;margin-top:6px}
-.sum-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
-.sum-card .lbl{font-size:13px;color:var(--muted);margin-bottom:6px}
-.sum-card .val{font-family:'Bebas Neue',sans-serif;font-size:54px;line-height:1;margin-bottom:3px}
-.sum-card .sub{font-size:13px;color:var(--muted)}
-.sum-card.red .val{color:var(--red)}
-.today-card{background:linear-gradient(135deg,var(--card),rgba(20,184,166,.07));border:1px solid rgba(20,184,166,.28);border-radius:12px;padding:24px}
-.today-card .tlbl{font-size:11px;color:var(--mint);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-family:'Space Grotesk',sans-serif}
-.today-card .ttxt{font-size:17px;font-weight:500;line-height:1.55}
-.last-upd{font-size:12px;color:var(--muted);margin-top:10px}
-.region-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.rc{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:12px;padding:22px;transition:transform .2s;animation:fadeUp .5s ease forwards;opacity:0}
-.rc:hover{transform:translateY(-2px)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.rc:nth-child(1){animation-delay:.05s}.rc:nth-child(2){animation-delay:.10s}.rc:nth-child(3){animation-delay:.15s}.rc:nth-child(4){animation-delay:.20s}.rc:nth-child(5){animation-delay:.25s}.rc:nth-child(6){animation-delay:.30s}.rc:nth-child(7){animation-delay:.35s}.rc:nth-child(8){animation-delay:.40s}.rc:nth-child(9){animation-delay:.45s}
-.rc.C{border-left-color:var(--red)}.rc.B{border-left-color:var(--orange)}.rc.S{border-left-color:var(--yellow)}.rc.L{border-left-color:var(--green)}.rc.N{border-left-color:var(--border)}
-.rc-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.rc-name{font-size:16px;font-weight:700}
-.rc-badge{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600}
-.bC{background:rgba(239,68,68,.15);color:var(--red)}.bB{background:rgba(249,115,22,.15);color:var(--orange)}.bS{background:rgba(234,179,8,.15);color:var(--yellow)}.bL{background:rgba(34,197,94,.15);color:var(--green)}.bN{background:rgba(148,163,184,.1);color:var(--muted)}
-.rc-score{font-family:'Bebas Neue',sans-serif;font-size:56px;line-height:1;margin-bottom:1px}
+
+/* ── LAYOUT ── */
+main{max-width:1360px;margin:0 auto;padding:48px 32px 100px}
+section{margin-bottom:72px}
+.sec-eyebrow{font-family:var(--ff-mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mint);margin-bottom:8px}
+.sec-title{font-size:24px;font-weight:700;margin-bottom:5px;letter-spacing:-.3px}
+.sec-desc{font-size:13px;color:var(--muted2);margin-bottom:28px;max-width:640px;line-height:1.7}
+.sec-meta{font-size:11px;color:var(--muted);margin-top:10px;font-family:var(--ff-mono)}
+
+/* ── SUMMARY GRID ── */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1.8fr;gap:14px}
+.sum-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 22px;position:relative;overflow:hidden}
+.sum-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(20,184,166,.04),transparent 60%);pointer-events:none}
+.sum-card .sc-lbl{font-size:11px;font-family:var(--ff-mono);color:var(--muted2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
+.sum-card .sc-val{font-family:var(--ff-disp);font-size:58px;line-height:1;color:var(--text);margin-bottom:4px}
+.sum-card .sc-sub{font-size:12px;color:var(--muted)}
+.sum-card.sc-red .sc-val{color:var(--red)}
+.sum-card.sc-data .sc-val{font-size:44px}
+.sum-card.sc-data sup{font-family:var(--ff-mono);font-size:16px;color:var(--muted);font-weight:400;vertical-align:super}
+.today-card{background:var(--card);border:1px solid var(--mint-b);border-radius:14px;padding:24px 22px;background:linear-gradient(135deg,var(--card),rgba(20,184,166,.06))}
+.today-card .tc-lbl{font-size:10px;font-family:var(--ff-mono);color:var(--mint);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.today-card .tc-txt{font-size:16px;font-weight:500;line-height:1.65;color:var(--text)}
+
+/* ── REGION CARDS ── */
+.region-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.rc{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:14px;padding:22px;transition:transform .2s,background .2s;animation:fadeUp .45s ease forwards;opacity:0}
+.rc:hover{transform:translateY(-2px);background:var(--card2)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.rc:nth-child(1){animation-delay:.04s}.rc:nth-child(2){animation-delay:.08s}.rc:nth-child(3){animation-delay:.12s}
+.rc:nth-child(4){animation-delay:.16s}.rc:nth-child(5){animation-delay:.20s}.rc:nth-child(6){animation-delay:.24s}
+.rc:nth-child(7){animation-delay:.28s}.rc:nth-child(8){animation-delay:.32s}.rc:nth-child(9){animation-delay:.36s}
+.rc.lC{border-left-color:var(--red)}.rc.lB{border-left-color:var(--orange)}.rc.lS{border-left-color:var(--yellow)}.rc.lL{border-left-color:var(--green)}.rc.lN{border-left-color:var(--muted)}
+.rc-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:8px}
+.rc-name{font-size:15px;font-weight:700;line-height:1.3}
+.badge{display:inline-block;font-size:11px;font-family:var(--ff-mono);font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.bC{background:var(--red-d);color:var(--red)}.bB{background:var(--orange-d);color:var(--orange)}.bS{background:var(--yellow-d);color:var(--yellow)}.bL{background:var(--green-d);color:var(--green)}.bN{background:rgba(100,116,139,.12);color:var(--muted2)}
+.rc-score{font-family:var(--ff-disp);font-size:54px;line-height:1;margin-bottom:2px}
 .sC{color:var(--red)}.sB{color:var(--orange)}.sS{color:var(--yellow)}.sL{color:var(--green)}.sN{color:var(--muted)}
-.rc-score-lbl{font-size:12px;color:var(--muted);margin-bottom:14px}
-.prog-wrap{background:rgba(255,255,255,.06);border-radius:4px;height:6px;margin-bottom:14px;overflow:hidden}
-.prog-fill{height:100%;border-radius:4px;transition:width 1s ease}
+.rc-score-lbl{font-size:11px;color:var(--muted);margin-bottom:12px;font-family:var(--ff-mono)}
+.prog-wrap{height:5px;background:rgba(255,255,255,.05);border-radius:3px;margin-bottom:14px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
 .fC{background:var(--red)}.fB{background:var(--orange)}.fS{background:var(--yellow)}.fL{background:var(--green)}
-.rc-counts{display:flex;gap:14px;margin-bottom:10px;font-size:13px;color:var(--muted)}
-.rc-wait{font-size:14px}.rc-wait strong{color:var(--mint)}
-.rc-nodata-msg{font-size:14px;color:var(--muted);padding:18px 0 4px;text-align:center}
-.rc-nodata-count{font-size:12px;color:var(--border);text-align:center;margin-top:2px}
-.stale-tag{display:inline-block;font-size:11px;color:var(--orange);background:rgba(249,115,22,.12);border-radius:4px;padding:1px 6px;margin-left:5px;vertical-align:middle}
-.t5-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.rc-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px}
+.rc-stat .rs-lbl{color:var(--muted);margin-bottom:2px}
+.rc-stat .rs-val{font-family:var(--ff-mono);font-weight:600;font-size:13px}
+.rc-nodata{text-align:center;padding:20px 0 8px}
+.rc-nodata .nd-ico{font-size:28px;margin-bottom:8px;opacity:.4}
+.rc-nodata .nd-msg{font-size:13px;color:var(--muted2)}
+.rc-nodata .nd-sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--ff-mono)}
+
+/* ── REGION ANALYTICS ── */
+.ra-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;animation:fadeUp .45s ease forwards;opacity:0;transition:background .2s}
+.ra-card:hover{background:var(--card2)}
+.ra-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:8px}
+.ra-name{font-size:14px;font-weight:700}
+.ra-badges{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.ci-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.ci-bar-track{flex:1;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.ci-bar-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.ci-num{font-family:var(--ff-disp);font-size:32px;line-height:1;min-width:44px;text-align:right}
+.ra-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.ra-metric .rm-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-family:var(--ff-mono)}
+.ra-metric .rm-val{font-size:15px;font-weight:600}
+.ra-narrative{font-size:11px;color:var(--muted2);border-top:1px solid var(--border2);padding-top:10px;line-height:1.7}
+.ra-week{font-size:10px;color:var(--muted);margin-top:6px;font-family:var(--ff-mono)}
+.ra-collecting{text-align:center;padding:30px 0;color:var(--muted)}
+
+/* ── TABLE ── */
+.t5-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .t5{width:100%;border-collapse:collapse}
-.t5 th{text-align:left;padding:12px 16px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);background:var(--surface);font-family:'Space Grotesk',sans-serif}
-.t5 td{padding:15px 16px;border-bottom:1px solid rgba(30,58,95,.4);font-size:15px}
+.t5 thead{background:var(--surface)}
+.t5 th{text-align:left;padding:11px 16px;font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:1.5px;border-bottom:1px solid var(--border);font-family:var(--ff-mono);font-weight:600;white-space:nowrap}
+.t5 td{padding:14px 16px;border-bottom:1px solid rgba(26,58,92,.3);font-size:14px;vertical-align:middle}
 .t5 tbody tr{cursor:pointer;transition:background .15s}
-.t5 tbody tr:hover{background:rgba(20,184,166,.05)}
+.t5 tbody tr:hover{background:rgba(20,184,166,.04)}
 .t5 tbody tr:last-child td{border-bottom:none}
-.pname{font-weight:600}.pcode{font-size:12px;color:var(--muted)}
-.score-big{font-family:'Bebas Neue',sans-serif;font-size:30px}
-.coming-soon{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:40px;text-align:center;color:var(--muted);font-size:15px;line-height:1.9}
-.coming-soon strong{color:var(--text);display:block;font-size:18px;margin-bottom:10px}
-.cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.cp-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
-.cp-name{font-size:18px;font-weight:700;margin-bottom:4px}
-.cp-subdesc{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5}
-.cp-vals{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.cp-val-lbl{font-size:12px;color:var(--muted);margin-bottom:3px}
-.cp-val-num{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1}
-.cp-status{display:flex;align-items:center;gap:8px;padding-top:14px;border-top:1px solid var(--border);font-size:14px}
-.cp-info{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
-.eta-wrap{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
-.eta-form{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:30px}
-.eta-form h3{font-size:18px;font-weight:700;margin-bottom:5px}
-.fdesc{font-size:14px;color:var(--muted);margin-bottom:26px}
-.fg{margin-bottom:18px}
-.fg label{display:block;font-size:14px;color:var(--muted);margin-bottom:7px}
-.fg select,.fg input[type=date],.fg input[type=number]{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:11px 14px;font-size:15px;font-family:'Noto Sans KR',sans-serif;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.port-cell{display:flex;flex-direction:column;gap:2px}
+.port-name{font-weight:700;font-size:14px}
+.port-code{font-size:11px;color:var(--muted);font-family:var(--ff-mono)}
+.score-num{font-family:var(--ff-disp);font-size:28px;line-height:1}
+.stale-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--orange);background:var(--orange-d);border-radius:4px;padding:1px 6px;margin-left:4px;font-family:var(--ff-mono);vertical-align:middle}
+
+/* ── STRAIT CARDS ── */
+.cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.cp-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;transition:background .2s}
+.cp-card:hover{background:var(--card2)}
+.cp-name{font-size:19px;font-weight:700;margin-bottom:5px}
+.cp-desc{font-size:12px;color:var(--muted2);margin-bottom:20px;line-height:1.6}
+.cp-vals{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.cp-val-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;font-family:var(--ff-mono)}
+.cp-val-num{font-family:var(--ff-disp);font-size:40px;line-height:1}
+.cp-divider{height:1px;background:var(--border2);margin-bottom:14px}
+.cp-status{font-size:13px;font-weight:600;margin-bottom:8px}
+.cp-note{font-size:11px;color:var(--muted);line-height:1.6}
+
+/* ── ETA SECTION ── */
+.eta-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.eta-form{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px}
+.eta-form-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.eta-form-desc{font-size:13px;color:var(--muted2);margin-bottom:24px}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:12px;color:var(--muted2);margin-bottom:7px;font-family:var(--ff-mono);text-transform:uppercase;letter-spacing:.8px}
+.fg select,.fg input[type=date],.fg input[type=number]{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:11px 14px;font-size:14px;font-family:var(--ff-body);outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
 .fg select:focus,.fg input:focus{border-color:var(--mint)}
 .fg select option{background:var(--surface)}
-.port-hint{font-size:13px;margin-top:6px;min-height:20px}
-.eta-btn{width:100%;padding:15px;background:var(--mint);color:#000;border:none;border-radius:8px;font-size:16px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:background .2s,transform .1s;margin-top:6px}
-.eta-btn:hover{background:#0fa896}.eta-btn:active{transform:scale(.99)}.eta-btn:disabled{background:var(--muted);cursor:not-allowed}
-.eta-result{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:30px;min-height:340px;display:flex;flex-direction:column;justify-content:center}
-.eta-ph{text-align:center;color:var(--muted)}.phi{font-size:48px;margin-bottom:12px;opacity:.3}
-.eta-rtitle{font-size:17px;font-weight:700;margin-bottom:22px}
-.eta-rows{display:flex;flex-direction:column;gap:16px;margin-bottom:22px}
+.port-hint{font-size:12px;margin-top:6px;min-height:18px;font-family:var(--ff-mono)}
+.nm-auto{font-size:13px;min-height:20px;display:none;padding-bottom:6px}
+.nm-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:11px 14px;font-size:14px;font-family:var(--ff-body);outline:none;margin-top:6px;display:none;transition:border-color .2s}
+.nm-input:focus{border-color:var(--mint)}
+.eta-btn{width:100%;padding:14px;background:var(--mint);color:#000;border:none;border-radius:8px;font-size:15px;font-weight:700;font-family:var(--ff-body);cursor:pointer;transition:all .2s;margin-top:4px;letter-spacing:.3px}
+.eta-btn:hover{background:#0fb8a4;transform:translateY(-1px)}
+.eta-btn:active{transform:scale(.99)}
+.eta-btn:disabled{background:var(--muted);cursor:not-allowed;transform:none}
+.eta-result{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;min-height:360px;display:flex;flex-direction:column;justify-content:center}
+.eta-ph{text-align:center;color:var(--muted)}
+.eta-ph-ico{font-size:44px;margin-bottom:14px;opacity:.25}
+.eta-ph-txt{font-size:14px;color:var(--muted2);line-height:1.7}
+.eta-rtitle{font-size:16px;font-weight:700;margin-bottom:20px}
+.eta-rows{display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
 .eta-row-hdr{display:flex;justify-content:space-between;align-items:center}
-.eta-rtype{font-size:13px;color:var(--muted)}
-.eta-rdate{font-family:'Bebas Neue',sans-serif;font-size:28px}
-.eta-row.p50 .eta-rdate{font-size:40px;color:var(--mint)}
-.eta-bar-wrap{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin:4px 0}
+.eta-rtype{font-size:12px;color:var(--muted2);font-family:var(--ff-mono)}
+.eta-rdate{font-family:var(--ff-disp);font-size:28px}
+.eta-row.p50 .eta-rdate{font-size:38px;color:var(--mint)}
+.eta-bar-wrap{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;margin:5px 0}
 .eta-bar{height:100%;border-radius:2px;background:var(--muted)}
 .eta-row.p50 .eta-bar{background:var(--mint)}.eta-row.p90 .eta-bar{background:var(--orange)}
-.eta-rnote{font-size:12px;color:var(--muted)}
-.eta-warn{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:13px;font-size:14px;margin-bottom:11px}
-.eta-info{background:rgba(20,184,166,.05);border:1px solid rgba(20,184,166,.2);border-radius:8px;padding:13px;font-size:14px;color:var(--muted)}
+.eta-rnote{font-size:11px;color:var(--muted)}
+.eta-alert{background:var(--red-d);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:10px}
+.eta-info{background:var(--mint-d);border:1px solid var(--mint-b);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--muted2)}
 .eta-info strong{color:var(--mint)}
-.nm-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:11px 14px;font-size:15px;font-family:'Noto Sans KR',sans-serif;outline:none;margin-top:8px;display:none;transition:border-color .2s}
-.nm-input:focus{border-color:var(--mint)}
-.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted);gap:12px;font-size:14px}
-.spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite}
+
+/* ── COMING SOON ── */
+.coming-soon{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:48px;text-align:center;color:var(--muted2)}
+.coming-soon .cs-ico{font-size:36px;margin-bottom:14px;opacity:.5}
+.coming-soon .cs-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px}
+.coming-soon .cs-msg{font-size:13px;line-height:1.75}
+
+/* ── LOADING/EMPTY ── */
+.loading{display:flex;align-items:center;justify-content:center;padding:44px;color:var(--muted);gap:12px;font-size:13px}
+.spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-.no-data{text-align:center;color:var(--muted);padding:32px;font-size:14px}
-@media(max-width:960px){.sum-grid{grid-template-columns:1fr 1fr}.region-grid{grid-template-columns:1fr 1fr}.cp-grid{grid-template-columns:1fr}.eta-wrap{grid-template-columns:1fr}}
-@media(max-width:600px){main{padding:24px 16px 60px}.hdr-top{padding:11px 16px}.sum-grid,.region-grid{grid-template-columns:1fr}.brand-sub{display:none}}
+.no-data-block{text-align:center;color:var(--muted2);padding:36px;font-size:13px}
+
+/* ── MISC ── */
+.collecting-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted2);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-family:var(--ff-mono)}
+.collecting-dot{width:6px;height:6px;border-radius:50%;background:var(--mint);animation:pulse 1.4s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.sum-grid{grid-template-columns:1fr 1fr}.cp-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:960px){.region-grid{grid-template-columns:1fr 1fr}.eta-wrap{grid-template-columns:1fr}}
+@media(max-width:640px){main{padding:28px 16px 72px}.hdr-top{padding:11px 16px}.sum-grid,.region-grid,.cp-grid{grid-template-columns:1fr}.brand-tag{display:none}}
 </style>
 </head>
 <body>
@@ -126,14 +203,14 @@ section{margin-bottom:68px}
 <header id="hdr">
   <div class="hdr-top">
     <div class="hdr-brand">
-      <span style="font-size:22px">🚢</span>
-      <span class="brand-text" data-i18n="brand">MTL 항만 혼잡도 모니터</span>
-      <span class="brand-sub" data-i18n="brand_sub">글로벌 항만 실시간 혼잡도 · ETA 보정 서비스</span>
+      <div class="brand-icon">🚢</div>
+      <div class="brand-name">MTL <span>Port</span> Intelligence</div>
+      <div class="brand-tag" data-i18n="brand_tag">BETA</div>
     </div>
     <div class="hdr-right">
       <div id="utc"></div>
       <div class="lang-btn">
-        <button id="btn-ko" class="active" onclick="setLang('ko')">한국어</button>
+        <button id="btn-ko" class="active" onclick="setLang('ko')">KO</button>
         <button id="btn-en" onclick="setLang('en')">EN</button>
       </div>
     </div>
@@ -141,7 +218,7 @@ section{margin-bottom:68px}
   <nav class="hdr-nav">
     <a href="#sec1" data-i18n="nav1">항만 현황</a>
     <a href="#sec2" data-i18n="nav2">권역별 혼잡도</a>
-    <a href="#sec-ra" data-i18n="nav_ra">권역 해운 지표</a>
+    <a href="#sec-ra" data-i18n="nav_ra">권역 지표</a>
     <a href="#sec3" data-i18n="nav3">주의 항만 TOP 5</a>
     <a href="#sec4" data-i18n="nav4">조기 경보</a>
     <a href="#sec5" data-i18n="nav5">해협 현황</a>
@@ -150,183 +227,292 @@ section{margin-bottom:68px}
 </header>
 
 <main>
+
+<!-- SECTION 1: 글로벌 요약 -->
 <section id="sec1">
-  <div class="sec-label" data-i18n="s1lbl">실시간 현황</div>
+  <div class="sec-eyebrow" data-i18n="s1lbl">실시간 현황</div>
   <div class="sec-title" data-i18n="s1ttl">🌏 글로벌 항만 혼잡도 현황</div>
-  <div class="sec-desc" data-i18n="s1dsc">EconDB 실데이터 기반 · 데이터가 없는 항만은 "수집 중"으로 표시됩니다</div>
-  <div class="sum-grid" id="sum-grid"><div class="loading" style="grid-column:1/-1"><div class="spin"></div>데이터 로딩 중...</div></div>
-  <div class="last-upd" id="last-upd"></div>
+  <div class="sec-desc" data-i18n="s1dsc">실시간 글로벌 항만 데이터 기반 · 데이터가 없는 항만은 수집 중으로 표시됩니다</div>
+  <div class="sum-grid" id="sum-grid">
+    <div class="loading" style="grid-column:1/-1"><div class="spin"></div>데이터 불러오는 중...</div>
+  </div>
+  <div class="sec-meta" id="last-upd"></div>
 </section>
 
+<!-- SECTION 2: 권역별 혼잡도 -->
 <section id="sec2">
-  <div class="sec-label" data-i18n="s2lbl">권역별 분석</div>
+  <div class="sec-eyebrow" data-i18n="s2lbl">권역별 분석</div>
   <div class="sec-title" data-i18n="s2ttl">🗺️ 권역별 혼잡도 지수</div>
-  <div class="sec-desc" data-i18n="s2dsc">전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다</div>
+  <div class="sec-desc" data-i18n="s2dsc">전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다. 수집 중인 항만은 데이터 확보 후 반영됩니다.</div>
   <div class="region-grid" id="region-grid"><div class="loading"><div class="spin"></div></div></div>
 </section>
 
+<!-- SECTION RA: 권역 해운 지표 -->
 <section id="sec-ra">
-  <div class="sec-label" data-i18n="s_ra_lbl">EconDB 권역 지표</div>
+  <div class="sec-eyebrow" data-i18n="s_ra_lbl">권역 지표</div>
   <div class="sec-title" data-i18n="s_ra_ttl">📊 권역별 해운 지표</div>
-  <div class="sec-desc" data-i18n="s_ra_dsc">EconDB 야드 적체·블랭크세일링·선석 점유를 권역별로 집계한 <strong>지표</strong>입니다. 예측 모델이 아닌 실측 기반 지표이며, 임계값은 운영 데이터로 보정됩니다.</div>
+  <div class="sec-desc" data-i18n="s_ra_dsc">야드 적체·블랭크세일링·선석 점유를 권역별로 집계한 <strong>지표</strong>입니다. 예측 모델이 아닌 실측 기반 지표이며, 데이터 축적에 따라 임계값은 보정됩니다.</div>
   <div class="region-grid" id="ra-grid"><div class="loading"><div class="spin"></div></div></div>
 </section>
 
+<!-- SECTION 3: TOP 5 -->
 <section id="sec3">
-  <div class="sec-label" data-i18n="s3lbl">주요 혼잡 항만</div>
+  <div class="sec-eyebrow" data-i18n="s3lbl">주요 혼잡 항만</div>
   <div class="sec-title" data-i18n="s3ttl">⚠️ 지금 주의해야 할 항만 TOP 5</div>
-  <div class="sec-desc" data-i18n="s3dsc">혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다</div>
-  <div class="t5-wrap"><table class="t5">
-    <thead><tr>
-      <th data-i18n="th1">항만</th>
-      <th data-i18n="th2">국가</th>
-      <th data-i18n="th3">혼잡도 지수</th>
-      <th data-i18n="th_turn">재항 일수</th>
-      <th data-i18n="th_delay">지연율</th>
-      <th data-i18n="th_anc">대기 선박</th>
-      <th data-i18n="th5">상태</th>
-    </tr></thead>
-    <tbody id="t5-body"><tr><td colspan="7"><div class="loading"><div class="spin"></div></div></td></tr></tbody>
-  </table></div>
+  <div class="sec-desc" data-i18n="s3dsc">혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다.</div>
+  <div class="t5-wrap">
+    <table class="t5">
+      <thead><tr>
+        <th data-i18n="th1">항만</th>
+        <th data-i18n="th2">국가</th>
+        <th data-i18n="th3">혼잡도 지수</th>
+        <th data-i18n="th_turn">재항 일수</th>
+        <th data-i18n="th_delay">지연율</th>
+        <th data-i18n="th_anc">대기 선박</th>
+        <th data-i18n="th5">상태</th>
+      </tr></thead>
+      <tbody id="t5-body">
+        <tr><td colspan="7"><div class="loading"><div class="spin"></div></div></td></tr>
+      </tbody>
+    </table>
+  </div>
 </section>
 
+<!-- SECTION 4: 조기 경보 -->
 <section id="sec4">
-  <div class="sec-label" data-i18n="s4lbl">선제 모니터링</div>
+  <div class="sec-eyebrow" data-i18n="s4lbl">선제 모니터링</div>
   <div class="sec-title" data-i18n="s4ttl">📡 조기 혼잡 경보</div>
-  <div class="sec-desc" data-i18n="s4dsc">EconDB 지연율 추세가 급증 중인 항만을 조기에 감지합니다</div>
+  <div class="sec-desc" data-i18n="s4dsc">지연율 추세가 급증 중인 항만을 조기에 감지합니다</div>
   <div id="ew-box"></div>
 </section>
 
+<!-- SECTION 5: 해협 -->
 <section id="sec5">
-  <div class="sec-label" data-i18n="s5lbl">주요 해협</div>
+  <div class="sec-eyebrow" data-i18n="s5lbl">주요 해협</div>
   <div class="sec-title" data-i18n="s5ttl">🗺️ 주요 해협 통과 현황</div>
-  <div class="sec-desc" data-i18n="s5dsc">글로벌 해운 화물의 대부분이 이 해협을 통과합니다. 통과 선박이 급감하면 항로 우회로 ETA가 크게 늘어납니다</div>
-  <div class="cp-grid" id="cp-grid"><div class="loading"><div class="spin"></div></div></div>
+  <div class="sec-desc" data-i18n="s5dsc">글로벌 해운 화물의 대부분이 이 해협을 통과합니다. 통과 선박이 급감하면 항로 우회로 ETA가 크게 늘어납니다.</div>
+  <div class="cp-grid" id="cp-grid"><div class="loading" style="grid-column:1/-1"><div class="spin"></div></div></div>
 </section>
 
+<!-- SECTION 6: ETA -->
 <section id="sec6">
-  <div class="sec-label" data-i18n="s6lbl">도착일 예측</div>
+  <div class="sec-eyebrow" data-i18n="s6lbl">도착일 예측</div>
   <div class="sec-title" data-i18n="s6ttl">📦 화물 도착일 예측</div>
-  <div class="sec-desc" data-i18n="s6dsc">도착 항만, 선사, 출발일만 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다</div>
+  <div class="sec-desc" data-i18n="s6dsc">도착 항만과 출발일을 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다.</div>
   <div class="eta-wrap">
     <div class="eta-form">
-      <h3 data-i18n="ef_ttl">도착 정보 입력</h3>
-      <p class="fdesc" data-i18n="ef_dsc">아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다</p>
-      <div class="fg"><label data-i18n="ef_l0">🛳️ 출발 항만</label>
-        <select id="e-origin"><option value="">-- 항만 선택 --</option></select></div>
-      <div class="fg"><label data-i18n="ef_l1">📍 도착 항만</label>
+      <div class="eta-form-title" data-i18n="ef_ttl">도착 정보 입력</div>
+      <div class="eta-form-desc" data-i18n="ef_dsc">아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다.</div>
+      <div class="fg">
+        <label data-i18n="ef_l0">🛳️ 출발 항만</label>
+        <select id="e-origin"><option value="">-- 항만 선택 --</option></select>
+      </div>
+      <div class="fg">
+        <label data-i18n="ef_l1">📍 도착 항만</label>
         <select id="e-port"><option value="">-- 항만 선택 --</option></select>
-        <div class="port-hint" id="port-hint"></div></div>
-      <div class="fg"><label data-i18n="ef_l3">📅 출발 예정일</label><input type="date" id="e-etd"></div>
+        <div class="port-hint" id="port-hint"></div>
+      </div>
+      <div class="fg">
+        <label data-i18n="ef_l3">📅 출발 예정일</label>
+        <input type="date" id="e-etd">
+      </div>
       <div class="fg" id="nm-fg">
-        <div id="nm-auto" style="font-size:14px;min-height:20px;display:none;padding-bottom:6px;"></div>
-        <input type="number" class="nm-input" id="e-nm" placeholder="직접 입력 (해리, nm)" min="100" max="25000"></div>
+        <div class="nm-auto" id="nm-auto"></div>
+        <input type="number" class="nm-input" id="e-nm" placeholder="직접 입력 (해리, nm)" min="100" max="25000">
+      </div>
       <button class="eta-btn" id="e-btn" data-i18n="ef_btn">도착일 예측하기</button>
     </div>
     <div class="eta-result" id="eta-result">
-      <div class="eta-ph" id="eta-ph"><div class="phi">📦</div><p data-i18n="ef_ph">왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요</p></div>
+      <div class="eta-ph" id="eta-ph">
+        <div class="eta-ph-ico">📦</div>
+        <div class="eta-ph-txt" data-i18n="ef_ph">왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요</div>
+      </div>
       <div id="eta-rc" style="display:none"></div>
     </div>
   </div>
 </section>
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const CFG={SB_URL:"https://tsxerizaaldykqksxxid.supabase.co",SB_ANON:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzeGVyaXphYWxkeWtxa3N4eGlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NzA3MzEsImV4cCI6MjA5NTE0NjczMX0.cxHXPlLsa5cT4dpjnQtsEpCLLHolnPX4RIAC3jgT0Rs",API_URL:"https://mpci-engine-production.up.railway.app",REFRESH:5*60*1000};
+const CFG={
+  SB_URL:"https://tsxerizaaldykqksxxid.supabase.co",
+  SB_ANON:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzeGVyaXphYWxkeWtxa3N4eGlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NzA3MzEsImV4cCI6MjA5NTE0NjczMX0.cxHXPlLsa5cT4dpjnQtsEpCLLHolnPX4RIAC3jgT0Rs",
+  API_URL:"https://mpci-engine-production.up.railway.app",
+  REFRESH:5*60*1000
+};
 let LANG='ko';
+
+/* ── i18n ── */
 const T={
-ko:{brand:"MTL 항만 혼잡도 모니터",brand_sub:"글로벌 항만 실시간 혼잡도 · ETA 보정 서비스",
-nav1:"항만 현황",nav2:"권역별 혼잡도",nav3:"주의 항만 TOP 5",nav4:"조기 경보",nav5:"해협 현황",nav6:"도착일 예측",
-s1lbl:"실시간 현황",s1ttl:"🌏 글로벌 항만 혼잡도 현황",s1dsc:"EconDB 실데이터 기반 · 데이터가 없는 항만은 \"수집 중\"으로 표시됩니다",
-s2lbl:"권역별 분석",s2ttl:"🗺️ 권역별 혼잡도 지수",s2dsc:"전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다",
-s3lbl:"주요 혼잡 항만",s3ttl:"⚠️ 지금 주의해야 할 항만 TOP 5",s3dsc:"혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다",
-s4lbl:"선제 모니터링",s4ttl:"📡 조기 혼잡 경보",s4dsc:"EconDB 지연율 추세가 급증 중인 항만을 조기에 감지합니다",
-s5lbl:"주요 해협",s5ttl:"🗺️ 주요 해협 통과 현황",s5dsc:"글로벌 해운 화물의 대부분이 이 해협을 통과합니다. 통과 선박이 급감하면 항로 우회로 ETA가 크게 늘어납니다",
-s6lbl:"도착일 예측",s6ttl:"📦 화물 도착일 예측",s6dsc:"도착 항만과 출발일을 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다",
-th1:"항만",th2:"국가",th3:"혼잡도 지수",th_turn:"재항 일수",th_delay:"지연율",th_anc:"대기 선박",th5:"상태",
-ef_ttl:"도착 정보 입력",ef_dsc:"아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다",
-ef_l0:"🛳️ 출발 항만",ef_l1:"📍 도착 항만",ef_l3:"📅 출발 예정일",
-ef_btn:"도착일 예측하기",ef_ph:"왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요",
-lv_C:"🔴 혼잡",lv_B:"🟠 주의",lv_S:"🟡 보통",lv_L:"🟢 원활",lv_N:"— 수집 중",
-w3:"약 3일",w15:"약 1.5일",w1:"약 1일",wh:"약 반나절",
-cp_ok:"🟢 정상 운항 중",cp_caut:"🟠 주의 필요",cp_alert:"🔴 통과 급감 경보",
-cp_suez:"유럽↔아시아 최단 항로 (홍해 경유).\n통과량이 평균 40% 이하면 우회 경보 발령",
-cp_pan:"태평양↔대서양 최단 항로.\n가뭄 시 통항 제한 발생 가능",
-cp_mal:"동남아↔인도양 핵심 통로.\n전 세계 무역량의 약 40% 통과",
-today_s:"오늘 컨테이너선",avg7:"7일 평균",
-sum_mon:"전체 항만",sum_data:"데이터 확보",sum_con:"🔴 혼잡 항만",sum_today:"오늘의 한 줄 요약",
-idx_lbl:"혼잡도 지수 (0~100)",avg_wait:"평균 재항 일수",
-arr_early:"🟢 빠른 경우",arr_likely:"🎯 가장 가능성 높음",arr_late:"🔴 늦은 경우",
-arr_early_d:"순조로운 항해, 항만 혼잡 완화 시",arr_likely_d:"현재 항만 혼잡도 반영",arr_late_d:"혼잡 악화, 기상 불량 시",
-dnd_ttl:"ℹ️ 지체료 (D&D) 안내",
-dnd_body:"컨테이너 반납 기한이 <strong>%D%</strong> 이전이면 지체료가 발생할 수 있습니다. 선사에 Free Time 연장 요청을 권장합니다.",
-arr_dest:"도착 예상일",arr_approx:"도착 예상일 (추정)",
-s4_coming:"EconDB 이력 데이터 축적 후 제공됩니다. 데이터 수집 시작일로부터 약 7일 후 활성화됩니다.",
-eta_nodata:"해당 항만 EconDB 데이터 없음 — 기본값으로 계산됨",
-stale_warn:"⚠️ 데이터 오래됨",nodata:"데이터 없음",
-nav_ra:"권역 해운 지표",
-s_ra_lbl:"EconDB 권역 지표",s_ra_ttl:"📊 권역별 해운 지표",
-s_ra_dsc:"EconDB 야드 적체·블랭크세일링·선석 점유를 권역별로 집계한 <strong>지표</strong>입니다. 예측 모델이 아닌 실측 기반 지표이며, 임계값은 운영 데이터로 보정됩니다.",
-fp_building:"운임 상승 압력",fp_neutral:"운임 중립",fp_easing:"운임 완화",
-dr_elevated:"지연 위험 ↑",dr_moderate:"지연 위험 중",dr_low:"지연 위험 낮음",
-lbl_yard_ci:"야드 적체",lbl_blank:"블랭크세일링",lbl_fwd:"향후 전망",lbl_yoy:"선석 YoY"},
-en:{brand:"MTL Port Congestion Monitor",brand_sub:"Global Port Real-time Congestion & ETA Service",
-nav1:"Port Status",nav2:"By Region",nav3:"Watch Ports TOP 5",nav4:"Early Warning",nav5:"Straits",nav6:"ETA Forecast",
-s1lbl:"Live Status",s1ttl:"🌏 Global Port Congestion Status",s1dsc:"EconDB-based · Ports without data shown as 'Collecting'",
-s2lbl:"Regional Analysis",s2ttl:"🗺️ Regional Congestion Index",s2dsc:"8 global shipping regions at a glance",
-s3lbl:"High Alert Ports",s3ttl:"⚠️ Top 5 Ports to Watch Now",s3dsc:"High congestion may delay cargo. Click a port to calculate ETA instantly.",
-s4lbl:"Early Warning",s4ttl:"📡 Congestion Early Warning",s4dsc:"Detects ports with rapidly rising EconDB delay rates.",
-s5lbl:"Key Straits",s5ttl:"🗺️ Strategic Straits Status",s5dsc:"Most global cargo passes through these straits. A sharp drop in transits signals rerouting risk.",
-s6lbl:"ETA Forecast",s6ttl:"📦 Cargo Arrival Date Forecast",s6dsc:"Enter destination port and departure date for an arrival estimate reflecting current congestion.",
-th1:"Port",th2:"Country",th3:"Congestion Index",th_turn:"Turnaround",th_delay:"Delay Rate",th_anc:"Waiting",th5:"Status",
-ef_ttl:"Enter Arrival Info",ef_dsc:"Fill in what you know — the rest is calculated automatically.",
-ef_l0:"🛳️ Origin Port",ef_l1:"📍 Destination Port",ef_l3:"📅 Departure Date (ETD)",
-ef_btn:"Forecast Arrival Date",ef_ph:"Enter info on the left<br>and click Forecast",
-lv_C:"🔴 Congested",lv_B:"🟠 Busy",lv_S:"🟡 Stable",lv_L:"🟢 Clear",lv_N:"— Collecting",
-w3:"~3 days",w15:"~1.5 days",w1:"~1 day",wh:"~half day",
-cp_ok:"🟢 Normal",cp_caut:"🟠 Caution",cp_alert:"🔴 Transit Drop Alert",
-cp_suez:"Shortest Europe↔Asia route (via Red Sea).\nBelow 40% of avg = rerouting alert.",
-cp_pan:"Shortest Pacific↔Atlantic route.\nDrought can restrict transits.",
-cp_mal:"SE Asia↔Indian Ocean gateway.\n~40% of global trade passes through.",
-today_s:"Today containers",avg7:"7-day avg",
-sum_mon:"Total Ports",sum_data:"With Data",sum_con:"🔴 Congested",sum_today:"Today's Summary",
-idx_lbl:"Congestion Index (0–100)",avg_wait:"Avg. turnaround",
-arr_early:"🟢 Best case",arr_likely:"🎯 Most likely",arr_late:"🔴 Worst case",
-arr_early_d:"Smooth voyage, congestion improves",arr_likely_d:"Reflects current port congestion",arr_late_d:"Congestion worsens, bad weather",
-dnd_ttl:"ℹ️ Detention & Demurrage Note",
-dnd_body:"If container return deadline is before <strong>%D%</strong>, D&D charges may apply. Consider requesting a Free Time extension.",
-arr_dest:"Estimated Arrival",arr_approx:"Estimated Arrival (Approximate)",
-s4_coming:"Will be available after 7 days of EconDB history data collection.",
-eta_nodata:"No EconDB data for this port — using defaults",
-stale_warn:"⚠️ Outdated",nodata:"No data",
-nav_ra:"Regional Indicators",
-s_ra_lbl:"EconDB Regional Indicators",s_ra_ttl:"📊 Regional Maritime Indicators",
-s_ra_dsc:"EconDB-based yard congestion, blank sailing and berth occupancy <strong>indicators</strong> by region. These are measured indicators, not forecasts. Thresholds are calibrated with operational data.",
-fp_building:"Freight Pressure Building",fp_neutral:"Freight Neutral",fp_easing:"Freight Easing",
-dr_elevated:"Delay Risk Elevated",dr_moderate:"Delay Risk Moderate",dr_low:"Delay Risk Low",
-lbl_yard_ci:"Yard Congestion",lbl_blank:"Blank Sailings",lbl_fwd:"Forward",lbl_yoy:"Berth YoY"}
+ko:{
+  brand_tag:"BETA",
+  nav1:"항만 현황",nav2:"권역별 혼잡도",nav_ra:"권역 지표",nav3:"주의 항만 TOP 5",nav4:"조기 경보",nav5:"해협 현황",nav6:"도착일 예측",
+  s1lbl:"실시간 현황",s1ttl:"🌏 글로벌 항만 혼잡도 현황",s1dsc:"실시간 글로벌 항만 데이터 기반 · 데이터가 없는 항만은 수집 중으로 표시됩니다",
+  s2lbl:"권역별 분석",s2ttl:"🗺️ 권역별 혼잡도 지수",s2dsc:"전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다. 수집 중인 항만은 데이터 확보 후 반영됩니다.",
+  s_ra_lbl:"권역 지표",s_ra_ttl:"📊 권역별 해운 지표",s_ra_dsc:"야드 적체·블랭크세일링·선석 점유를 권역별로 집계한 <strong>지표</strong>입니다. 예측 모델이 아닌 실측 기반 지표이며, 데이터 축적에 따라 임계값은 보정됩니다.",
+  s3lbl:"주요 혼잡 항만",s3ttl:"⚠️ 지금 주의해야 할 항만 TOP 5",s3dsc:"혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다.",
+  s4lbl:"선제 모니터링",s4ttl:"📡 조기 혼잡 경보",s4dsc:"지연율 추세가 급증 중인 항만을 조기에 감지합니다",
+  s5lbl:"주요 해협",s5ttl:"🗺️ 주요 해협 통과 현황",s5dsc:"글로벌 해운 화물의 대부분이 이 해협을 통과합니다. 통과 선박이 급감하면 항로 우회로 ETA가 크게 늘어납니다.",
+  s6lbl:"도착일 예측",s6ttl:"📦 화물 도착일 예측",s6dsc:"도착 항만과 출발일을 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다.",
+  th1:"항만",th2:"국가",th3:"혼잡도 지수",th_turn:"재항 일수",th_delay:"지연율",th_anc:"대기 선박",th5:"상태",
+  ef_ttl:"도착 정보 입력",ef_dsc:"아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다.",
+  ef_l0:"🛳️ 출발 항만",ef_l1:"📍 도착 항만",ef_l3:"📅 출발 예정일",
+  ef_btn:"도착일 예측하기",ef_ph:"왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요",
+  lv_C:"🔴 혼잡",lv_B:"🟠 주의",lv_S:"🟡 보통",lv_L:"🟢 원활",lv_N:"— 수집 중",
+  w3:"약 3일",w15:"약 1.5일",w1:"약 1일",wh:"약 반나절",
+  cp_ok:"🟢 정상 운항 중",cp_caut:"🟠 주의 필요",cp_alert:"🔴 통과 급감 경보",
+  cp_suez:"유럽↔아시아 최단 항로 (홍해 경유).\n통과량이 평균 40% 이하면 우회 경보 발령",
+  cp_pan:"태평양↔대서양 최단 항로.\n가뭄 시 통항 제한 발생 가능",
+  cp_mal:"동남아↔인도양 핵심 통로.\n전 세계 무역량의 약 40% 통과",
+  today_s:"오늘 컨테이너선",avg7:"7일 평균",
+  sum_mon:"전체 항만",sum_data:"데이터 확보",sum_con:"🔴 혼잡 항만",sum_today:"오늘의 한 줄 요약",
+  idx_lbl:"혼잡도 지수 (0~100)",avg_wait:"평균 재항 일수",
+  arr_early:"🟢 빠른 경우",arr_likely:"🎯 가장 가능성 높음",arr_late:"🔴 늦은 경우",
+  arr_early_d:"순조로운 항해, 항만 혼잡 완화 시",arr_likely_d:"현재 항만 혼잡도 반영",arr_late_d:"혼잡 악화, 기상 불량 시",
+  dnd_ttl:"ℹ️ 지체료 (D&D) 안내",
+  dnd_body:"컨테이너 반납 기한이 <strong>%D%</strong> 이전이면 지체료가 발생할 수 있습니다. 선사에 Free Time 연장 요청을 권장합니다.",
+  arr_dest:"도착 예상일",arr_approx:"도착 예상일 (추정)",
+  s4_coming:"이력 데이터 축적 후 제공됩니다. 데이터 수집 시작일로부터 약 7일 후 활성화됩니다.",
+  eta_nodata:"해당 항만 데이터 수집 중 — 기본값으로 계산됨",
+  stale_warn:"⚠️ 오래됨",
+  fp_building:"운임 상승 압력",fp_neutral:"운임 중립",fp_easing:"운임 완화",
+  dr_elevated:"지연 위험 ↑",dr_moderate:"지연 위험 중",dr_low:"지연 위험 낮음",
+  lbl_blank:"블랭크세일링",lbl_fwd:"향후 전망",lbl_yoy:"선석 YoY",lbl_ci:"야드 적체"
+},
+en:{
+  brand_tag:"BETA",
+  nav1:"Port Status",nav2:"By Region",nav_ra:"Regional KPIs",nav3:"Watch Ports TOP 5",nav4:"Early Warning",nav5:"Straits",nav6:"ETA Forecast",
+  s1lbl:"Live Status",s1ttl:"🌏 Global Port Congestion Status",s1dsc:"Real-time global port data · Ports without data are shown as Collecting",
+  s2lbl:"Regional Analysis",s2ttl:"🗺️ Regional Congestion Index",s2dsc:"8 global shipping regions at a glance. Ports being collected will appear once data is confirmed.",
+  s_ra_lbl:"Regional KPIs",s_ra_ttl:"📊 Regional Maritime Indicators",s_ra_dsc:"Yard congestion, blank sailing and berth occupancy <strong>indicators</strong> by region. Measured data, not forecasts. Thresholds calibrated as data accumulates.",
+  s3lbl:"High Alert Ports",s3ttl:"⚠️ Top 5 Ports to Watch Now",s3dsc:"High congestion may delay cargo. Click a port to calculate ETA instantly.",
+  s4lbl:"Early Warning",s4ttl:"📡 Congestion Early Warning",s4dsc:"Detects ports with rapidly rising delay rates",
+  s5lbl:"Key Straits",s5ttl:"🗺️ Strategic Straits Status",s5dsc:"Most global cargo passes through these straits. A sharp drop in transits signals rerouting risk.",
+  s6lbl:"ETA Forecast",s6ttl:"📦 Cargo Arrival Date Forecast",s6dsc:"Enter destination port and departure date for an arrival estimate reflecting current congestion.",
+  th1:"Port",th2:"Country",th3:"Congestion Index",th_turn:"Turnaround",th_delay:"Delay Rate",th_anc:"Waiting",th5:"Status",
+  ef_ttl:"Enter Arrival Info",ef_dsc:"Fill in what you know — the rest is calculated automatically.",
+  ef_l0:"🛳️ Origin Port",ef_l1:"📍 Destination Port",ef_l3:"📅 Departure Date (ETD)",
+  ef_btn:"Forecast Arrival Date",ef_ph:"Enter info on the left<br>and click Forecast",
+  lv_C:"🔴 Congested",lv_B:"🟠 Busy",lv_S:"🟡 Stable",lv_L:"🟢 Clear",lv_N:"— Collecting",
+  w3:"~3 days",w15:"~1.5 days",w1:"~1 day",wh:"~half day",
+  cp_ok:"🟢 Normal",cp_caut:"🟠 Caution",cp_alert:"🔴 Transit Drop Alert",
+  cp_suez:"Shortest Europe↔Asia route (via Red Sea).\nBelow 40% of avg = rerouting alert.",
+  cp_pan:"Shortest Pacific↔Atlantic route.\nDrought can restrict transits.",
+  cp_mal:"SE Asia↔Indian Ocean gateway.\n~40% of global trade passes through.",
+  today_s:"Today containers",avg7:"7-day avg",
+  sum_mon:"Total Ports",sum_data:"With Data",sum_con:"🔴 Congested",sum_today:"Today's Summary",
+  idx_lbl:"Congestion Index (0–100)",avg_wait:"Avg. turnaround",
+  arr_early:"🟢 Best case",arr_likely:"🎯 Most likely",arr_late:"🔴 Worst case",
+  arr_early_d:"Smooth voyage, congestion improves",arr_likely_d:"Reflects current port congestion",arr_late_d:"Congestion worsens, bad weather",
+  dnd_ttl:"ℹ️ Detention & Demurrage Note",
+  dnd_body:"If container return deadline is before <strong>%D%</strong>, D&D charges may apply. Consider requesting a Free Time extension.",
+  arr_dest:"Estimated Arrival",arr_approx:"Estimated Arrival (Approximate)",
+  s4_coming:"Will be available after 7 days of history data collection.",
+  eta_nodata:"No data for this port — using defaults",
+  stale_warn:"⚠️ Outdated",
+  fp_building:"Freight Pressure Building",fp_neutral:"Freight Neutral",fp_easing:"Freight Easing",
+  dr_elevated:"Delay Risk Elevated",dr_moderate:"Delay Risk Moderate",dr_low:"Delay Risk Low",
+  lbl_blank:"Blank Sailings",lbl_fwd:"Forward",lbl_yoy:"Berth YoY",lbl_ci:"Yard Congestion"
+}
 };
 const t=k=>(T[LANG]||T.ko)[k]||k;
-function setLang(l){LANG=l;document.getElementById('btn-ko').className=l==='ko'?'active':'';document.getElementById('btn-en').className=l==='en'?'active':'';document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(T[l][k]!==undefined)el.innerHTML=T[l][k]});if(window._snaps)renderAll(window._snaps,window._cps,window._ri)}
+function setLang(l){
+  LANG=l;
+  document.getElementById('btn-ko').className=l==='ko'?'active':'';
+  document.getElementById('btn-en').className=l==='en'?'active':'';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(T[l]&&T[l][k]!==undefined)el.innerHTML=T[l][k];
+  });
+  if(window._snaps)renderAll(window._snaps,window._cps,window._ri);
+}
 
-const PM={KRPUS:{n:"Busan",nk:"부산",c:"대한민국",ce:"South Korea",r:"kr-jp"},KRKAN:{n:"Gwangyang",nk:"광양",c:"대한민국",ce:"South Korea",r:"kr-jp"},JPYOK:{n:"Yokohama",nk:"요코하마",c:"일본",ce:"Japan",r:"kr-jp"},JPOSA:{n:"Osaka",nk:"오사카",c:"일본",ce:"Japan",r:"kr-jp"},JPTYO:{n:"Tokyo",nk:"도쿄",c:"일본",ce:"Japan",r:"kr-jp"},CNSHA:{n:"Shanghai",nk:"상하이",c:"중국",ce:"China",r:"china"},CNNBO:{n:"Ningbo",nk:"닝보",c:"중국",ce:"China",r:"china"},CNSZX:{n:"Shenzhen",nk:"선전",c:"중국",ce:"China",r:"china"},CNQIN:{n:"Qingdao",nk:"칭다오",c:"중국",ce:"China",r:"china"},CNGZU:{n:"Guangzhou",nk:"광저우",c:"중국",ce:"China",r:"china"},HKHKG:{n:"Hong Kong",nk:"홍콩",c:"홍콩",ce:"Hong Kong",r:"china"},TWKHH:{n:"Kaohsiung",nk:"가오슝",c:"대만",ce:"Taiwan",r:"china"},SGSIN:{n:"Singapore",nk:"싱가포르",c:"싱가포르",ce:"Singapore",r:"sea"},MYPKG:{n:"Port Klang",nk:"포트클랑",c:"말레이시아",ce:"Malaysia",r:"sea"},MYTPP:{n:"Tg. Pelepas",nk:"탄중펠레파스",c:"말레이시아",ce:"Malaysia",r:"sea"},IDTPP:{n:"Tanjung Priok",nk:"탄중프리옥",c:"인도네시아",ce:"Indonesia",r:"sea"},VHSGN:{n:"Ho Chi Minh",nk:"호치민",c:"베트남",ce:"Vietnam",r:"sea"},THBKK:{n:"Bangkok",nk:"방콕",c:"태국",ce:"Thailand",r:"sea"},PHMNL:{n:"Manila",nk:"마닐라",c:"필리핀",ce:"Philippines",r:"sea"},INNSA:{n:"Nhava Sheva",nk:"나바셰바",c:"인도",ce:"India",r:"sa-me"},INCCU:{n:"Kolkata",nk:"콜카타",c:"인도",ce:"India",r:"sa-me"},PKKAR:{n:"Karachi",nk:"카라치",c:"파키스탄",ce:"Pakistan",r:"sa-me"},AEJEA:{n:"Jebel Ali",nk:"제벨알리",c:"UAE",ce:"UAE",r:"sa-me"},OMMSQ:{n:"Muscat",nk:"무스카트",c:"오만",ce:"Oman",r:"sa-me"},NLRTM:{n:"Rotterdam",nk:"로테르담",c:"네덜란드",ce:"Netherlands",r:"europe"},BEANR:{n:"Antwerp",nk:"앤트워프",c:"벨기에",ce:"Belgium",r:"europe"},DEHAM:{n:"Hamburg",nk:"함부르크",c:"독일",ce:"Germany",r:"europe"},GBFXT:{n:"Felixstowe",nk:"펠릭스토",c:"영국",ce:"UK",r:"europe"},ESBCN:{n:"Barcelona",nk:"바르셀로나",c:"스페인",ce:"Spain",r:"europe"},ITGOA:{n:"Genoa",nk:"제노바",c:"이탈리아",ce:"Italy",r:"europe"},USLAX:{n:"Los Angeles",nk:"로스앤젤레스",c:"미국",ce:"USA",r:"namerica"},USLGB:{n:"Long Beach",nk:"롱비치",c:"미국",ce:"USA",r:"namerica"},USNYC:{n:"New York",nk:"뉴욕",c:"미국",ce:"USA",r:"namerica"},USSAV:{n:"Savannah",nk:"사바나",c:"미국",ce:"USA",r:"namerica"},CAHAL:{n:"Halifax",nk:"핼리팩스",c:"캐나다",ce:"Canada",r:"namerica"},MXZLO:{n:"Manzanillo",nk:"만사니요",c:"멕시코",ce:"Mexico",r:"latam"},BRSAO:{n:"Santos",nk:"산토스",c:"브라질",ce:"Brazil",r:"latam"},ARBUE:{n:"Buenos Aires",nk:"부에노스아이레스",c:"아르헨티나",ce:"Argentina",r:"latam"},CLSAI:{n:"San Antonio",nk:"산안토니오",c:"칠레",ce:"Chile",r:"latam"},ZADUR:{n:"Durban",nk:"더반",c:"남아공",ce:"S. Africa",r:"africa"},EGPSD:{n:"Port Said",nk:"포트사이드",c:"이집트",ce:"Egypt",r:"africa"},NGAPP:{n:"Apapa",nk:"아파파",c:"나이지리아",ce:"Nigeria",r:"africa"},RUMME:{n:"Novorossiysk",nk:"노보로시스크",c:"러시아",ce:"Russia",r:"ru-cis"},RUVVO:{n:"Vladivostok",nk:"블라디보스토크",c:"러시아",ce:"Russia",r:"ru-cis"}};
-const REGS={"kr-jp":{ko:"동북아시아",en:"NE Asia"},"china":{ko:"중국·홍콩·대만",en:"Greater China"},"sea":{ko:"동남아시아",en:"SE Asia"},"sa-me":{ko:"남아시아·중동",en:"S.Asia & ME"},"europe":{ko:"유럽",en:"Europe"},"namerica":{ko:"북미",en:"N. America"},"latam":{ko:"중남미",en:"Latin America"},"africa":{ko:"아프리카",en:"Africa"}};
-const DISTANCE_TABLE={"CNSHA-NLRTM":11500,"CNSHA-BEANR":11800,"CNSHA-DEHAM":11800,"CNSHA-USLAX":6200,"CNSHA-USNYC":11500,"CNSHA-GBFXT":12000,"CNSHA-FRLEH":11700,"CNSHA-KRPUS":520,"CNSHA-SGSIN":2300,"KRPUS-NLRTM":11000,"KRPUS-BEANR":11300,"KRPUS-DEHAM":11300,"KRPUS-USLAX":5600,"KRPUS-USNYC":11000,"KRPUS-SGSIN":2600,"SGSIN-NLRTM":8400,"SGSIN-BEANR":8700,"SGSIN-DEHAM":8700,"SGSIN-USLAX":8800,"SGSIN-USNYC":10500,"SGSIN-FRLEH":8500,"HKHKG-NLRTM":10500,"HKHKG-USLAX":5900,"HKHKG-USNYC":10800,"CNNGB-NLRTM":11400,"CNNGB-USLAX":6100,"JPTYO-USLAX":4800,"JPTYO-NLRTM":11500};
-const ORIGIN_PORTS=[{code:'CNSHA',ko:'상하이',en:'Shanghai'},{code:'KRPUS',ko:'부산',en:'Busan'},{code:'CNNGB',ko:'닝보',en:'Ningbo'},{code:'SGSIN',ko:'싱가포르',en:'Singapore'},{code:'HKHKG',ko:'홍콩',en:'Hong Kong'},{code:'JPTYO',ko:'도쿄',en:'Tokyo'},{code:'JPKOB',ko:'고베',en:'Kobe'},{code:'CNGZU',ko:'광저우',en:'Guangzhou'},{code:'CNYTN',ko:'옌티안',en:'Yantian'},{code:'custom',ko:'기타 (직접 입력)',en:'Other (manual)'}];
+/* ── Port / Region Maps ── */
+const PM={
+  KRPUS:{n:"Busan",nk:"부산",c:"대한민국",ce:"South Korea",r:"kr-jp"},
+  KRKAN:{n:"Gwangyang",nk:"광양",c:"대한민국",ce:"South Korea",r:"kr-jp"},
+  JPYOK:{n:"Yokohama",nk:"요코하마",c:"일본",ce:"Japan",r:"kr-jp"},
+  JPOSA:{n:"Osaka",nk:"오사카",c:"일본",ce:"Japan",r:"kr-jp"},
+  JPTYO:{n:"Tokyo",nk:"도쿄",c:"일본",ce:"Japan",r:"kr-jp"},
+  CNSHA:{n:"Shanghai",nk:"상하이",c:"중국",ce:"China",r:"china"},
+  CNNBO:{n:"Ningbo",nk:"닝보",c:"중국",ce:"China",r:"china"},
+  CNSZX:{n:"Shenzhen",nk:"선전",c:"중국",ce:"China",r:"china"},
+  CNQIN:{n:"Qingdao",nk:"칭다오",c:"중국",ce:"China",r:"china"},
+  CNGZU:{n:"Guangzhou",nk:"광저우",c:"중국",ce:"China",r:"china"},
+  HKHKG:{n:"Hong Kong",nk:"홍콩",c:"홍콩",ce:"Hong Kong",r:"china"},
+  TWKHH:{n:"Kaohsiung",nk:"가오슝",c:"대만",ce:"Taiwan",r:"china"},
+  SGSIN:{n:"Singapore",nk:"싱가포르",c:"싱가포르",ce:"Singapore",r:"sea"},
+  MYPKG:{n:"Port Klang",nk:"포트클랑",c:"말레이시아",ce:"Malaysia",r:"sea"},
+  MYTPP:{n:"Tg. Pelepas",nk:"탄중펠레파스",c:"말레이시아",ce:"Malaysia",r:"sea"},
+  IDTPP:{n:"Tanjung Priok",nk:"탄중프리옥",c:"인도네시아",ce:"Indonesia",r:"sea"},
+  VHSGN:{n:"Ho Chi Minh",nk:"호치민",c:"베트남",ce:"Vietnam",r:"sea"},
+  THBKK:{n:"Bangkok",nk:"방콕",c:"태국",ce:"Thailand",r:"sea"},
+  PHMNL:{n:"Manila",nk:"마닐라",c:"필리핀",ce:"Philippines",r:"sea"},
+  INNSA:{n:"Nhava Sheva",nk:"나바셰바",c:"인도",ce:"India",r:"sa-me"},
+  INCCU:{n:"Kolkata",nk:"콜카타",c:"인도",ce:"India",r:"sa-me"},
+  PKKAR:{n:"Karachi",nk:"카라치",c:"파키스탄",ce:"Pakistan",r:"sa-me"},
+  AEJEA:{n:"Jebel Ali",nk:"제벨알리",c:"UAE",ce:"UAE",r:"sa-me"},
+  OMMSQ:{n:"Muscat",nk:"무스카트",c:"오만",ce:"Oman",r:"sa-me"},
+  NLRTM:{n:"Rotterdam",nk:"로테르담",c:"네덜란드",ce:"Netherlands",r:"europe"},
+  BEANR:{n:"Antwerp",nk:"앤트워프",c:"벨기에",ce:"Belgium",r:"europe"},
+  DEHAM:{n:"Hamburg",nk:"함부르크",c:"독일",ce:"Germany",r:"europe"},
+  GBFXT:{n:"Felixstowe",nk:"펠릭스토",c:"영국",ce:"UK",r:"europe"},
+  ESBCN:{n:"Barcelona",nk:"바르셀로나",c:"스페인",ce:"Spain",r:"europe"},
+  ITGOA:{n:"Genoa",nk:"제노바",c:"이탈리아",ce:"Italy",r:"europe"},
+  USLAX:{n:"Los Angeles",nk:"로스앤젤레스",c:"미국",ce:"USA",r:"namerica"},
+  USLGB:{n:"Long Beach",nk:"롱비치",c:"미국",ce:"USA",r:"namerica"},
+  USNYC:{n:"New York",nk:"뉴욕",c:"미국",ce:"USA",r:"namerica"},
+  USSAV:{n:"Savannah",nk:"사바나",c:"미국",ce:"USA",r:"namerica"},
+  CAHAL:{n:"Halifax",nk:"핼리팩스",c:"캐나다",ce:"Canada",r:"namerica"},
+  MXZLO:{n:"Manzanillo",nk:"만사니요",c:"멕시코",ce:"Mexico",r:"latam"},
+  BRSAO:{n:"Santos",nk:"산토스",c:"브라질",ce:"Brazil",r:"latam"},
+  ARBUE:{n:"Buenos Aires",nk:"부에노스아이레스",c:"아르헨티나",ce:"Argentina",r:"latam"},
+  CLSAI:{n:"San Antonio",nk:"산안토니오",c:"칠레",ce:"Chile",r:"latam"},
+  ZADUR:{n:"Durban",nk:"더반",c:"남아공",ce:"S. Africa",r:"africa"},
+  EGPSD:{n:"Port Said",nk:"포트사이드",c:"이집트",ce:"Egypt",r:"africa"},
+  NGAPP:{n:"Apapa",nk:"아파파",c:"나이지리아",ce:"Nigeria",r:"africa"},
+  RUMME:{n:"Novorossiysk",nk:"노보로시스크",c:"러시아",ce:"Russia",r:"ru-cis"},
+  RUVVO:{n:"Vladivostok",nk:"블라디보스토크",c:"러시아",ce:"Russia",r:"ru-cis"}
+};
+const REGS={
+  "kr-jp":{ko:"동북아시아",en:"NE Asia"},
+  "china":{ko:"중국·홍콩·대만",en:"Greater China"},
+  "sea":{ko:"동남아시아",en:"SE Asia"},
+  "sa-me":{ko:"남아시아·중동",en:"S.Asia & ME"},
+  "europe":{ko:"유럽",en:"Europe"},
+  "namerica":{ko:"북미",en:"N. America"},
+  "latam":{ko:"중남미",en:"Latin America"},
+  "africa":{ko:"아프리카",en:"Africa"}
+};
+const DISTANCE_TABLE={
+  "CNSHA-NLRTM":11500,"CNSHA-BEANR":11800,"CNSHA-DEHAM":11800,"CNSHA-USLAX":6200,
+  "CNSHA-USNYC":11500,"CNSHA-GBFXT":12000,"CNSHA-FRLEH":11700,"CNSHA-KRPUS":520,
+  "CNSHA-SGSIN":2300,"KRPUS-NLRTM":11000,"KRPUS-BEANR":11300,"KRPUS-DEHAM":11300,
+  "KRPUS-USLAX":5600,"KRPUS-USNYC":11000,"KRPUS-SGSIN":2600,"SGSIN-NLRTM":8400,
+  "SGSIN-BEANR":8700,"SGSIN-DEHAM":8700,"SGSIN-USLAX":8800,"SGSIN-USNYC":10500,
+  "SGSIN-FRLEH":8500,"HKHKG-NLRTM":10500,"HKHKG-USLAX":5900,"HKHKG-USNYC":10800,
+  "CNNGB-NLRTM":11400,"CNNGB-USLAX":6100,"JPTYO-USLAX":4800,"JPTYO-NLRTM":11500
+};
+const ORIGIN_PORTS=[
+  {code:'CNSHA',ko:'상하이',en:'Shanghai'},{code:'KRPUS',ko:'부산',en:'Busan'},
+  {code:'CNNGB',ko:'닝보',en:'Ningbo'},{code:'SGSIN',ko:'싱가포르',en:'Singapore'},
+  {code:'HKHKG',ko:'홍콩',en:'Hong Kong'},{code:'JPTYO',ko:'도쿄',en:'Tokyo'},
+  {code:'JPKOB',ko:'고베',en:'Kobe'},{code:'CNGZU',ko:'광저우',en:'Guangzhou'},
+  {code:'CNYTN',ko:'옌티안',en:'Yantian'},{code:'custom',ko:'기타 (직접 입력)',en:'Other (manual)'}
+];
 
 const sb=supabase.createClient(CFG.SB_URL,CFG.SB_ANON);
 
-// ── MPCI 계산 (EconDB 실데이터 기반) ───────────────────────────────
-// 세 값 중 하나라도 없으면 null 반환 — 값 날조 금지
+/* ── MPCI 계산 (세 값 모두 없으면 null — 값 날조 금지) ── */
 function calcMPCI(port){
   const cong=port.econdb_congestion,dp=port.econdb_delay_pct,turn=port.econdb_turnaround;
   if(cong==null||dp==null||turn==null)return null;
   const congScore=(cong/18)*100;
   const delayScore=Math.min(dp,100);
   const turnScore=Math.min((turn-0.5)/4.5*100,100);
-  const mpci=congScore*0.35+delayScore*0.35+turnScore*0.30;
-  return Math.round(Math.min(mpci,100)*10)/10;
+  return Math.round(Math.min(congScore*.35+delayScore*.35+turnScore*.30,100)*10)/10;
 }
 function getMPCILevel(mpci){
   if(mpci===null)return null;
@@ -334,21 +520,34 @@ function getMPCILevel(mpci){
 }
 function isOlderThan(ts,ms){return!ts||Date.now()-new Date(ts).getTime()>ms}
 
-// ── 공통 헬퍼 ───────────────────────────────────────────────────
+/* ── 공통 헬퍼 ── */
 function lvlCode(mpci){if(mpci===null)return'N';return mpci>=75?'C':mpci>=50?'B':mpci>=25?'S':'L'}
-function lvlLabel(mpci){const m={C:t('lv_C'),B:t('lv_B'),S:t('lv_S'),L:t('lv_L'),N:t('lv_N')};return m[lvlCode(mpci)]||'--'}
+function lvlLabel(mpci){return{C:t('lv_C'),B:t('lv_B'),S:t('lv_S'),L:t('lv_L'),N:t('lv_N')}[lvlCode(mpci)]||'--'}
 function waitDays(mpci){if(!mpci)return 0;return mpci>=75?3:mpci>=50?1.5:mpci>=25?.75:.25}
 function waitLbl(mpci){const d=waitDays(mpci);return d>=3?t('w3'):d>=1.5?t('w15'):d>=.75?t('w1'):t('wh')}
 function pn(c){const m=PM[c]||{};return LANG==='ko'?(m.nk||m.n||c):(m.n||c)}
 function ctry(c){const m=PM[c]||{};return LANG==='ko'?(m.c||''):(m.ce||'')}
 function reg(c){return(PM[c]||{}).r||null}
-function fmtD(s){if(!s)return'--';const d=new Date(s);return d.toLocaleDateString(LANG==='ko'?'ko-KR':'en-US',{month:'short',day:'numeric'})}
-function staleTag(ts){return isOlderThan(ts,6*36e5)?`<span class="stale-tag">${t('stale_warn')}</span>`:''}
+function fmtD(s){if(!s)return'--';return new Date(s).toLocaleDateString(LANG==='ko'?'ko-KR':'en-US',{month:'short',day:'numeric'})}
+function staleTag(ts){
+  if(!isOlderThan(ts,6*36e5))return'';
+  return`<span class="stale-tag">⚠ ${t('stale_warn')}</span>`;
+}
+function collectingBadge(){
+  return`<span class="collecting-badge"><span class="collecting-dot"></span>${LANG==='ko'?'수집 중':'Collecting'}</span>`;
+}
 
-function tick(){const n=new Date(),h=String(n.getUTCHours()).padStart(2,'0'),m=String(n.getUTCMinutes()).padStart(2,'0'),s=String(n.getUTCSeconds()).padStart(2,'0');document.getElementById('utc').innerHTML=`<span class="dot">●</span> UTC ${h}:${m}:${s}`}
+/* ── UTC 시계 ── */
+function tick(){
+  const n=new Date();
+  const h=String(n.getUTCHours()).padStart(2,'0');
+  const m=String(n.getUTCMinutes()).padStart(2,'0');
+  const s=String(n.getUTCSeconds()).padStart(2,'0');
+  document.getElementById('utc').innerHTML=`<span class="dot">●</span> UTC ${h}:${m}:${s}`;
+}
 setInterval(tick,1000);tick();
 
-// ── Supabase 쿼리 ────────────────────────────────────────────────
+/* ── Supabase 쿼리 ── */
 async function fetchSnaps(){
   const{data,error}=await sb.from('port_snapshots')
     .select('port_code,port_name,country,region,lat,lon,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at')
@@ -358,196 +557,385 @@ async function fetchSnaps(){
 }
 async function fetchCPs(){
   const ago=new Date(Date.now()-8*864e5).toISOString().split('T')[0];
-  const{data,error}=await sb.from('chokepoint_daily').select('portid,recorded_date,n_container').gte('recorded_date',ago).order('recorded_date',{ascending:false});
+  const{data,error}=await sb.from('chokepoint_daily')
+    .select('portid,recorded_date,n_container')
+    .gte('recorded_date',ago)
+    .order('recorded_date',{ascending:false});
   if(error){console.error(error);return[]}
   return data||[];
 }
 async function fetchRegionIndex(){
-  // region_index 요약만 읽기 (무거운 주간 원본 직접 쿼리 금지)
   const{data,error}=await sb.from('region_index').select('*').order('region');
-  if(error){console.error('region_index fetch error',error);return[]}
+  if(error){console.error(error);return[]}
   return data||[];
 }
 
-// ── 섹션 렌더링 ──────────────────────────────────────────────────
+/* ══════════════════════════════════════
+   SECTION 1 — 글로벌 요약
+══════════════════════════════════════ */
 function renderS1(ports){
   const valid=ports.filter(p=>calcMPCI(p)!==null);
   const total=ports.length,wd=valid.length;
   const con=valid.filter(p=>getMPCILevel(calcMPCI(p))==='CONGESTED').length;
-  const latestPort=ports
-    .filter(p=>p.econdb_updated_at||p.updated_at)
+
+  const latestPort=ports.filter(p=>p.econdb_updated_at||p.updated_at)
     .sort((a,b)=>new Date(b.econdb_updated_at||b.updated_at)-new Date(a.econdb_updated_at||a.updated_at))[0];
   const ts=latestPort?.econdb_updated_at||latestPort?.updated_at;
-  if(ts)document.getElementById('last-upd').textContent=`EconDB 기준: ${new Date(ts).toLocaleString(LANG==='ko'?'ko-KR':'en-US')}`;
-  const rmap={};valid.forEach(p=>{const r=p.region||reg(p.port_code)||'other';if(!rmap[r])rmap[r]={t:0,c:0};rmap[r].t++;if(getMPCILevel(calcMPCI(p))==='CONGESTED')rmap[r].c++});
+  if(ts){
+    document.getElementById('last-upd').textContent=
+      (LANG==='ko'?'데이터 기준: ':'Data as of: ')+new Date(ts).toLocaleString(LANG==='ko'?'ko-KR':'en-US');
+  }
+
+  const rmap={};valid.forEach(p=>{
+    const r=p.region||reg(p.port_code)||'other';
+    if(!rmap[r])rmap[r]={t:0,c:0};
+    rmap[r].t++;
+    if(getMPCILevel(calcMPCI(p))==='CONGESTED')rmap[r].c++;
+  });
   const conRegs=Object.entries(rmap).filter(([,v])=>v.t>0&&v.c/v.t>=.5).map(([k])=>k);
+
   let summary;
   if(LANG==='ko'){
-    if(!wd)summary='EconDB 데이터 수집 중입니다. 잠시 후 다시 확인해 주세요.';
+    if(!wd)summary='데이터를 받아오는 중입니다. 잠시 후 다시 확인해 주세요.';
     else if(!conRegs.length&&con/Math.max(wd,1)<.2)summary='전반적으로 안정. 주의 항만 없음';
     else if(conRegs.length)summary=`${conRegs.map(r=>(REGS[r]||{}).ko||r).join('·')} 항만 전반 혼잡. ETA +2~3일 예상`;
     else summary=`전반 안정. ${con}개 항만 혼잡 모니터링 중`;
   }else{
-    if(!wd)summary='Collecting EconDB data. Please check back shortly.';
+    if(!wd)summary='Receiving data. Please check back shortly.';
     else if(!conRegs.length&&con/Math.max(wd,1)<.2)summary='Overall stable. No major congestion alerts.';
     else if(conRegs.length)summary=`${conRegs.map(r=>(REGS[r]||{}).en||r).join(' & ')} broadly congested. ETA +2–3 days expected.`;
     else summary=`Overall stable. ${con} port(s) congested.`;
   }
+
   document.getElementById('sum-grid').innerHTML=
-    `<div class="sum-card"><div class="lbl">${t('sum_mon')}</div><div class="val">${total}</div><div class="sub">${LANG==='ko'?'개 항만':'ports'}</div></div>`+
-    `<div class="sum-card"><div class="lbl">${t('sum_data')}</div><div class="val" style="font-size:40px">${wd}<span style="font-size:22px;color:var(--muted)">/${total}</span></div><div class="sub">${LANG==='ko'?'개 항만 데이터 확보':'ports with data'}</div></div>`+
-    `<div class="sum-card red"><div class="lbl">${t('sum_con')}</div><div class="val">${con}</div><div class="sub">${LANG==='ko'?'개 항만':'ports'}</div></div>`+
-    `<div class="today-card"><div class="tlbl">${t('sum_today')}</div><div class="ttxt">"${summary}"</div></div>`;
+    `<div class="sum-card">
+      <div class="sc-lbl">${t('sum_mon')}</div>
+      <div class="sc-val">${total}</div>
+      <div class="sc-sub">${LANG==='ko'?'개 항만 모니터링':'ports monitored'}</div>
+    </div>`+
+    `<div class="sum-card sc-data">
+      <div class="sc-lbl">${t('sum_data')}</div>
+      <div class="sc-val">${wd}<sup>/${total}</sup></div>
+      <div class="sc-sub">${LANG==='ko'?'개 항만 데이터 확보':'ports with data'}</div>
+    </div>`+
+    `<div class="sum-card sc-red">
+      <div class="sc-lbl">${t('sum_con')}</div>
+      <div class="sc-val">${con}</div>
+      <div class="sc-sub">${LANG==='ko'?`개 항만 (전체 ${Math.round(con/Math.max(wd,1)*100)}%)`:
+        `ports (${Math.round(con/Math.max(wd,1)*100)}% of tracked)`}</div>
+    </div>`+
+    `<div class="today-card">
+      <div class="tc-lbl">${t('sum_today')}</div>
+      <div class="tc-txt">"${summary}"</div>
+    </div>`;
 }
 
+/* ══════════════════════════════════════
+   SECTION 2 — 권역별 혼잡도
+══════════════════════════════════════ */
 function renderS2(ports){
-  const rmap={};ports.forEach(p=>{const r=p.region||reg(p.port_code);if(!r)return;if(!rmap[r])rmap[r]=[];rmap[r].push(p)});
+  const rmap={};
+  ports.forEach(p=>{
+    const r=p.region||reg(p.port_code);
+    if(!r)return;
+    if(!rmap[r])rmap[r]=[];
+    rmap[r].push(p);
+  });
+
   document.getElementById('region-grid').innerHTML=Object.entries(REGS).map(([key,info])=>{
-    const rp=rmap[key]||[],rname=LANG==='ko'?info.ko:info.en;
+    const rp=rmap[key]||[];
+    const rname=LANG==='ko'?info.ko:info.en;
     const vp=rp.filter(p=>calcMPCI(p)!==null);
+
     if(!vp.length){
-      return`<div class="rc N"><div class="rc-hdr"><span class="rc-name">${rname}</span><span class="rc-badge bN">${t('lv_N')}</span></div><div class="rc-score sN">--</div><div class="rc-score-lbl">${t('idx_lbl')}</div><div class="prog-wrap"><div class="prog-fill" style="width:0%;background:var(--border)"></div></div><div class="rc-nodata-msg">📡 ${LANG==='ko'?'데이터 수집 중...':'Collecting data...'}</div><div class="rc-nodata-count">${LANG==='ko'?`0 / ${rp.length}개 항만 데이터 확보`:`0 / ${rp.length} ports with data`}</div></div>`;
+      return`<div class="rc lN">
+        <div class="rc-hdr">
+          <span class="rc-name">${rname}</span>
+          <span class="badge bN">${t('lv_N')}</span>
+        </div>
+        <div class="rc-nodata">
+          <div class="nd-ico">📡</div>
+          <div class="nd-msg">${LANG==='ko'?'데이터를 받아오는 중...':'Receiving data...'}</div>
+          <div class="nd-sub">${LANG==='ko'?`0 / ${rp.length}개 항만`:`0 / ${rp.length} ports`}</div>
+        </div>
+      </div>`;
     }
-    const avg=vp.reduce((s,p)=>s+calcMPCI(p),0)/vp.length,lv=lvlCode(avg);
-    const con=vp.filter(p=>getMPCILevel(calcMPCI(p))==='CONGESTED').length,bus=vp.filter(p=>getMPCILevel(calcMPCI(p))==='BUSY').length;
+
+    const avg=vp.reduce((s,p)=>s+calcMPCI(p),0)/vp.length;
+    const lv=lvlCode(avg);
+    const con=vp.filter(p=>getMPCILevel(calcMPCI(p))==='CONGESTED').length;
+    const bus=vp.filter(p=>getMPCILevel(calcMPCI(p))==='BUSY').length;
     const avgTurn=vp.reduce((s,p)=>s+(p.econdb_turnaround||0),0)/vp.length;
-    const tstr=avgTurn>=1?`${avgTurn.toFixed(1)}${LANG==='ko'?'일':' days'}`:`${Math.round(avgTurn*24)}${LANG==='ko'?'시간':'h'}`;
-    return`<div class="rc ${lv}"><div class="rc-hdr"><span class="rc-name">${rname}</span><span class="rc-badge b${lv}">${lvlLabel(avg)}</span></div><div class="rc-score s${lv}">${avg.toFixed(1)}</div><div class="rc-score-lbl">${t('idx_lbl')} (${LANG==='ko'?`${vp.length}/${rp.length}개`:`${vp.length}/${rp.length}`})</div><div class="prog-wrap"><div class="prog-fill f${lv}" style="width:${Math.min(100,avg)}%"></div></div><div class="rc-counts"><span>🔴 ${LANG==='ko'?'혼잡':'Congested'} ${con}${LANG==='ko'?'개':''}</span><span>🟠 ${LANG==='ko'?'주의':'Busy'} ${bus}${LANG==='ko'?'개':''}</span></div><div class="rc-wait">${t('avg_wait')} <strong>${tstr}</strong></div></div>`;
-  }).join('');
-}
+    const avgDly=vp.reduce((s,p)=>s+(p.econdb_delay_pct||0),0)/vp.length;
+    const tstr=avgTurn>=1?`${avgTurn.toFixed(1)}${LANG==='ko'?'일':' d'}`:`${Math.round(avgTurn*24)}${LANG==='ko'?'h':'h'}`;
 
-function renderS3(ports){
-  const top=ports.filter(p=>calcMPCI(p)!==null).sort((a,b)=>calcMPCI(b)-calcMPCI(a)).slice(0,5);
-  if(!top.length){document.getElementById('t5-body').innerHTML=`<tr><td colspan="7" class="no-data">📡 ${LANG==='ko'?'EconDB 데이터 수집 중입니다':'Collecting EconDB data'}</td></tr>`;return}
-  document.getElementById('t5-body').innerHTML=top.map(p=>{
-    const mpci=calcMPCI(p),lv=lvlCode(mpci);
-    const col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)',N:'var(--muted)'}[lv];
-    const stale=staleTag(p.econdb_updated_at);
-    const turn=p.econdb_turnaround!=null?`${p.econdb_turnaround.toFixed(1)}${LANG==='ko'?'일':' d'}`:'--';
-    const delay=p.econdb_delay_pct!=null?`${Math.round(p.econdb_delay_pct)}%`:'--';
-    // vessels_anchored: AIS 보조 정보 (대기 선박 수) — MPCI 계산에는 사용하지 않음
-    const anc=p.vessels_anchored!=null?`${p.vessels_anchored}${LANG==='ko'?'척':''}`:'--';
-    return`<tr onclick="pickPort('${p.port_code}')"><td><span class="pname">${pn(p.port_code)}</span>${stale}<br><span class="pcode">${p.port_code}</span></td><td style="color:var(--muted)">${ctry(p.port_code)}</td><td><span class="score-big" style="color:${col}">${mpci!=null?mpci.toFixed(1):'--'}</span></td><td style="color:var(--muted)">${turn}</td><td style="color:var(--muted)">${delay}</td><td style="color:var(--muted)">${anc}</td><td style="font-size:14px;font-weight:600">${lvlLabel(mpci)}</td></tr>`;
-  }).join('');
-}
-
-function renderS4(){
-  document.getElementById('ew-box').innerHTML=
-    `<div class="coming-soon"><strong>📡 ${LANG==='ko'?'조기 경보 준비 중':'Early Warning Coming Soon'}</strong>${t('s4_coming')}</div>`;
-}
-
-function renderS5(raw){
-  const pmap={};raw.forEach(r=>{if(!pmap[r.portid])pmap[r.portid]=[];pmap[r.portid].push(r)});
-  const defs=[{id:"SUEZCANALOUTH",nk:"수에즈 운하",ne:"Suez Canal",dk:"cp_suez"},{id:"PANAMACANALS",nk:"파나마 운하",ne:"Panama Canal",dk:"cp_pan"},{id:"MALACCASTRAIT",nk:"말라카 해협",ne:"Malacca Strait",dk:"cp_mal"}];
-  document.getElementById('cp-grid').innerHTML=defs.map(def=>{
-    const nm=LANG==='ko'?def.nk:def.ne,desc=t(def.dk).split('\n');
-    const recs=(pmap[def.id]||[]).sort((a,b)=>b.recorded_date.localeCompare(a.recorded_date));
-    if(!recs.length)return`<div class="cp-card"><div class="cp-name">${nm}</div><div class="cp-subdesc">${desc[0]}</div><div class="cp-vals"><div><div class="cp-val-lbl">${t('today_s')}</div><div class="cp-val-num" style="color:var(--muted)">--</div></div><div><div class="cp-val-lbl">${t('avg7')}</div><div class="cp-val-num" style="color:var(--muted)">--</div></div></div><div class="cp-status">${t('cp_ok')}</div><div class="cp-info">${desc[1]||''}</div></div>`;
-    const today=recs[0],last7=recs.slice(0,7),avg7=last7.reduce((s,r)=>s+(r.n_container||0),0)/last7.length;
-    const ratio=avg7>0?(today.n_container||0)/avg7:null;
-    const status=ratio===null?t('cp_ok'):ratio<.4?t('cp_alert'):ratio<.6?t('cp_caut'):t('cp_ok');
-    const col=ratio===null?'var(--text)':ratio<.4?'var(--red)':ratio<.6?'var(--orange)':'var(--green)';
-    return`<div class="cp-card"><div class="cp-name">${nm}</div><div class="cp-subdesc">${desc[0]}</div><div class="cp-vals"><div><div class="cp-val-lbl">${t('today_s')}</div><div class="cp-val-num" style="color:${col}">${today.n_container||0}</div></div><div><div class="cp-val-lbl">${t('avg7')}</div><div class="cp-val-num" style="color:var(--muted)">${Math.round(avg7)}</div></div></div><div class="cp-status">${status}</div><div class="cp-info">${desc[1]||''}</div></div>`;
-  }).join('');
-}
-
-function renderRegionAnalytics(rows){
-  const el=document.getElementById('ra-grid');
-  if(!el)return;
-  if(!rows||!rows.length){
-    el.innerHTML=`<div class="no-data" style="grid-column:1/-1">📡 ${LANG==='ko'?'권역 데이터 수집 중...':'Collecting regional data...'}</div>`;
-    return;
-  }
-  // 지표 뱃지 색상 — "지표(예측 아님)" 의미가 드러나게 텍스트에 명시
-  const fpColor={building:'var(--orange)',neutral:'var(--muted)',easing:'var(--green)'};
-  const fpBg={building:'rgba(249,115,22,.15)',neutral:'rgba(148,163,184,.1)',easing:'rgba(34,197,94,.15)'};
-  const drColor={elevated:'var(--red)',moderate:'var(--orange)',low:'var(--green)'};
-  const drBg={elevated:'rgba(239,68,68,.15)',moderate:'rgba(249,115,22,.15)',low:'rgba(34,197,94,.15)'};
-  const fmt1=v=>v!=null?v.toFixed(1):'--';
-  const fmtSign=v=>v!=null?(v>=0?'+':'')+v.toFixed(1):'--';
-  el.innerHTML=rows.map((r,i)=>{
-    const ci=r.congestion_index,ciPct=ci!=null?Math.min(100,Math.max(0,ci)):0;
-    const ciColor=ci>=75?'var(--red)':ci>=50?'var(--orange)':ci>=25?'var(--yellow)':'var(--green)';
-    const fp=r.freight_pressure||'neutral',dr=r.delay_risk||'low';
-    const fpLabel={building:t('fp_building'),neutral:t('fp_neutral'),easing:t('fp_easing')}[fp]||fp;
-    const drLabel={elevated:t('dr_elevated'),moderate:t('dr_moderate'),low:t('dr_low')}[dr]||dr;
-    const narrative=LANG==='ko'?(r.narrative_ko||''):(r.narrative_en||'');
-    const delay=`.${Math.min(i,8)*5+5}s`;
-    return`<div class="rc" style="animation-delay:${delay}">
+    return`<div class="rc l${lv}">
       <div class="rc-hdr">
-        <span class="rc-name">${r.region}</span>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end">
-          <span style="font-size:11px;padding:2px 7px;border-radius:20px;background:${fpBg[fp]};color:${fpColor[fp]}">${fpLabel}</span>
-          <span style="font-size:11px;padding:2px 7px;border-radius:20px;background:${drBg[dr]};color:${drColor[dr]}">${drLabel}</span>
+        <span class="rc-name">${rname}</span>
+        <span class="badge b${lv}">${lvlLabel(avg)}</span>
+      </div>
+      <div class="rc-score s${lv}">${avg.toFixed(1)}</div>
+      <div class="rc-score-lbl">${t('idx_lbl')} · ${vp.length}/${rp.length}${LANG==='ko'?'개':''}</div>
+      <div class="prog-wrap"><div class="prog-fill f${lv}" style="width:${Math.min(100,avg)}%"></div></div>
+      <div class="rc-stats">
+        <div class="rc-stat">
+          <div class="rs-lbl">${LANG==='ko'?'혼잡/주의':'Cong/Busy'}</div>
+          <div class="rs-val">🔴${con} 🟠${bus}</div>
+        </div>
+        <div class="rc-stat">
+          <div class="rs-lbl">${t('avg_wait')}</div>
+          <div class="rs-val">${tstr}</div>
+        </div>
+        <div class="rc-stat">
+          <div class="rs-lbl">${LANG==='ko'?'평균 지연율':'Avg delay'}</div>
+          <div class="rs-val">${Math.round(avgDly)}%</div>
+        </div>
+        <div class="rc-stat">
+          <div class="rs-lbl">${LANG==='ko'?'데이터 항만':'Data ports'}</div>
+          <div class="rs-val">${vp.length} / ${rp.length}</div>
         </div>
       </div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('lbl_yard_ci')}${r.congestion_trend_pct!=null?` <span style="color:${r.congestion_trend_pct>=0?'var(--orange)':'var(--green)'}">${fmtSign(r.congestion_trend_pct)}%</span>`:''}</div>
-      <div class="prog-wrap"><div class="prog-fill" style="width:${ciPct}%;background:${ciColor}"></div></div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:38px;color:${ciColor};line-height:1;margin-bottom:10px">${ci!=null?ci.toFixed(0):'--'}<span style="font-size:15px;color:var(--muted)"> /100</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:13px;margin-bottom:12px">
-        <div><div style="color:var(--muted);font-size:11px;margin-bottom:2px">${t('lbl_blank')}</div>
-          <div style="font-weight:600">${fmt1(r.blank_sailing_pct)}%${r.blank_sailing_trend_pp!=null?` <span style="color:var(--muted);font-size:11px">${fmtSign(r.blank_sailing_trend_pp)}pp</span>`:''}</div></div>
-        <div><div style="color:var(--muted);font-size:11px;margin-bottom:2px">${t('lbl_fwd')}</div>
-          <div style="font-weight:600">${fmt1(r.blank_sailing_fwd_pct)}%</div></div>
-        <div><div style="color:var(--muted);font-size:11px;margin-bottom:2px">${t('lbl_yoy')}</div>
-          <div style="font-weight:600;color:${r.schedule_yoy_pct>=0?'var(--mint)':'var(--orange)'}">${r.schedule_yoy_pct!=null?(r.schedule_yoy_pct>=0?'+':'')+r.schedule_yoy_pct.toFixed(1)+'%':'--'}</div></div>
-      </div>
-      ${narrative?`<div style="font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;line-height:1.6">${narrative}</div>`:''}
-      ${r.data_week?`<div style="font-size:10px;color:var(--border);margin-top:5px">${LANG==='ko'?'기준주':'Week'}: ${r.data_week}</div>`:''}
     </div>`;
   }).join('');
 }
 
+/* ══════════════════════════════════════
+   SECTION RA — 권역 해운 지표
+══════════════════════════════════════ */
+function renderRegionAnalytics(rows){
+  const el=document.getElementById('ra-grid');
+  if(!el)return;
+  if(!rows||!rows.length){
+    el.innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div>${LANG==='ko'?'권역 데이터를 받아오는 중...':'Receiving regional data...'}</div>`;
+    return;
+  }
+  const fpColor={building:'var(--orange)',neutral:'var(--muted2)',easing:'var(--green)'};
+  const fpBg={building:'var(--orange-d)',neutral:'rgba(100,116,139,.1)',easing:'var(--green-d)'};
+  const drColor={elevated:'var(--red)',moderate:'var(--orange)',low:'var(--green)'};
+  const drBg={elevated:'var(--red-d)',moderate:'var(--orange-d)',low:'var(--green-d)'};
+  const fmt1=v=>v!=null?v.toFixed(1):'--';
+  const fmtSign=v=>v!=null?(v>=0?'+':'')+v.toFixed(1):'--';
+
+  el.innerHTML=rows.map((r,i)=>{
+    const ci=r.congestion_index;
+    const ciPct=ci!=null?Math.min(100,Math.max(0,ci)):0;
+    const ciColor=ci>=75?'var(--red)':ci>=50?'var(--orange)':ci>=25?'var(--yellow)':'var(--green)';
+    const fp=r.freight_pressure||'neutral';
+    const dr=r.delay_risk||'low';
+    const fpLabel={building:t('fp_building'),neutral:t('fp_neutral'),easing:t('fp_easing')}[fp]||fp;
+    const drLabel={elevated:t('dr_elevated'),moderate:t('dr_moderate'),low:t('dr_low')}[dr]||dr;
+    const narrative=LANG==='ko'?(r.narrative_ko||''):(r.narrative_en||'');
+    const delay=`.${Math.min(i,8)*5+5}s`;
+    const trend=r.congestion_trend_pct;
+
+    return`<div class="ra-card" style="animation-delay:${delay}">
+      <div class="ra-hdr">
+        <div class="ra-name">${r.region}</div>
+        <div class="ra-badges">
+          <span class="badge" style="background:${fpBg[fp]};color:${fpColor[fp]}">${fpLabel}</span>
+          <span class="badge" style="background:${drBg[dr]};color:${drColor[dr]}">${drLabel}</span>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--ff-mono);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">
+        ${t('lbl_ci')}${trend!=null?` <span style="color:${trend>=0?'var(--orange)':'var(--green)'}">${fmtSign(trend)}%</span>`:''}
+      </div>
+      <div class="ci-bar-wrap">
+        <div class="ci-bar-track"><div class="ci-bar-fill" style="width:${ciPct}%;background:${ciColor}"></div></div>
+        <div class="ci-num" style="color:${ciColor}">${ci!=null?Math.round(ci):'--'}</div>
+      </div>
+      <div class="ra-metrics">
+        <div class="ra-metric">
+          <div class="rm-lbl">${t('lbl_blank')}</div>
+          <div class="rm-val">${fmt1(r.blank_sailing_pct)}%
+            ${r.blank_sailing_trend_pp!=null?`<span style="font-size:11px;color:var(--muted)">${fmtSign(r.blank_sailing_trend_pp)}pp</span>`:''}
+          </div>
+        </div>
+        <div class="ra-metric">
+          <div class="rm-lbl">${t('lbl_fwd')}</div>
+          <div class="rm-val">${fmt1(r.blank_sailing_fwd_pct)}%</div>
+        </div>
+        <div class="ra-metric">
+          <div class="rm-lbl">${t('lbl_yoy')}</div>
+          <div class="rm-val" style="color:${r.schedule_yoy_pct>=0?'var(--green)':'var(--orange)'}">
+            ${r.schedule_yoy_pct!=null?(r.schedule_yoy_pct>=0?'+':'')+r.schedule_yoy_pct.toFixed(1)+'%':'--'}
+          </div>
+        </div>
+      </div>
+      ${narrative?`<div class="ra-narrative">${narrative}</div>`:''}
+      ${r.data_week?`<div class="ra-week">${LANG==='ko'?'기준주':'Week'}: ${r.data_week}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════
+   SECTION 3 — TOP 5
+══════════════════════════════════════ */
+function renderS3(ports){
+  const top=ports.filter(p=>calcMPCI(p)!==null)
+    .sort((a,b)=>calcMPCI(b)-calcMPCI(a)).slice(0,5);
+
+  if(!top.length){
+    document.getElementById('t5-body').innerHTML=
+      `<tr><td colspan="7"><div class="loading"><div class="spin"></div>${LANG==='ko'?'데이터를 받아오는 중...':'Receiving data...'}</div></td></tr>`;
+    return;
+  }
+
+  document.getElementById('t5-body').innerHTML=top.map(p=>{
+    const mpci=calcMPCI(p),lv=lvlCode(mpci);
+    const col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)',N:'var(--muted)'}[lv];
+    const turn=p.econdb_turnaround!=null?`${p.econdb_turnaround.toFixed(1)}${LANG==='ko'?'일':' d'}`:'--';
+    const delay=p.econdb_delay_pct!=null?`${Math.round(p.econdb_delay_pct)}%`:'--';
+    const anc=p.vessels_anchored!=null?`${p.vessels_anchored}${LANG==='ko'?'척':''}`:'--';
+    return`<tr onclick="pickPort('${p.port_code}')">
+      <td>
+        <div class="port-cell">
+          <span class="port-name">${pn(p.port_code)}${staleTag(p.econdb_updated_at)}</span>
+          <span class="port-code">${p.port_code}</span>
+        </div>
+      </td>
+      <td style="color:var(--muted2)">${ctry(p.port_code)}</td>
+      <td><span class="score-num" style="color:${col}">${mpci!=null?mpci.toFixed(1):'--'}</span></td>
+      <td style="color:var(--muted2)">${turn}</td>
+      <td style="color:var(--muted2)">${delay}</td>
+      <td style="color:var(--muted2)">${anc}</td>
+      <td><span class="badge b${lv}">${lvlLabel(mpci)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════
+   SECTION 4 — 조기 경보
+══════════════════════════════════════ */
+function renderS4(){
+  document.getElementById('ew-box').innerHTML=
+    `<div class="coming-soon">
+      <div class="cs-ico">📡</div>
+      <div class="cs-title">${LANG==='ko'?'조기 경보 준비 중':'Early Warning Coming Soon'}</div>
+      <div class="cs-msg">${t('s4_coming')}</div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════
+   SECTION 5 — 해협
+══════════════════════════════════════ */
+function renderS5(raw){
+  const pmap={};raw.forEach(r=>{if(!pmap[r.portid])pmap[r.portid]=[];pmap[r.portid].push(r)});
+  const defs=[
+    {id:"SUEZCANALOUTH",nk:"수에즈 운하",ne:"Suez Canal",dk:"cp_suez"},
+    {id:"PANAMACANALS",nk:"파나마 운하",ne:"Panama Canal",dk:"cp_pan"},
+    {id:"MALACCASTRAIT",nk:"말라카 해협",ne:"Malacca Strait",dk:"cp_mal"}
+  ];
+  document.getElementById('cp-grid').innerHTML=defs.map(def=>{
+    const nm=LANG==='ko'?def.nk:def.ne;
+    const desc=t(def.dk).split('\n');
+    const recs=(pmap[def.id]||[]).sort((a,b)=>b.recorded_date.localeCompare(a.recorded_date));
+
+    if(!recs.length){
+      return`<div class="cp-card">
+        <div class="cp-name">${nm}</div>
+        <div class="cp-desc">${desc[0]}</div>
+        <div class="cp-vals">
+          <div><div class="cp-val-lbl">${t('today_s')}</div><div class="cp-val-num" style="color:var(--muted)">--</div></div>
+          <div><div class="cp-val-lbl">${t('avg7')}</div><div class="cp-val-num" style="color:var(--muted)">--</div></div>
+        </div>
+        <div class="cp-divider"></div>
+        <div class="cp-status">${collectingBadge()}</div>
+        <div class="cp-note">${desc[1]||''}</div>
+      </div>`;
+    }
+
+    const today=recs[0];
+    const last7=recs.slice(0,7);
+    const avg7=last7.reduce((s,r)=>s+(r.n_container||0),0)/last7.length;
+    const ratio=avg7>0?(today.n_container||0)/avg7:null;
+    const status=ratio===null?t('cp_ok'):ratio<.4?t('cp_alert'):ratio<.6?t('cp_caut'):t('cp_ok');
+    const col=ratio===null?'var(--text)':ratio<.4?'var(--red)':ratio<.6?'var(--orange)':'var(--green)';
+
+    return`<div class="cp-card">
+      <div class="cp-name">${nm}</div>
+      <div class="cp-desc">${desc[0]}</div>
+      <div class="cp-vals">
+        <div><div class="cp-val-lbl">${t('today_s')}</div><div class="cp-val-num" style="color:${col}">${(today.n_container||0).toLocaleString()}</div></div>
+        <div><div class="cp-val-lbl">${t('avg7')}</div><div class="cp-val-num" style="color:var(--muted2)">${Math.round(avg7).toLocaleString()}</div></div>
+      </div>
+      <div class="cp-divider"></div>
+      <div class="cp-status">${status}</div>
+      <div class="cp-note">${desc[1]||''}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════
+   SECTION 6 — ETA Form
+══════════════════════════════════════ */
 function buildEtaForm(ports){
   const os=document.getElementById('e-origin');
-  os.innerHTML=`<option value="">-- ${LANG==='ko'?'항만 선택':'Select Port'} --</option>`+ORIGIN_PORTS.map(o=>`<option value="${o.code}">${LANG==='ko'?o.ko:o.en}</option>`).join('');
+  os.innerHTML=`<option value="">-- ${LANG==='ko'?'항만 선택':'Select Port'} --</option>`+
+    ORIGIN_PORTS.map(o=>`<option value="${o.code}">${LANG==='ko'?o.ko:o.en}</option>`).join('');
   const ps=document.getElementById('e-port');
-  ps.innerHTML=`<option value="">-- ${LANG==='ko'?'항만 선택':'Select Port'} --</option>`+ports.map(p=>`<option value="${p.port_code}">${pn(p.port_code)} (${p.port_code})</option>`).join('');
+  ps.innerHTML=`<option value="">-- ${LANG==='ko'?'항만 선택':'Select Port'} --</option>`+
+    ports.map(p=>`<option value="${p.port_code}">${pn(p.port_code)} (${p.port_code})</option>`).join('');
   document.getElementById('e-etd').value=new Date().toISOString().split('T')[0];
   os.onchange=()=>updateDist();
-  ps.onchange=()=>{updateHint(ports);updateDist();};
+  ps.onchange=()=>{updateHint(ports);updateDist()};
   document.getElementById('e-btn').onclick=runEta;
 }
 
 function updateHint(ports){
-  const code=document.getElementById('e-port').value,hint=document.getElementById('port-hint');
+  const code=document.getElementById('e-port').value;
+  const hint=document.getElementById('port-hint');
   if(!code){hint.innerHTML='';return}
-  const p=ports.find(x=>x.port_code===code);if(!p){hint.innerHTML='';return}
+  const p=ports.find(x=>x.port_code===code);
+  if(!p){hint.innerHTML='';return}
   const mpci=calcMPCI(p);
-  if(mpci===null){hint.innerHTML=`<span style="color:var(--muted)">📡 ${LANG==='ko'?'데이터 수집 중':'Collecting data'}</span>`;return}
-  const lv=lvlCode(mpci),col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)'}[lv];
-  hint.innerHTML=`<span style="color:${col}">${lvlLabel(mpci)}</span>${staleTag(p.econdb_updated_at)} <span style="color:var(--muted)">— ${LANG==='ko'?'혼잡도':'Index'} ${mpci.toFixed(1)}</span>`;
+  if(mpci===null){hint.innerHTML=collectingBadge();return}
+  const lv=lvlCode(mpci);
+  const col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)'}[lv];
+  hint.innerHTML=`<span style="color:${col}">${lvlLabel(mpci)}</span>${staleTag(p.econdb_updated_at)} <span style="color:var(--muted)">— ${mpci.toFixed(1)}</span>`;
 }
 
 function updateDist(){
-  const orig=document.getElementById('e-origin').value,dest=document.getElementById('e-port').value;
-  const ni=document.getElementById('e-nm'),na=document.getElementById('nm-auto');
-  if(!orig||!dest){ni.style.display='none';ni.value='';if(na)na.style.display='none';return}
-  if(orig==='custom'){if(na)na.style.display='none';ni.style.display='block';ni.placeholder=LANG==='ko'?'직접 입력 (해리, nm)':'Enter distance (nm)';ni.value='';return}
-  const key=orig+'-'+dest,dist=DISTANCE_TABLE[key];
+  const orig=document.getElementById('e-origin').value;
+  const dest=document.getElementById('e-port').value;
+  const ni=document.getElementById('e-nm');
+  const na=document.getElementById('nm-auto');
+  if(!orig||!dest){ni.style.display='none';ni.value='';na.style.display='none';return}
+  if(orig==='custom'){na.style.display='none';ni.style.display='block';ni.placeholder=LANG==='ko'?'직접 입력 (해리, nm)':'Enter distance (nm)';ni.value='';return}
+  const dist=DISTANCE_TABLE[orig+'-'+dest];
   if(dist!==undefined){
     ni.style.display='none';ni.value=dist;
-    if(na){na.style.display='block';na.innerHTML='🗺️ <strong style="color:var(--mint)">'+dist.toLocaleString()+' nm</strong> <span style="color:var(--muted);font-size:13px">'+(LANG==='ko'?'(자동 계산)':'(auto-calculated)')+'</span>'}
+    na.style.display='block';
+    na.innerHTML=`🗺️ <strong style="color:var(--mint)">${dist.toLocaleString()} nm</strong> <span style="color:var(--muted);font-size:12px">${LANG==='ko'?'(자동 계산)':'(auto-calculated)'}</span>`;
   }else{
-    if(na)na.style.display='none';ni.style.display='block';ni.value='';
-    ni.placeholder=LANG==='ko'?'해당 구간 거리 정보가 없습니다. 직접 입력해주세요 (해리/nm)':'No data for this route. Please enter distance (nm)'
+    na.style.display='none';ni.style.display='block';ni.value='';
+    ni.placeholder=LANG==='ko'?'해당 구간 거리 정보가 없습니다. 직접 입력해주세요 (nm)':'No route data. Please enter distance (nm)';
   }
 }
 
-function pickPort(code){const s=document.getElementById('e-port');s.value=code;s.dispatchEvent(new Event('change'));document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'})}
+function pickPort(code){
+  const s=document.getElementById('e-port');
+  s.value=code;s.dispatchEvent(new Event('change'));
+  document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'});
+}
 
 async function runEta(){
-  const code=document.getElementById('e-port').value,etd=document.getElementById('e-etd').value;
+  const code=document.getElementById('e-port').value;
+  const etd=document.getElementById('e-etd').value;
   const nm=parseFloat(document.getElementById('e-nm').value);
-  if(!code||!etd||!nm||isNaN(nm)){alert(LANG==='ko'?'출발항, 도착항, 출발일, 거리를 모두 입력해주세요.':'Please fill in origin port, destination port, departure date, and distance.');return}
+  if(!code||!etd||!nm||isNaN(nm)){
+    alert(LANG==='ko'?'출발항, 도착항, 출발일, 거리를 모두 입력해주세요.':'Please fill in all fields.');return;
+  }
   const btn=document.getElementById('e-btn');
   btn.disabled=true;btn.textContent=LANG==='ko'?'계산 중...':'Calculating...';
   document.getElementById('eta-ph').innerHTML=`<div class="loading"><div class="spin"></div>${LANG==='ko'?'분석 중...':'Analyzing...'}</div>`;
-  document.getElementById('eta-ph').style.display='block';
+  document.getElementById('eta-ph').style.display='flex';
   document.getElementById('eta-rc').style.display='none';
   document.getElementById('eta-result').style.justifyContent='center';
   try{
-    const res=await fetch(`${CFG.API_URL}/eta/calculate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({port_code:code,carrier:null,etd,distance_nm:nm,v_design:20,bn:4,heading_deg:90})});
+    const res=await fetch(`${CFG.API_URL}/eta/calculate`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({port_code:code,carrier:null,etd,distance_nm:nm,v_design:20,bn:4,heading_deg:90})
+    });
     if(!res.ok)throw new Error('api-err');
     showResult(await res.json(),code,false);
   }catch(e){showFallback(code,etd,nm)}
@@ -562,21 +950,22 @@ function showResult(d,code,approx){
   const portData=(window._snaps||[]).find(p=>p.port_code===code);
   const mpci=portData?calcMPCI(portData):(d.breakdown?.mpci_score??null);
   const isBad=mpci!==null&&mpci>=50;
-  // EconDB 기반 혼잡도 정보 표시 (AIS/PortWatch 제거 — EconDB 실데이터만 사용)
+
   const mpciNote=portData&&calcMPCI(portData)!==null
-    ?`<div class="eta-info" style="margin-bottom:11px">📊 ${name} ${LANG==='ko'?'현재 혼잡도':'Congestion'}: <strong>${mpci!=null?mpci.toFixed(1):'--'}</strong> (${lvlLabel(mpci)})${staleTag(portData.econdb_updated_at)}</div>`
-    :`<div class="eta-info" style="margin-bottom:11px"><span style="color:var(--muted)">${t('eta_nodata')}</span></div>`;
+    ?`<div class="eta-info" style="margin-bottom:10px">📊 ${name} ${LANG==='ko'?'현재 혼잡도':'Congestion'}: <strong>${mpci!=null?mpci.toFixed(1):'--'}</strong> (${lvlLabel(mpci)})${staleTag(portData.econdb_updated_at)}</div>`
+    :`<div class="eta-info" style="margin-bottom:10px"><span style="color:var(--muted2)">${t('eta_nodata')}</span></div>`;
+
   rc.innerHTML=
     `<div class="eta-rtitle">${name} ${t(approx?'arr_approx':'arr_dest')}</div>`+
     `<div class="eta-rows">`+
-    `<div class="eta-row p10"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_early')}</span><span class="eta-rdate">${fmtD(d.p10)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:60%"></div></div><div class="eta-rnote">${t('arr_early_d')}</div></div>`+
-    `<div class="eta-row p50"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_likely')}</span><span class="eta-rdate">${fmtD(d.p50)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:100%"></div></div><div class="eta-rnote">${t('arr_likely_d')}</div></div>`+
-    `<div class="eta-row p90"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_late')}</span><span class="eta-rdate">${fmtD(d.p90)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:80%"></div></div><div class="eta-rnote">${t('arr_late_d')}</div></div>`+
+      `<div class="eta-row p10"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_early')}</span><span class="eta-rdate">${fmtD(d.p10)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:60%"></div></div><div class="eta-rnote">${t('arr_early_d')}</div></div>`+
+      `<div class="eta-row p50"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_likely')}</span><span class="eta-rdate">${fmtD(d.p50)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:100%"></div></div><div class="eta-rnote">${t('arr_likely_d')}</div></div>`+
+      `<div class="eta-row p90"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_late')}</span><span class="eta-rdate">${fmtD(d.p90)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:80%"></div></div><div class="eta-rnote">${t('arr_late_d')}</div></div>`+
     `</div>`+
     mpciNote+
-    (isBad?`<div class="eta-warn">⚠️ ${name} ${LANG==='ko'?`현재 ${lvlLabel(mpci)} — 선사 공지 ETA보다 약 ${waitLbl(mpci)} 늦을 수 있습니다`:`is currently ${lvlLabel(mpci)} — may arrive ${waitLbl(mpci)} later than carrier ETA`}</div>`:'')+
+    (isBad?`<div class="eta-alert">⚠️ ${name} ${LANG==='ko'?`현재 ${lvlLabel(mpci)} — 선사 공지 ETA보다 약 ${waitLbl(mpci)} 늦을 수 있습니다`:`currently ${lvlLabel(mpci)} — may arrive ${waitLbl(mpci)} later than carrier ETA`}</div>`:'')+
     `<div class="eta-info"><strong>${t('dnd_ttl')}</strong><br>${t('dnd_body').replace('%D%',fmtD(d.p50))}</div>`+
-    (approx?`<div style="font-size:12px;color:var(--muted);margin-top:12px">※ ${LANG==='ko'?'API 서버 연결 전 추정값입니다':'Approximate — API server not connected'}</div>`:'');
+    (approx?`<div style="font-size:11px;color:var(--muted);margin-top:12px">※ ${LANG==='ko'?'API 서버 연결 전 추정값입니다':'Approximate — API server not connected'}</div>`:'');
 }
 
 function showFallback(code,etd,nm){
@@ -589,7 +978,17 @@ function showFallback(code,etd,nm){
   showResult({p10:p10.toISOString(),p50:p50.toISOString(),p90:p90.toISOString(),breakdown:{mpci_score:mpci}},code,true);
 }
 
-function renderAll(ports,cps,ri){renderS1(ports);renderS2(ports);renderS3(ports);renderS4();renderS5(cps);renderRegionAnalytics(ri||[])}
+/* ══════════════════════════════════════
+   MAIN ORCHESTRATION
+══════════════════════════════════════ */
+function renderAll(ports,cps,ri){
+  renderS1(ports);
+  renderS2(ports);
+  renderRegionAnalytics(ri||[]);
+  renderS3(ports);
+  renderS4();
+  renderS5(cps);
+}
 
 async function init(){
   try{
@@ -599,10 +998,12 @@ async function init(){
     buildEtaForm(ports);
   }catch(e){
     console.error('init error',e);
-    document.getElementById('sum-grid').innerHTML=`<div class="no-data" style="grid-column:1/-1">⚠️ 데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.</div>`;
+    document.getElementById('sum-grid').innerHTML=
+      `<div class="no-data-block" style="grid-column:1/-1">⚠️ ${LANG==='ko'?'데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.':'Failed to load data. Please refresh.'}</div>`;
   }
   setTimeout(init,CFG.REFRESH);
 }
+
 document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>

@@ -297,8 +297,9 @@ def update_ais_daily_rollups(supabase: Client) -> None:
             "observed_date": observed_date,
             "avg_vessels_anchored": round(sum(_num(s.get("vessels_anchored")) for s in samples) / n, 2),
             "avg_vessels_berthed": round(sum(_num(s.get("vessels_berthed")) for s in samples) / n, 2),
-            "max_vessels_anchored": max(_num(s.get("vessels_anchored")) for s in samples),
-            "max_vessels_berthed": max(_num(s.get("vessels_berthed")) for s in samples),
+            # max_vessels_* 컬럼은 INTEGER 이므로 int() 캐스팅 (float 281.0 → 22P02 방지)
+            "max_vessels_anchored": int(max(_num(s.get("vessels_anchored")) for s in samples)),
+            "max_vessels_berthed": int(max(_num(s.get("vessels_berthed")) for s in samples)),
             "avg_tpfs": round(sum(_num(s.get("tpfs")) for s in samples) / n, 2),
             "sample_count": n,
             "updated_at": now_str,
