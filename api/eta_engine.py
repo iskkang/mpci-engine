@@ -8,6 +8,11 @@ anchored/berthed counts remain supplemental context, not MPCI inputs.
 import math
 from datetime import datetime, timedelta
 
+try:
+    from .mpci_core import compute_mpci  # 패키지 컨텍스트(FastAPI 앱)
+except ImportError:  # standalone 컨텍스트
+    from mpci_core import compute_mpci
+
 CHOKEPOINT_PENALTY = {
     "suez": 6800,
     "bab_mandeb": 6800,
@@ -23,8 +28,6 @@ CASCADE_FACTOR = {
     "EGPSD": {"suez": 2.0},
     "JOAQJ": {"suez": 1.5},
 }
-
-MAX_BERTHS = 20
 
 
 def _clamp(value: float, low: float, high: float) -> float:
@@ -43,21 +46,12 @@ def calc_econdb_mpci(port_snapshot: dict | None) -> float | None:
         except (TypeError, ValueError):
             pass
 
-    cong = port_snapshot.get("econdb_congestion")
-    delay_pct = port_snapshot.get("econdb_delay_pct")
-    turnaround = port_snapshot.get("econdb_turnaround")
-    if cong is None or delay_pct is None or turnaround is None:
-        return None
-
-    try:
-        cong_score = _clamp((float(cong) / 18.0) * 100.0, 0.0, 100.0)
-        delay_score = _clamp(float(delay_pct), 0.0, 100.0)
-        turn_score = _clamp(((float(turnaround) - 0.5) / 4.5) * 100.0, 0.0, 100.0)
-    except (TypeError, ValueError):
-        return None
-
-    mpci = cong_score * 0.35 + delay_score * 0.35 + turn_score * 0.30
-    return round(_clamp(mpci, 0.0, 100.0), 1)
+    # 산식은 mpci_core 한 곳에만. 키 이름은 스냅샷 스키마(econdb_*)에 맞춰 전달.
+    return compute_mpci(
+        port_snapshot.get("econdb_congestion"),
+        port_snapshot.get("econdb_delay_pct"),
+        port_snapshot.get("econdb_turnaround"),
+    )
 
 
 def calc_t_base(distance_nm: float, v_design: float) -> float:
@@ -77,7 +71,10 @@ def calc_delta_weather(
     eta_hull = 0.7
     theta_rad = math.radians(heading_deg)
 
-    f_bn_theta = (0.01 + 0.0025 * bn**2) * abs(math.cos(theta_rad))
+    # 방향 계수: 0°(정면파)=1.0 → 90°(측면파)=0.5 → 180°(순풍)=0.0.
+    # 기존 abs(cos)는 180°에서도 1.0이 되어 순풍을 역풍처럼 최대 감속시켰음.
+    direction_factor = (1.0 + math.cos(theta_rad)) / 2.0
+    f_bn_theta = (0.01 + 0.0025 * bn**2) * direction_factor
     speed_loss_ratio = min(eta_hull * f_bn_theta, 0.40)
 
     v_actual = max(v_design * (1.0 - speed_loss_ratio), v_design * 0.5)
@@ -85,39 +82,20 @@ def calc_delta_weather(
     return distance_nm / v_actual - distance_nm / v_design
 
 
-def _erlang_c(c: float, a: float) -> float:
-    c = int(min(max(c, 1), MAX_BERTHS))
-    if a <= 0:
-        return 0.0
-
-    rho = a / c
-    if rho >= 1.0:
-        return 1.0
-
-    try:
-        sum_terms = sum((a**k) / math.factorial(k) for k in range(c))
-        last_term = (a**c) / (math.factorial(c) * (1.0 - rho))
-        p0 = 1.0 / (sum_terms + last_term)
-        erlang_c = (a**c * p0) / (math.factorial(c) * (1.0 - rho))
-    except (OverflowError, ZeroDivisionError):
-        return 1.0
-
-    return min(erlang_c, 1.0)
-
-
 def calc_delta_port(
     port_snapshot: dict | None,
     port_baseline: dict | None,
     carrier_bias: float,
 ) -> tuple[float, dict]:
-    """Estimate port delay from EconDB MPCI and turnaround only."""
+    """Estimate port delay from EconDB MPCI and turnaround only.
+
+    NOTE: Phase 1은 대기열(Erlang-C) 모델을 쓰지 않고 MPCI 버킷 + 회항시간으로만
+    추정한다. 그래서 debug에는 *실제로 계산된 값*(mpci, base_wait, turnaround)만 담는다.
+    """
     debug: dict = {
-        "lambda_arrivals": 0.0,
-        "mu_service_rate": 0.0,
-        "c_berths": 0.0,
-        "rho_utilization": 0.0,
-        "erlang_c_prob": 0.0,
         "mpci_score": 0.0,
+        "base_wait_h": 0.0,
+        "turnaround_h": 0.0,
     }
 
     mpci = calc_econdb_mpci(port_snapshot)
@@ -137,18 +115,9 @@ def calc_delta_port(
 
     turnaround_days = float(port_snapshot.get("econdb_turnaround") or 1.0)
     turnaround_h = max(turnaround_days * 24.0, 1.0)
-    congestion = float(port_snapshot.get("econdb_congestion") or 0.0)
-    delay_pct = float(port_snapshot.get("econdb_delay_pct") or 0.0)
 
-    debug.update(
-        {
-            "lambda_arrivals": round(congestion, 3),
-            "mu_service_rate": round(1.0 / max(turnaround_days, 0.5), 3),
-            "c_berths": float(port_snapshot.get("vessels_berthed") or 0.0),
-            "rho_utilization": round(_clamp(delay_pct / 100.0, 0.0, 0.99), 3),
-            "erlang_c_prob": 0.0,
-        }
-    )
+    debug["base_wait_h"] = round(base_wait_h, 3)
+    debug["turnaround_h"] = round(turnaround_h, 3)
 
     delta_port = base_wait_h * 0.45 + turnaround_h * 0.55
     return max(delta_port, 1.0) * carrier_bias, debug

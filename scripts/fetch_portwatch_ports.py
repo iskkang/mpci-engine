@@ -16,6 +16,11 @@ from difflib import SequenceMatcher
 import httpx
 from supabase import Client, create_client
 
+# scripts/ standalone 실행 대응: repo 루트를 path 에 넣어 api 패키지에서 import.
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from api.mpci_core import combine_final_mpci
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -204,6 +209,14 @@ def resolve_port(
     if best is None or best[0] < 0.35:
         logger.warning("No PortWatch match for %s (%s)", code, snapshot.get("port_name"))
         return None
+    # 퍼지(좌표+이름) 매칭은 오매핑 위험이 있으므로 항상 눈에 띄게 경고.
+    # 신뢰가 필요한 항만은 build_portwatch_map.py 로 PORTWATCH_PORT_MAP 을 고정할 것.
+    logger.warning(
+        "FUZZY match used for %s (%s) -> portid=%s score=%.3f dist=%s km. "
+        "검수 권장: PORTWATCH_PORT_MAP 으로 고정하세요.",
+        code, snapshot.get("port_name"), best[1].get("portid"), best[0],
+        f"{best[2]:.1f}" if best[2] is not None else "n/a",
+    )
     return make_map_row(snapshot, best[1], "geo_name", best[0], best[2])
 
 
@@ -324,7 +337,7 @@ def calculate_portwatch_index(rows: list[dict]) -> dict | None:
     for row in rows:
         raw_date = row.get("recorded_date")
         metric = row.get("portcalls_container")
-        if metric is None or metric == 0:
+        if metric is None:  # 결측일 때만 total 로 폴백 (0건은 실제 0으로 유지)
             metric = row.get("portcalls")
         if raw_date is None or metric is None:
             continue
@@ -388,27 +401,6 @@ def calculate_portwatch_index(rows: list[dict]) -> dict | None:
     }
 
 
-def combine_final_mpci(snapshot: dict, portwatch_index: float) -> tuple[float | None, str]:
-    current = snapshot.get("econdb_current_index")
-    if current is None:
-        return None, "portwatch_only"
-    try:
-        current_f = float(current)
-        portwatch_f = float(portwatch_index)
-    except (TypeError, ValueError):
-        return None, "portwatch_only"
-
-    ais = snapshot.get("ais_wait_index")
-    if ais is not None:
-        try:
-            final = current_f * 0.50 + portwatch_f * 0.35 + float(ais) * 0.15
-            return round(clamp(final, 0.0, 100.0), 1), "portwatch_ais"
-        except (TypeError, ValueError):
-            pass
-    final = current_f * 0.60 + portwatch_f * 0.40
-    return round(clamp(final, 0.0, 100.0), 1), "portwatch_history"
-
-
 def update_snapshot_indices(
     supabase: Client,
     snapshots: dict[str, dict],
@@ -425,7 +417,11 @@ def update_snapshot_indices(
             continue
         map_row = by_code.get(port_code)
         snapshot = snapshots.get(port_code, {})
-        final_mpci, confidence = combine_final_mpci(snapshot, index["portwatch_historic_index"])
+        final_mpci, confidence = combine_final_mpci(
+            snapshot.get("econdb_current_index"),
+            index["portwatch_historic_index"],
+            snapshot.get("ais_wait_index"),
+        )
         data = {
             "port_code": port_code,
             "portwatch_portid": map_row.get("portwatch_portid") if map_row else None,

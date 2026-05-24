@@ -15,6 +15,12 @@ from datetime import datetime, timedelta, timezone
 import httpx
 from supabase import create_client, Client
 
+# scripts/ 에서 standalone 실행됨(python scripts/fetch_econdb.py). 이때 sys.path[0]=scripts/ 라
+# api/ 가 안 보이므로, repo 루트를 path 에 넣어 api 패키지의 mpci_core 를 import 한다.
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from api.mpci_core import compute_mpci, combine_final_mpci
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -22,8 +28,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 ECONDB_URL = "https://www.econdb.com/maritime/search/ports/"
-HEADERS = {"User-Agent": "MTLLink-MPCI-Monitor/1.0"}
+ECONDB_PORT_URL = "https://www.econdb.com/maritime/ports/async/"  # 단건(async) 폴백
+WARMUP_URL = "https://www.econdb.com/maritime/search/"            # 세션/쿠키 발급용
+
+# page>=2 의 WAF/캐시-미스 차단을 피하려면 비브라우저 티를 내면 안 된다.
+# 정직한 봇 UA(MTLLink-MPCI-Monitor)는 EconDB와 정식 계약 후 다시 사용할 것.
+BROWSER_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9,ko;q=0.8",
+    "X-Requested-With": "XMLHttpRequest",
+    "Referer": WARMUP_URL,
+}
 PAGE_SLEEP_SECONDS = (1.0, 3.0)
+PER_PORT_SLEEP_SECONDS = (1.0, 2.5)
 MAX_RETRIES = 3
 
 ECONDB_FIELDS = (
@@ -75,18 +97,12 @@ def mean(values: list[float]) -> float | None:
 
 
 def calc_current_index(port: dict) -> float | None:
-    cong = port.get("port_congestion")
-    delay_pct = port.get("delay_percent")
-    turnaround = port.get("turnaround")
-    if cong is None or delay_pct is None or turnaround is None:
-        return None
-    try:
-        cong_score = clamp((float(cong) / 18.0) * 100.0, 0.0, 100.0)
-        delay_score = clamp(float(delay_pct), 0.0, 100.0)
-        turn_score = clamp(((float(turnaround) - 0.5) / 4.5) * 100.0, 0.0, 100.0)
-    except (TypeError, ValueError):
-        return None
-    return round(clamp(cong_score * 0.35 + delay_score * 0.35 + turn_score * 0.30, 0.0, 100.0), 1)
+    # 산식은 mpci_core 한 곳에만. EconDB 검색 docs 스키마(port_congestion 등)로 전달.
+    return compute_mpci(
+        port.get("port_congestion"),
+        port.get("delay_percent"),
+        port.get("turnaround"),
+    )
 
 
 def parse_observed_at(value: str | None) -> datetime | None:
@@ -137,9 +153,51 @@ def map_region(locode: str, country: str | None, econdb_region: str | None) -> s
     return (econdb_region or "").strip()[:30] or "other"
 
 
-def fetch_page(client: httpx.Client, page: int) -> tuple[list[dict], int | None]:
-    # Use the paged port table endpoint. It returns the same EconDB metrics we
-    # need and is less brittle than the map bbox endpoint for batch collection.
+def make_client() -> tuple[object, str]:
+    """브라우저처럼 보이는 HTTP 클라이언트 생성.
+
+    page>=2 차단을 뚫는 가장 확실한 방법은 TLS/JA3 지문까지 위장하는 curl_cffi.
+    설치돼 있으면 우선 사용하고, 없으면 httpx + 브라우저 헤더로 폴백한다.
+    검색 페이지에 워밍업 GET을 보내 세션 쿠키를 미리 확보한다.
+
+    curl_cffi 설치:  pip install curl_cffi
+    """
+    client = None
+    backend = "httpx"
+    try:
+        from curl_cffi import requests as cffi_requests
+
+        # curl_cffi 버전마다 유효한 impersonate 타깃이 다르므로 순차 시도
+        for imp in ("chrome", "chrome124", "chrome120", "chrome110"):
+            try:
+                client = cffi_requests.Session(impersonate=imp)
+                backend = f"curl_cffi:{imp}"
+                break
+            except Exception:
+                client = None
+        if client is None:
+            raise RuntimeError("no valid curl_cffi impersonate target")
+        client.headers.update(BROWSER_HEADERS)
+    except Exception:
+        client = httpx.Client(headers=BROWSER_HEADERS, follow_redirects=True)
+        backend = "httpx"
+
+    try:
+        client.get(WARMUP_URL, timeout=30)  # 세션/쿠키 발급
+        logger.info("Warmup OK (backend=%s)", backend)
+    except Exception as e:
+        logger.warning("Warmup failed (backend=%s): %s", backend, e)
+
+    return client, backend
+
+
+def fetch_page(client, page: int) -> tuple[list[dict], int | None, str]:
+    """한 페이지 조회. (docs, num_found, status) 반환.
+
+    status: 'ok'      정상
+            'blocked' 403/429 (page>=2 차단) → 폴백 트리거
+            'error'   기타 오류
+    """
     url = (
         f"{ECONDB_URL}?page_size=40&page={page}&s="
         f"&fl={ECONDB_FIELDS.replace(',', '%2C')}"
@@ -147,72 +205,206 @@ def fetch_page(client: httpx.Client, page: int) -> tuple[list[dict], int | None]
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            resp = client.get(url, headers=HEADERS, timeout=60)
-            if resp.status_code in {403, 429}:
-                logger.warning("EconDB rate limited or blocked: status=%s page=%s", resp.status_code, page)
-                return [], None
+            resp = client.get(url, timeout=60)  # 헤더/쿠키는 세션에 있음
+            if resp.status_code in (403, 429):
+                logger.warning("EconDB blocked: status=%s page=%s", resp.status_code, page)
+                return [], None, "blocked"
             resp.raise_for_status()
             data = resp.json()
             response = data.get("response", {}) if isinstance(data, dict) else {}
             docs = response.get("docs", [])
             num_found = response.get("numFound")
-            return docs if isinstance(docs, list) else [], num_found
+            return (docs if isinstance(docs, list) else []), num_found, "ok"
         except Exception as e:
             if attempt == MAX_RETRIES:
                 logger.error("EconDB page fetch failed page=%s: %s", page, e)
-                return [], None
+                return [], None, "error"
             sleep_s = 2 ** attempt
             logger.warning("Retrying EconDB page=%s in %ss after error: %s", page, sleep_s, e)
             time.sleep(sleep_s)
 
-    return [], None
+    return [], None, "error"
 
 
-def fetch_econdb_ports() -> list[dict]:
-    """Fetch paginated EconDB port docs with polite pacing."""
+def _fetch_paginated(client, watchlist: set[str] | None) -> tuple[list[dict], set[str], bool]:
+    """[2번] 워밍업된 세션으로 페이지네이션. (ports, seen, blocked) 반환."""
     ports: list[dict] = []
     seen: set[str] = set()
     max_pages = int(os.getenv("ECONDB_MAX_PAGES", "0") or "0")
+    blocked = False
+    page = 1
+    num_found: int | None = None
+
+    while True:
+        docs, total, status = fetch_page(client, page)
+        if status == "blocked":
+            blocked = True
+            break
+        if status == "error":
+            break
+        if total is not None:
+            num_found = total
+        if not docs:
+            break
+
+        added = 0
+        for doc in docs:
+            locode = doc.get("locode")
+            if not locode:
+                continue
+            code = normalize_locode(str(locode))
+            if not code or code in seen:
+                continue
+            if watchlist is not None and code not in watchlist:
+                continue
+            seen.add(code)
+            ports.append(doc)
+            added += 1
+
+        logger.info("page %s: docs=%s added=%s seen=%s/%s",
+                    page, len(docs), added, len(ports), num_found or "?")
+
+        if max_pages and page >= max_pages:
+            logger.info("Stop at ECONDB_MAX_PAGES=%s", max_pages)
+            break
+        if watchlist is not None and watchlist.issubset(seen):
+            logger.info("All watchlist ports found via pagination (%s).", len(watchlist))
+            break
+        if num_found is not None and len(ports) >= num_found:
+            break
+
+        page += 1
+        time.sleep(random.uniform(*PAGE_SLEEP_SECONDS))
+
+    return ports, seen, blocked
+
+
+def _deep_get(obj, keys: tuple[str, ...]):
+    """중첩 dict/list 어디에 있든 keys 중 첫 번째로 존재하는 non-null 값 반환.
+
+    async 단건 엔드포인트의 정확한 응답 스키마가 미확인이라 방어적으로 탐색한다.
+    첫 폴백 호출 때 로그로 찍히는 'ASYNC SAMPLE' 키 목록을 보고 keys 후보를 보정할 것.
+    """
+    if isinstance(obj, dict):
+        for k in keys:
+            if k in obj and obj[k] is not None:
+                return obj[k]
+        for v in obj.values():
+            found = _deep_get(v, keys)
+            if found is not None:
+                return found
+    elif isinstance(obj, list):
+        for item in obj:
+            found = _deep_get(item, keys)
+            if found is not None:
+                return found
+    return None
+
+
+def _normalize_async_doc(raw, code: str) -> dict | None:
+    """async 응답을 검색 docs와 동일한 스키마로 변환.
+
+    ⚠️ 키 이름은 추정값이다. 실제 응답(로그의 ASYNC SAMPLE)을 보고 아래 후보 목록을
+    반드시 검증/보정해야 한다. 셋 다 못 찾으면 None 반환(스킵).
+    """
+    congestion = _deep_get(raw, ("port_congestion", "congestion"))
+    delay = _deep_get(raw, ("delay_percent", "delay_pct", "delay"))
+    turnaround = _deep_get(raw, ("turnaround", "turnaround_days", "median_turnaround"))
+    if congestion is None and delay is None and turnaround is None:
+        return None
+    return {
+        "locode": f"{code[:2]} {code[2:]}",
+        "name": _deep_get(raw, ("name", "port_name")) or code,
+        "country": _deep_get(raw, ("country", "country_code")),
+        "region": _deep_get(raw, ("region",)),
+        "coord": _deep_get(raw, ("coord", "coordinates")),
+        "turnaround": turnaround,
+        "schedule": _deep_get(raw, ("schedule", "schedule_reliability")),
+        "delay_percent": delay,
+        "port_congestion": congestion,
+    }
+
+
+def _fetch_per_port(client, codes: set[str]) -> list[dict]:
+    """[3번] 항만별 단건(async) 폴백. 각 호출은 direct GET(page=1 등가)이라 차단 회피."""
+    from urllib.parse import quote
+
+    out: list[dict] = []
+    logged_sample = False
+    for code in sorted(codes):
+        # 'USLAX' -> 'US LAX' (표준 5자리 LOCODE: 국가 2 + 위치 3)
+        locode = f"{code[:2]} {code[2:]}"
+        url = f"{ECONDB_PORT_URL}{quote(locode)}/"
+        try:
+            resp = client.get(url, timeout=60)
+            if resp.status_code in (403, 429):
+                logger.warning("per-port blocked status=%s code=%s", resp.status_code, code)
+                continue
+            resp.raise_for_status()
+            raw = resp.json()
+        except Exception as e:
+            logger.warning("per-port fetch failed code=%s: %s", code, e)
+            continue
+
+        if not logged_sample:
+            sample = list(raw.keys()) if isinstance(raw, dict) else type(raw).__name__
+            logger.info("ASYNC SAMPLE (%s) top-level keys=%s", code, sample)
+            logged_sample = True
+
+        doc = _normalize_async_doc(raw, code)
+        if doc:
+            out.append(doc)
+        else:
+            logger.warning("per-port: %s 지표 추출 실패 (스키마 불일치? _normalize_async_doc 보정 필요)", code)
+
+        time.sleep(random.uniform(*PER_PORT_SLEEP_SECONDS))
+
+    logger.info("per-port fallback recovered %s/%s ports", len(out), len(codes))
+    return out
+
+
+def fetch_econdb_ports() -> list[dict]:
+    """[2번] 워밍업 세션 페이지네이션 → 차단/누락 시 [3번] 항만별 단건 폴백."""
     watchlist = get_watchlist()
+    client, backend = make_client()
 
-    with httpx.Client() as client:
-        page = 1
-        num_found: int | None = None
-        while True:
-            docs, total = fetch_page(client, page)
-            if total is not None:
-                num_found = total
-            if not docs:
-                break
+    try:
+        # ── 2번: 페이지네이션 ──────────────────────────────────────────
+        ports, seen, blocked = _fetch_paginated(client, watchlist)
+        logger.info("Pagination done (backend=%s, blocked=%s): %s ports",
+                    backend, blocked, len(ports))
 
-            added = 0
-            for doc in docs:
-                locode = doc.get("locode")
-                if not locode:
-                    continue
-                code = normalize_locode(str(locode))
-                if watchlist is not None and code not in watchlist:
-                    continue
-                if not code or code in seen:
-                    continue
-                seen.add(code)
-                ports.append(doc)
-                added += 1
+        # ── 3번: 폴백 (watchlist 누락분만) ────────────────────────────
+        if watchlist is not None:
+            missing = watchlist - seen
+            if missing:
+                logger.warning(
+                    "Pagination incomplete %s/%s. Per-port fallback for %s ports: %s",
+                    len(seen), len(watchlist), len(missing), sorted(missing),
+                )
+                for doc in _fetch_per_port(client, missing):
+                    code = normalize_locode(str(doc.get("locode", "")))
+                    if code and code not in seen:
+                        seen.add(code)
+                        ports.append(doc)
+        elif blocked:
+            # ALL 모드는 누락 목록을 특정할 수 없어 단건 폴백 불가
+            logger.warning("ALL 모드에서 차단 발생 — 단건 폴백 불가. watchlist 지정을 권장.")
+    finally:
+        try:
+            client.close()
+        except Exception:
+            pass
 
-            logger.info("Fetched EconDB page %s: docs=%s added=%s total_seen=%s/%s",
-                        page, len(docs), added, len(ports), num_found or "?")
-
-            if max_pages and page >= max_pages:
-                logger.info("Stopping at ECONDB_MAX_PAGES=%s", max_pages)
-                break
-            if watchlist is not None and watchlist.issubset(seen):
-                logger.info("All watchlist ports found (%s).", len(watchlist))
-                break
-            if num_found is not None and len(ports) >= num_found:
-                break
-
-            page += 1
-            time.sleep(random.uniform(*PAGE_SLEEP_SECONDS))
+    # ── 커버리지 검증: 부분 성공을 성공으로 착각하지 않기 ────────────
+    if watchlist is not None:
+        still_missing = watchlist - seen
+        if still_missing:
+            logger.error("EconDB 커버리지 미달: %s/%s 누락=%s",
+                         len(seen), len(watchlist), sorted(still_missing))
+            # 기본은 graceful(워크플로 실패 방지). 엄격 모드는 env로 켠다.
+            if os.getenv("ECONDB_STRICT_COVERAGE", "").lower() in ("1", "true", "yes"):
+                raise SystemExit(1)
 
     logger.info("Fetched %s unique ports from EconDB", len(ports))
     return ports
@@ -301,7 +493,8 @@ def calculate_historical_index(
     previous_values = [v for ts, v in values if previous_start <= ts < previous_end]
     one_year_values = [v for ts, v in values if ts >= now_dt - timedelta(days=HISTORY_LOOKBACK_DAYS)]
 
-    current_avg = mean(current_values) or current_index
+    _cur_mean = mean(current_values)
+    current_avg = _cur_mean if _cur_mean is not None else current_index
     previous_avg = mean(previous_values)
     percentile = None
     if len(one_year_values) >= PERIOD_DAYS:
@@ -331,27 +524,20 @@ def calculate_historical_index(
             portwatch_index = None
 
     if portwatch_index is not None:
-        trend_score = signal_context.get("portwatch_trend_index") or trend_score
+        _pw_trend = signal_context.get("portwatch_trend_index")
+        trend_score = _pw_trend if _pw_trend is not None else trend_score
         try:
             trend_score = clamp(float(trend_score), 0.0, 100.0)
         except (TypeError, ValueError):
             trend_score = 50.0
 
         ais_index = signal_context.get("ais_wait_index")
-        if ais_index is not None:
-            try:
-                final_mpci = current_index * 0.50 + portwatch_index * 0.35 + clamp(float(ais_index), 0.0, 100.0) * 0.15
-                confidence = "portwatch_ais"
-            except (TypeError, ValueError):
-                final_mpci = current_index * 0.60 + portwatch_index * 0.40
-                confidence = "portwatch_history"
-        else:
-            final_mpci = current_index * 0.60 + portwatch_index * 0.40
-            confidence = "portwatch_history"
+        # 합성식은 mpci_core 한 곳에만.
+        final_mpci, confidence = combine_final_mpci(current_index, portwatch_index, ais_index)
 
         portwatch_days = signal_context.get("portwatch_history_days")
         try:
-            history_days = int(portwatch_days or history_days)
+            history_days = int(portwatch_days) if portwatch_days is not None else history_days
         except (TypeError, ValueError):
             pass
 

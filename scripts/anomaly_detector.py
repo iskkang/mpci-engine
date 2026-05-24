@@ -21,10 +21,39 @@ MIN_SAMPLE_COUNT     = 5    # 기준선 최소 샘플 수
 HISTORY_RETAIN_DAYS  = 90   # port_history 보관 기간
 AIS_RECENT_HOURS     = 24   # AIS 보조 지표 최근 평균 윈도우
 AIS_DAILY_RETAIN_DAYS = 395 # 일별 AIS 롤업 보관 기간
+PAGE_SIZE            = 1000 # PostgREST 기본 행 제한 회피용 페이지 크기
 
 
 def clamp(value: float, low: float, high: float) -> float:
     return max(low, min(value, high))
+
+
+def _num(value) -> float:
+    """DB 값(None/문자열 가능)을 안전하게 float 로. 결측/비정상은 0.0."""
+    if value is None:
+        return 0.0
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _select_all(build_query) -> list[dict]:
+    """페이지네이션으로 전량 조회 (PostgREST 1000행 제한 회피).
+
+    build_query(start, end) 는 필터·정렬이 적용된 쿼리에 .range(start, end) 까지
+    붙여 반환해야 한다. 안정적 페이징을 위해 호출부에서 .order() 로 결정적 순서를 줄 것.
+    """
+    rows: list[dict] = []
+    start = 0
+    while True:
+        resp = build_query(start, start + PAGE_SIZE - 1).execute()
+        batch = resp.data or []
+        rows.extend(batch)
+        if len(batch) < PAGE_SIZE:
+            break
+        start += PAGE_SIZE
+    return rows
 
 
 def get_supabase() -> Client:
@@ -39,13 +68,15 @@ def update_baselines(supabase: Client) -> dict[str, dict]:
     반환: {port_code: {avg_anchored_7d, avg_berthed_7d, avg_tpfs_7d, sample_count}}
     """
     cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
-    resp = (
-        supabase.table("port_history")
-        .select("port_code,vessels_anchored,vessels_berthed,tpfs")
-        .gte("snapshot_at", cutoff)
-        .execute()
+    rows = _select_all(
+        lambda s, e: (
+            supabase.table("port_history")
+            .select("port_code,vessels_anchored,vessels_berthed,tpfs")
+            .gte("snapshot_at", cutoff)
+            .order("snapshot_at").order("port_code")  # 결정적 순서로 안정 페이징
+            .range(s, e)
+        )
     )
-    rows = resp.data or []
 
     # 항만별 집계
     buckets: dict[str, list] = {}
@@ -59,9 +90,9 @@ def update_baselines(supabase: Client) -> dict[str, dict]:
 
     for port_code, samples in buckets.items():
         n = len(samples)
-        avg_a = sum(s["vessels_anchored"] for s in samples) / n
-        avg_b = sum(s["vessels_berthed"]  for s in samples) / n
-        avg_t = sum(s["tpfs"]            for s in samples) / n
+        avg_a = sum(_num(s.get("vessels_anchored")) for s in samples) / n
+        avg_b = sum(_num(s.get("vessels_berthed")) for s in samples) / n
+        avg_t = sum(_num(s.get("tpfs")) for s in samples) / n
 
         baselines[port_code] = {
             "avg_anchored_7d": avg_a,
@@ -116,7 +147,7 @@ def detect_ais_anomalies(supabase: Client, baselines: dict[str, dict]) -> None:
         if not recent:
             continue
 
-        avg_recent = sum(r["vessels_anchored"] for r in recent) / len(recent)
+        avg_recent = sum(_num(r.get("vessels_anchored")) for r in recent) / len(recent)
         ratio = avg_recent / base_anchored
 
         if ratio < ANOMALY_RATIO_MEDIUM:
@@ -193,8 +224,8 @@ def update_ais_supplement(supabase: Client, baselines: dict[str, dict]) -> None:
         if not recent:
             continue
 
-        avg_recent_anchored = sum(r["vessels_anchored"] for r in recent) / len(recent)
-        avg_recent_berthed = sum(r["vessels_berthed"] for r in recent) / len(recent)
+        avg_recent_anchored = sum(_num(r.get("vessels_anchored")) for r in recent) / len(recent)
+        avg_recent_berthed = sum(_num(r.get("vessels_berthed")) for r in recent) / len(recent)
         base_anchored = float(baseline["avg_anchored_7d"])
 
         if base_anchored > 0:
@@ -214,6 +245,7 @@ def update_ais_supplement(supabase: Client, baselines: dict[str, dict]) -> None:
             level = "NORMAL"
 
         data = {
+            "port_code": port_code,
             "ais_recent_anchored_avg": round(avg_recent_anchored, 2),
             "ais_recent_berthed_avg": round(avg_recent_berthed, 2),
             "ais_baseline_anchored_avg": round(base_anchored, 2),
@@ -224,10 +256,11 @@ def update_ais_supplement(supabase: Client, baselines: dict[str, dict]) -> None:
             "ais_updated_at": now_str,
         }
         try:
-            supabase.table("port_snapshots").update(data).eq("port_code", port_code).execute()
+            # update().eq() 는 row 가 없으면 조용히 0건 no-op 이므로 upsert 로 변경.
+            supabase.table("port_snapshots").upsert(data, on_conflict="port_code").execute()
             updates += 1
         except Exception as e:
-            logger.warning(f"Failed to update AIS supplement for {port_code}: {e}")
+            logger.warning(f"Failed to upsert AIS supplement for {port_code}: {e}")
 
     logger.info(f"Updated AIS supplemental metrics for {updates} ports.")
 
@@ -236,13 +269,15 @@ def update_ais_daily_rollups(supabase: Client) -> None:
     """Roll up recent 15-minute AIS aggregates into daily rows."""
     start_date = date.today() - timedelta(days=1)
     cutoff = start_date.isoformat() + "T00:00:00+00:00"
-    resp = (
-        supabase.table("port_history")
-        .select("port_code,snapshot_at,vessels_anchored,vessels_berthed,tpfs")
-        .gte("snapshot_at", cutoff)
-        .execute()
+    rows = _select_all(
+        lambda s, e: (
+            supabase.table("port_history")
+            .select("port_code,snapshot_at,vessels_anchored,vessels_berthed,tpfs")
+            .gte("snapshot_at", cutoff)
+            .order("snapshot_at").order("port_code")  # 결정적 순서로 안정 페이징
+            .range(s, e)
+        )
     )
-    rows = resp.data or []
 
     buckets: dict[tuple[str, str], list[dict]] = {}
     for row in rows:
@@ -260,11 +295,11 @@ def update_ais_daily_rollups(supabase: Client) -> None:
         upserts.append({
             "port_code": port_code,
             "observed_date": observed_date,
-            "avg_vessels_anchored": round(sum(s["vessels_anchored"] for s in samples) / n, 2),
-            "avg_vessels_berthed": round(sum(s["vessels_berthed"] for s in samples) / n, 2),
-            "max_vessels_anchored": max(s["vessels_anchored"] for s in samples),
-            "max_vessels_berthed": max(s["vessels_berthed"] for s in samples),
-            "avg_tpfs": round(sum(s["tpfs"] for s in samples) / n, 2),
+            "avg_vessels_anchored": round(sum(_num(s.get("vessels_anchored")) for s in samples) / n, 2),
+            "avg_vessels_berthed": round(sum(_num(s.get("vessels_berthed")) for s in samples) / n, 2),
+            "max_vessels_anchored": max(_num(s.get("vessels_anchored")) for s in samples),
+            "max_vessels_berthed": max(_num(s.get("vessels_berthed")) for s in samples),
+            "avg_tpfs": round(sum(_num(s.get("tpfs")) for s in samples) / n, 2),
             "sample_count": n,
             "updated_at": now_str,
         })
