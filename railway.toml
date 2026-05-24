@@ -2,6 +2,6 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "python collector.py"
+startCommand = "uvicorn api.main:app --host 0.0.0.0 --port $PORT & python collector.py"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
