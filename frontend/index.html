@@ -160,7 +160,7 @@ section{margin-bottom:68px}
 <section id="sec2">
   <div class="sec-label" data-i18n="s2lbl">권역별 분석</div>
   <div class="sec-title" data-i18n="s2ttl">🗺️ 권역별 혼잡도 지수</div>
-  <div class="sec-desc" data-i18n="s2dsc">전 세계 주요 항만을 9개 권역으로 나누어 보여드립니다</div>
+  <div class="sec-desc" data-i18n="s2dsc">전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다</div>
   <div class="region-grid" id="region-grid"><div class="loading"><div class="spin"></div></div></div>
 </section>
 
@@ -231,7 +231,7 @@ const T={
 ko:{brand:"MTL 항만 혼잡도 모니터",brand_sub:"글로벌 항만 실시간 혼잡도 · ETA 보정 서비스",
 nav1:"항만 현황",nav2:"권역별 혼잡도",nav3:"주의 항만 TOP 5",nav4:"조기 경보",nav5:"해협 현황",nav6:"도착일 예측",
 s1lbl:"실시간 현황",s1ttl:"🌏 글로벌 항만 혼잡도 현황",s1dsc:"EconDB 실데이터 기반 · 데이터가 없는 항만은 \"수집 중\"으로 표시됩니다",
-s2lbl:"권역별 분석",s2ttl:"🗺️ 권역별 혼잡도 지수",s2dsc:"전 세계 주요 항만을 9개 권역으로 나누어 보여드립니다",
+s2lbl:"권역별 분석",s2ttl:"🗺️ 권역별 혼잡도 지수",s2dsc:"전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다",
 s3lbl:"주요 혼잡 항만",s3ttl:"⚠️ 지금 주의해야 할 항만 TOP 5",s3dsc:"혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다",
 s4lbl:"선제 모니터링",s4ttl:"📡 조기 혼잡 경보",s4dsc:"EconDB 지연율 추세가 급증 중인 항만을 조기에 감지합니다",
 s5lbl:"주요 해협",s5ttl:"🗺️ 주요 해협 통과 현황",s5dsc:"글로벌 해운 화물의 대부분이 이 해협을 통과합니다. 통과 선박이 급감하면 항로 우회로 ETA가 크게 늘어납니다",
@@ -260,7 +260,7 @@ stale_warn:"⚠️ 데이터 오래됨",nodata:"데이터 없음"},
 en:{brand:"MTL Port Congestion Monitor",brand_sub:"Global Port Real-time Congestion & ETA Service",
 nav1:"Port Status",nav2:"By Region",nav3:"Watch Ports TOP 5",nav4:"Early Warning",nav5:"Straits",nav6:"ETA Forecast",
 s1lbl:"Live Status",s1ttl:"🌏 Global Port Congestion Status",s1dsc:"EconDB-based · Ports without data shown as 'Collecting'",
-s2lbl:"Regional Analysis",s2ttl:"🗺️ Regional Congestion Index",s2dsc:"9 global shipping regions at a glance",
+s2lbl:"Regional Analysis",s2ttl:"🗺️ Regional Congestion Index",s2dsc:"8 global shipping regions at a glance",
 s3lbl:"High Alert Ports",s3ttl:"⚠️ Top 5 Ports to Watch Now",s3dsc:"High congestion may delay cargo. Click a port to calculate ETA instantly.",
 s4lbl:"Early Warning",s4ttl:"📡 Congestion Early Warning",s4dsc:"Detects ports with rapidly rising EconDB delay rates.",
 s5lbl:"Key Straits",s5ttl:"🗺️ Strategic Straits Status",s5dsc:"Most global cargo passes through these straits. A sharp drop in transits signals rerouting risk.",
@@ -291,7 +291,7 @@ const t=k=>(T[LANG]||T.ko)[k]||k;
 function setLang(l){LANG=l;document.getElementById('btn-ko').className=l==='ko'?'active':'';document.getElementById('btn-en').className=l==='en'?'active':'';document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(T[l][k]!==undefined)el.innerHTML=T[l][k]});if(window._snaps)renderAll(window._snaps,window._cps)}
 
 const PM={KRPUS:{n:"Busan",nk:"부산",c:"대한민국",ce:"South Korea",r:"kr-jp"},KRKAN:{n:"Gwangyang",nk:"광양",c:"대한민국",ce:"South Korea",r:"kr-jp"},JPYOK:{n:"Yokohama",nk:"요코하마",c:"일본",ce:"Japan",r:"kr-jp"},JPOSA:{n:"Osaka",nk:"오사카",c:"일본",ce:"Japan",r:"kr-jp"},JPTYO:{n:"Tokyo",nk:"도쿄",c:"일본",ce:"Japan",r:"kr-jp"},CNSHA:{n:"Shanghai",nk:"상하이",c:"중국",ce:"China",r:"china"},CNNBO:{n:"Ningbo",nk:"닝보",c:"중국",ce:"China",r:"china"},CNSZX:{n:"Shenzhen",nk:"선전",c:"중국",ce:"China",r:"china"},CNQIN:{n:"Qingdao",nk:"칭다오",c:"중국",ce:"China",r:"china"},CNGZU:{n:"Guangzhou",nk:"광저우",c:"중국",ce:"China",r:"china"},HKHKG:{n:"Hong Kong",nk:"홍콩",c:"홍콩",ce:"Hong Kong",r:"china"},TWKHH:{n:"Kaohsiung",nk:"가오슝",c:"대만",ce:"Taiwan",r:"china"},SGSIN:{n:"Singapore",nk:"싱가포르",c:"싱가포르",ce:"Singapore",r:"sea"},MYPKG:{n:"Port Klang",nk:"포트클랑",c:"말레이시아",ce:"Malaysia",r:"sea"},MYTPP:{n:"Tg. Pelepas",nk:"탄중펠레파스",c:"말레이시아",ce:"Malaysia",r:"sea"},IDTPP:{n:"Tanjung Priok",nk:"탄중프리옥",c:"인도네시아",ce:"Indonesia",r:"sea"},VHSGN:{n:"Ho Chi Minh",nk:"호치민",c:"베트남",ce:"Vietnam",r:"sea"},THBKK:{n:"Bangkok",nk:"방콕",c:"태국",ce:"Thailand",r:"sea"},PHMNL:{n:"Manila",nk:"마닐라",c:"필리핀",ce:"Philippines",r:"sea"},INNSA:{n:"Nhava Sheva",nk:"나바셰바",c:"인도",ce:"India",r:"sa-me"},INCCU:{n:"Kolkata",nk:"콜카타",c:"인도",ce:"India",r:"sa-me"},PKKAR:{n:"Karachi",nk:"카라치",c:"파키스탄",ce:"Pakistan",r:"sa-me"},AEJEA:{n:"Jebel Ali",nk:"제벨알리",c:"UAE",ce:"UAE",r:"sa-me"},OMMSQ:{n:"Muscat",nk:"무스카트",c:"오만",ce:"Oman",r:"sa-me"},NLRTM:{n:"Rotterdam",nk:"로테르담",c:"네덜란드",ce:"Netherlands",r:"europe"},BEANR:{n:"Antwerp",nk:"앤트워프",c:"벨기에",ce:"Belgium",r:"europe"},DEHAM:{n:"Hamburg",nk:"함부르크",c:"독일",ce:"Germany",r:"europe"},GBFXT:{n:"Felixstowe",nk:"펠릭스토",c:"영국",ce:"UK",r:"europe"},ESBCN:{n:"Barcelona",nk:"바르셀로나",c:"스페인",ce:"Spain",r:"europe"},ITGOA:{n:"Genoa",nk:"제노바",c:"이탈리아",ce:"Italy",r:"europe"},USLAX:{n:"Los Angeles",nk:"로스앤젤레스",c:"미국",ce:"USA",r:"namerica"},USLGB:{n:"Long Beach",nk:"롱비치",c:"미국",ce:"USA",r:"namerica"},USNYC:{n:"New York",nk:"뉴욕",c:"미국",ce:"USA",r:"namerica"},USSAV:{n:"Savannah",nk:"사바나",c:"미국",ce:"USA",r:"namerica"},CAHAL:{n:"Halifax",nk:"핼리팩스",c:"캐나다",ce:"Canada",r:"namerica"},MXZLO:{n:"Manzanillo",nk:"만사니요",c:"멕시코",ce:"Mexico",r:"latam"},BRSAO:{n:"Santos",nk:"산토스",c:"브라질",ce:"Brazil",r:"latam"},ARBUE:{n:"Buenos Aires",nk:"부에노스아이레스",c:"아르헨티나",ce:"Argentina",r:"latam"},CLSAI:{n:"San Antonio",nk:"산안토니오",c:"칠레",ce:"Chile",r:"latam"},ZADUR:{n:"Durban",nk:"더반",c:"남아공",ce:"S. Africa",r:"africa"},EGPSD:{n:"Port Said",nk:"포트사이드",c:"이집트",ce:"Egypt",r:"africa"},NGAPP:{n:"Apapa",nk:"아파파",c:"나이지리아",ce:"Nigeria",r:"africa"},RUMME:{n:"Novorossiysk",nk:"노보로시스크",c:"러시아",ce:"Russia",r:"ru-cis"},RUVVO:{n:"Vladivostok",nk:"블라디보스토크",c:"러시아",ce:"Russia",r:"ru-cis"}};
-const REGS={"kr-jp":{ko:"동북아시아",en:"NE Asia"},"china":{ko:"중국·홍콩·대만",en:"Greater China"},"sea":{ko:"동남아시아",en:"SE Asia"},"sa-me":{ko:"남아시아·중동",en:"S.Asia & ME"},"europe":{ko:"유럽",en:"Europe"},"namerica":{ko:"북미",en:"N. America"},"latam":{ko:"중남미",en:"Latin America"},"africa":{ko:"아프리카",en:"Africa"},"ru-cis":{ko:"러시아·CIS",en:"Russia/CIS"}};
+const REGS={"kr-jp":{ko:"동북아시아",en:"NE Asia"},"china":{ko:"중국·홍콩·대만",en:"Greater China"},"sea":{ko:"동남아시아",en:"SE Asia"},"sa-me":{ko:"남아시아·중동",en:"S.Asia & ME"},"europe":{ko:"유럽",en:"Europe"},"namerica":{ko:"북미",en:"N. America"},"latam":{ko:"중남미",en:"Latin America"},"africa":{ko:"아프리카",en:"Africa"}};
 const DISTANCE_TABLE={"CNSHA-NLRTM":11500,"CNSHA-BEANR":11800,"CNSHA-DEHAM":11800,"CNSHA-USLAX":6200,"CNSHA-USNYC":11500,"CNSHA-GBFXT":12000,"CNSHA-FRLEH":11700,"CNSHA-KRPUS":520,"CNSHA-SGSIN":2300,"KRPUS-NLRTM":11000,"KRPUS-BEANR":11300,"KRPUS-DEHAM":11300,"KRPUS-USLAX":5600,"KRPUS-USNYC":11000,"KRPUS-SGSIN":2600,"SGSIN-NLRTM":8400,"SGSIN-BEANR":8700,"SGSIN-DEHAM":8700,"SGSIN-USLAX":8800,"SGSIN-USNYC":10500,"SGSIN-FRLEH":8500,"HKHKG-NLRTM":10500,"HKHKG-USLAX":5900,"HKHKG-USNYC":10800,"CNNGB-NLRTM":11400,"CNNGB-USLAX":6100,"JPTYO-USLAX":4800,"JPTYO-NLRTM":11500};
 const ORIGIN_PORTS=[{code:'CNSHA',ko:'상하이',en:'Shanghai'},{code:'KRPUS',ko:'부산',en:'Busan'},{code:'CNNGB',ko:'닝보',en:'Ningbo'},{code:'SGSIN',ko:'싱가포르',en:'Singapore'},{code:'HKHKG',ko:'홍콩',en:'Hong Kong'},{code:'JPTYO',ko:'도쿄',en:'Tokyo'},{code:'JPKOB',ko:'고베',en:'Kobe'},{code:'CNGZU',ko:'광저우',en:'Guangzhou'},{code:'CNYTN',ko:'옌티안',en:'Yantian'},{code:'custom',ko:'기타 (직접 입력)',en:'Other (manual)'}];
 
