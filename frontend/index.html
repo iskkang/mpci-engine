@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>MPCI · MTL Port Congestion Index</title>
+
+  <!-- Fonts: Orbitron (display) + IBM Plex Mono (data) -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <style>
+    /* ══ CSS Variables ══ */
+    :root {
+      --bg:           #060d1f;
+      --surface:      #0c1628;
+      --surface2:     #112038;
+      --border:       #1a3454;
+      --border-bright:#2a4f7a;
+      --accent:       #00e5ff;
+      --accent-dim:   #0099bb;
+      --warn:         #ff6b2b;
+      --danger:       #ef4444;
+      --success:      #22c55e;
+      --caution:      #eab308;
+      --text:         #b8d8ec;
+      --text-dim:     #4a6f8a;
+      --text-bright:  #e8f4ff;
+      --font-display: 'Orbitron', monospace;
+      --font-data:    'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-data);
+      min-width: 1280px;
+      overflow-x: hidden;
+    }
+
+    /* Grid background texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ══ HEADER ══ */
+    header {
+      position: relative;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 54px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 30px rgba(0,229,255,0.07), 0 0 0 0 transparent;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.5;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 14px; }
+
+    .logo-ring {
+      position: relative;
+      width: 32px; height: 32px;
+      border: 1.5px solid var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-ring::before {
+      content: '';
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent);
+      animation: sonar 2.4s ease-in-out infinite;
+    }
+    .logo-ring::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px solid var(--accent);
+      animation: sonar-ring 2.4s ease-in-out infinite;
+    }
+    @keyframes sonar {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.6; transform: scale(0.85); }
+    }
+    @keyframes sonar-ring {
+      0%   { transform: scale(1); opacity: 0.5; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    .site-title {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-bright);
+    }
+    .site-title em {
+      color: var(--accent);
+      font-style: normal;
+    }
+    .site-sub {
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+
+    .header-right {
+      display: flex; align-items: center; gap: 20px;
+    }
+    .refresh-label {
+      font-size: 10px; color: var(--text-dim); letter-spacing: 0.06em;
+    }
+    .refresh-label span { color: var(--accent); }
+
+    .loading-bar {
+      width: 100px; height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+    .loading-bar-fill {
+      height: 100%;
+      width: 35%;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+      animation: sweep 1.4s ease-in-out infinite;
+      display: none;
+    }
+    .loading-bar-fill.on { display: block; }
+    @keyframes sweep {
+      0%   { margin-left: -35%; }
+      100% { margin-left: 135%; }
+    }
+
+    /* ══ MAIN AREA ══ */
+    .main-area {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      height: calc(100vh - 54px - 310px);
+      min-height: 460px;
+    }
+
+    /* ══ MAP ══ */
+    #map {
+      width: 100%; height: 100%;
+      background: #05091a;
+      border-right: 1px solid var(--border);
+    }
+
+    /* Leaflet overrides */
+    .leaflet-popup-content-wrapper {
+      background: var(--surface2) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--border-bright) !important;
+      border-radius: 3px !important;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.6), 0 0 12px rgba(0,229,255,0.1) !important;
+      font-family: var(--font-data) !important;
+      font-size: 11px !important;
+      padding: 0 !important;
+    }
+    .leaflet-popup-content {
+      margin: 0 !important;
+      padding: 10px 14px !important;
+    }
+    .leaflet-popup-tip { background: var(--surface2) !important; }
+    .leaflet-popup-close-button { color: var(--text-dim) !important; top: 6px !important; right: 8px !important; }
+    .leaflet-control-zoom a {
+      background: var(--surface2) !important;
+      color: var(--text) !important;
+      border-color: var(--border) !important;
+    }
+    .leaflet-control-zoom a:hover { background: var(--surface) !important; color: var(--accent) !important; }
+    .leaflet-control-attribution {
+      background: rgba(6,13,31,0.7) !important;
+      color: var(--text-dim) !important;
+      font-family: var(--font-data) !important;
+      font-size: 9px !important;
+    }
+
+    .popup-name {
+      font-family: var(--font-display);
+      font-size: 12px; font-weight: 600;
+      color: var(--text-bright);
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .popup-row {
+      display: flex; justify-content: space-between; gap: 16px;
+      font-size: 10px; line-height: 1.9;
+    }
+    .popup-row .k { color: var(--text-dim); }
+    .popup-row .v { color: var(--text-bright); font-weight: 500; }
+
+    /* ══ RIGHT PANELS ══ */
+    .right-panels {
+      display: flex; flex-direction: column;
+      overflow-y: auto;
+      background: var(--surface);
+    }
+
+    .panel {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .panel-hd {
+      display: flex; align-items: center; gap: 7px;
+      margin-bottom: 11px;
+    }
+    .panel-icon { font-size: 13px; }
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-bright);
+    }
+    .panel-accent-line {
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border-bright), transparent);
+    }
+
+    /* Panel A — Chokepoints */
+    .ck-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .ck-table th {
+      color: var(--text-dim); font-weight: 400; font-size: 9px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 6px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ck-table td {
+      padding: 5px 6px;
+      border-bottom: 1px solid rgba(26,52,84,0.5);
+    }
+    .ck-table tr:hover td { background: rgba(0,229,255,0.035); }
+    .ck-name { color: var(--text); font-size: 10px; }
+    .ck-num  { color: var(--accent); font-weight: 600; font-size: 12px; font-family: var(--font-display); }
+    .ck-avg  { color: var(--text-dim); font-size: 10px; }
+
+    .st-badge {
+      display: inline-block; font-size: 9px; padding: 2px 5px;
+      border-radius: 2px; letter-spacing: 0.04em; font-weight: 600;
+    }
+
+    /* Panel B — Anomalies */
+    .anomaly-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      border-radius: 2px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+    }
+    .anomaly-card.sHIGH   { border-left-color: var(--danger); }
+    .anomaly-card.sMEDIUM { border-left-color: var(--warn); }
+    .anomaly-card.sLOW    { border-left-color: var(--success); }
+
+    .anomaly-top {
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 3px;
+    }
+    .sev-tag {
+      font-size: 8px; font-weight: 700; letter-spacing: 0.1em;
+      padding: 1px 5px; border-radius: 2px;
+      font-family: var(--font-display);
+    }
+    .sHIGH .sev-tag   { background: rgba(239,68,68,0.2);  color: #fca5a5; }
+    .sMEDIUM .sev-tag { background: rgba(255,107,43,0.2); color: #fdba74; }
+    .sLOW .sev-tag    { background: rgba(34,197,94,0.2);  color: #86efac; }
+
+    .anom-code { color: var(--accent); font-size: 11px; font-weight: 600; flex: 1; }
+    .anom-time { color: var(--text-dim); font-size: 9px; }
+    .anom-detail { color: var(--text-dim); font-size: 9px; line-height: 1.5; }
+    .anom-ratio  { color: var(--warn); font-size: 9px; margin-top: 1px; }
+    .no-anomaly  { text-align: center; color: var(--text-dim); font-size: 11px; padding: 10px 0; }
+
+    /* Panel C — Level Summary */
+    .level-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+    }
+    .level-tile {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 3px; padding: 9px 12px;
+      cursor: pointer; transition: border-color 0.12s, background 0.12s;
+      display: flex; align-items: center; gap: 9px;
+    }
+    .level-tile:hover, .level-tile.active {
+      border-color: var(--accent);
+      background: rgba(0,229,255,0.06);
+    }
+    .level-dot {
+      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+    }
+    .level-lbl { font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; }
+    .level-cnt {
+      font-family: var(--font-display); font-size: 22px; font-weight: 900;
+      color: var(--text-bright); line-height: 1; margin-top: 1px;
+    }
+
+    /* ══ TABLE SECTION ══ */
+    .table-section {
+      position: relative; z-index: 1;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 0 24px 20px;
+    }
+
+    .table-toolbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 0 8px;
+      flex-wrap: wrap;
+    }
+    .tb-label {
+      font-size: 9px; color: var(--text-dim);
+      letter-spacing: 0.14em; text-transform: uppercase;
+    }
+
+    .f-btn {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text-dim); font-family: var(--font-data);
+      font-size: 9px; padding: 3px 9px; cursor: pointer;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      border-radius: 2px; transition: all 0.12s;
+    }
+    .f-btn:hover, .f-btn.active {
+      border-color: var(--accent); color: var(--accent);
+      background: rgba(0,229,255,0.07);
+    }
+
+    .country-sel {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-family: var(--font-data);
+      font-size: 9px; padding: 3px 8px; border-radius: 2px;
+      outline: none; cursor: pointer;
+    }
+
+    .row-count {
+      margin-left: auto; font-size: 9px; color: var(--text-dim);
+      letter-spacing: 0.06em;
+    }
+
+    .table-wrap { max-height: 230px; overflow-y: auto; }
+
+    .port-tbl { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .port-tbl th {
+      position: sticky; top: 0; z-index: 2;
+      padding: 6px 10px; text-align: left;
+      font-size: 9px; color: var(--text-dim);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      font-weight: 400; font-family: var(--font-data);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer; user-select: none; white-space: nowrap;
+      transition: color 0.12s;
+    }
+    .port-tbl th:hover { color: var(--accent); }
+    .port-tbl th.s-asc::after  { content: ' ↑'; color: var(--accent); }
+    .port-tbl th.s-desc::after { content: ' ↓'; color: var(--accent); }
+
+    .port-tbl td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(26,52,84,0.4);
+      white-space: nowrap;
+    }
+    .port-tbl tr:hover td { background: rgba(0,229,255,0.03); }
+
+    .td-name   { color: var(--text-bright); font-weight: 500; }
+    .td-country{ color: var(--text-dim); font-size: 10px; }
+    .td-tpfs   { color: var(--accent); font-family: var(--font-display); font-size: 10px; font-weight: 600; }
+    .td-num    { color: var(--text-dim); }
+    .td-time   { color: var(--text-dim); font-size: 10px; }
+
+    .lv-badge {
+      display: inline-block; font-size: 8px; font-weight: 700;
+      padding: 2px 6px; border-radius: 2px; letter-spacing: 0.08em;
+      font-family: var(--font-display);
+    }
+
+    /* ══ LOADING OVERLAY ══ */
+    #overlay {
+      position: fixed; inset: 0;
+      background: rgba(6,13,31,0.88);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; transition: opacity 0.35s;
+    }
+    #overlay.off { opacity: 0; pointer-events: none; }
+
+    .spin-wrap { text-align: center; }
+    .spin-outer {
+      width: 52px; height: 52px; margin: 0 auto 14px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-bright);
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 16px rgba(0,229,255,0.12);
+    }
+    .spin-text {
+      font-family: var(--font-display); font-size: 9px;
+      color: var(--text-dim); letter-spacing: 0.2em; text-transform: uppercase;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOADING OVERLAY ══ -->
+<div id="overlay">
+  <div class="spin-wrap">
+    <div class="spin-outer"></div>
+    <div class="spin-text">데이터 로딩 중</div>
+  </div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="header-left">
+    <div class="logo-ring"></div>
+    <div>
+      <div class="site-title"><em>MPCI</em> · MTL Port Congestion Index</div>
+      <div class="site-sub">글로벌 항만 혼잡도 실시간 모니터링 시스템</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="refresh-label">최종 갱신: <span id="lastRefresh">—</span></div>
+    <div class="loading-bar"><div class="loading-bar-fill" id="loadBar"></div></div>
+  </div>
+</header>
+
+<!-- ══ MAIN: MAP + PANELS ══ -->
+<div class="main-area">
+  <div id="map"></div>
+
+  <div class="right-panels">
+
+    <!-- PANEL A: Chokepoint Risk -->
+    <div class="panel">
+      <div class="panel-hd">
+        <span class="panel-icon">🚢</span>
+        <span class="panel-title">초크포인트 현황</span>
+        <div class="panel-accent-line"></div>
+      </div>
+      <table class="ck-table">
+        <thead>
+          <tr>
+            <th>이름</th><th>오늘</th><th>7일평균</th><th>상태</th>
+          </tr>
+        </thead>
+        <tbody id="ckBody">
+          <tr><td colspan="4" style="color:var(--text-dim);font-size:10px;padding:10px 6px;text-align:center;">데이터 수집 중...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PANEL B: Anomaly Alerts -->
+    <div class="panel">
+      <div class="panel-hd">
+        <span class="panel-icon">🚨</span>
+        <span class="panel-title">이상 감지 알림</span>
+        <div class="panel-accent-line"></div>
+      </div>
+      <div id="anomalyContent">
+        <div class="no-anomaly">로딩 중...</div>
+      </div>
+    </div>
+
+    <!-- PANEL C: Level Summary -->
+    <div class="panel">
+      <div class="panel-hd">
+        <span class="panel-icon">📡</span>
+        <span class="panel-title">레벨별 항만 요약</span>
+        <div class="panel-accent-line"></div>
+      </div>
+      <div class="level-grid">
+        <div class="level-tile" data-lv="CONGESTED" onclick="setLevelFilter('CONGESTED')">
+          <div class="level-dot" style="background:#ef4444;box-shadow:0 0 7px #ef4444;"></div>
+          <div>
+            <div class="level-lbl">혼잡</div>
+            <div class="level-cnt" id="cnt-CONGESTED">—</div>
+          </div>
+        </div>
+        <div class="level-tile" data-lv="BUSY" onclick="setLevelFilter('BUSY')">
+          <div class="level-dot" style="background:#f97316;box-shadow:0 0 7px #f97316;"></div>
+          <div>
+            <div class="level-lbl">주의</div>
+            <div class="level-cnt" id="cnt-BUSY">—</div>
+          </div>
+        </div>
+        <div class="level-tile" data-lv="STABLE" onclick="setLevelFilter('STABLE')">
+          <div class="level-dot" style="background:#eab308;box-shadow:0 0 7px #eab308;"></div>
+          <div>
+            <div class="level-lbl">보통</div>
+            <div class="level-cnt" id="cnt-STABLE">—</div>
+          </div>
+        </div>
+        <div class="level-tile" data-lv="LOW" onclick="setLevelFilter('LOW')">
+          <div class="level-dot" style="background:#22c55e;box-shadow:0 0 7px #22c55e;"></div>
+          <div>
+            <div class="level-lbl">원활</div>
+            <div class="level-cnt" id="cnt-LOW">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ FOOTER TABLE ══ -->
+<div class="table-section">
+  <div class="table-toolbar">
+    <span class="tb-label">레벨</span>
+    <button class="f-btn active" data-lv="ALL"       onclick="setLevelFilter('ALL')">전체</button>
+    <button class="f-btn"        data-lv="CONGESTED" onclick="setLevelFilter('CONGESTED')">혼잡</button>
+    <button class="f-btn"        data-lv="BUSY"      onclick="setLevelFilter('BUSY')">주의</button>
+    <button class="f-btn"        data-lv="STABLE"    onclick="setLevelFilter('STABLE')">보통</button>
+    <button class="f-btn"        data-lv="LOW"       onclick="setLevelFilter('LOW')">원활</button>
+    <span class="tb-label" style="margin-left:14px;">국가</span>
+    <select class="country-sel" id="countrySel" onchange="applyFilters()">
+      <option value="">전체</option>
+    </select>
+    <span class="row-count" id="rowCount"></span>
+  </div>
+  <div class="table-wrap">
+    <table class="port-tbl" id="portTbl">
+      <thead>
+        <tr>
+          <th onclick="setSort('port_name')">항만</th>
+          <th onclick="setSort('country')">국가</th>
+          <th onclick="setSort('level')">레벨</th>
+          <th onclick="setSort('tpfs')">TPFS</th>
+          <th onclick="setSort('vessels_anchored')">묘박</th>
+          <th onclick="setSort('vessels_berthed')">접안</th>
+          <th onclick="setSort('updated_at')">갱신</th>
+        </tr>
+      </thead>
+      <tbody id="portBody">
+        <tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:20px;">데이터 로딩 중...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════
+const CONFIG = {
+  SUPABASE_URL:      "https://tsxerizaaldykqksxxid.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzeGVyaXphYWxkeWtxa3N4eGlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NzA3MzEsImV4cCI6MjA5NTE0NjczMX0.cxHXPlLsa5cT4dpjnQtsEpCLLHolnPX4RIAC3jgT0Rs",
+  REFRESH_INTERVAL_MS: 5 * 60 * 1000,
+};
+
+// ══════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════
+const LEVEL_CFG = {
+  CONGESTED: { color: "#ef4444", label: "혼잡",  bg: "rgba(239,68,68,0.18)"  },
+  BUSY:      { color: "#f97316", label: "주의",  bg: "rgba(249,115,22,0.18)" },
+  STABLE:    { color: "#eab308", label: "보통",  bg: "rgba(234,179,8,0.18)"  },
+  LOW:       { color: "#22c55e", label: "원활",  bg: "rgba(34,197,94,0.18)"  },
+};
+
+const CK_COORDS = {
+  "Suez Canal":        [30.5,   32.3],
+  "Panama Canal":      [ 9.1,  -79.7],
+  "Strait of Malacca": [ 2.5,  101.5],
+  "Bab-el-Mandeb":     [12.5,   43.3],
+  "Strait of Hormuz":  [26.5,   56.5],
+  "Turkish Straits":   [41.0,   29.0],
+  "Danish Straits":    [57.5,   10.5],
+};
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let allPorts        = [];
+let portMarkers     = [];
+let ckMarkers       = [];
+let levelFilter     = "ALL";
+let sortKey         = "tpfs";
+let sortDir         = "desc";
+let firstLoad       = true;
+
+// ══════════════════════════════════════════════════════════
+// SUPABASE
+// ══════════════════════════════════════════════════════════
+const { createClient } = supabase;
+const db = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+// ══════════════════════════════════════════════════════════
+// MAP INIT
+// ══════════════════════════════════════════════════════════
+const map = L.map("map", {
+  center: [20, 10],
+  zoom: 2,
+  minZoom: 2,
+  maxZoom: 6,
+  zoomControl: true,
+});
+
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+  attribution: "© OpenStreetMap © CARTO",
+  subdomains: "abcd",
+  maxZoom: 20,
+}).addTo(map);
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function relTime(iso) {
+  if (!iso) return "—";
+  const s = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (s < 60)    return `${Math.floor(s)}초 전`;
+  if (s < 3600)  return `${Math.floor(s/60)}분 전`;
+  if (s < 86400) return `${Math.floor(s/3600)}시간 전`;
+  return `${Math.floor(s/86400)}일 전`;
+}
+
+function fmt1(n) { return n != null ? Number(n).toFixed(1) : "—"; }
+
+function lvBadge(level) {
+  const c = LEVEL_CFG[level] || LEVEL_CFG.LOW;
+  return `<span class="lv-badge" style="background:${c.bg};color:${c.color};">${c.label}</span>`;
+}
+
+function showLoad(on) {
+  if (on && firstLoad) {
+    document.getElementById("overlay").classList.remove("off");
+  } else {
+    document.getElementById("overlay").classList.add("off");
+  }
+  document.getElementById("loadBar").classList.toggle("on", on);
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER MAP MARKERS
+// ══════════════════════════════════════════════════════════
+function renderMap(ports) {
+  portMarkers.forEach(m => map.removeLayer(m));
+  portMarkers = [];
+  if (!ports || !ports.length) return;
+
+  ports.forEach(p => {
+    if (p.lat == null || p.lon == null) return;
+    const cfg    = LEVEL_CFG[p.level] || LEVEL_CFG.LOW;
+    const radius = 8 + Math.min((p.tpfs || 0) / 10, 8);
+    const m = L.circleMarker([p.lat, p.lon], {
+      radius,
+      fillColor:   cfg.color,
+      color:       "#ffffff",
+      weight:      1,
+      opacity:     0.9,
+      fillOpacity: 0.8,
+    }).bindPopup(`
+      <div class="popup-name">${p.port_name || p.port_code}</div>
+      <div class="popup-row"><span class="k">레벨</span><span class="v">${cfg.label}</span></div>
+      <div class="popup-row"><span class="k">TPFS</span><span class="v">${fmt1(p.tpfs)}</span></div>
+      <div class="popup-row"><span class="k">묘박</span><span class="v">${p.vessels_anchored ?? 0}척</span></div>
+      <div class="popup-row"><span class="k">접안</span><span class="v">${p.vessels_berthed ?? 0}척</span></div>
+      <div class="popup-row"><span class="k">갱신</span><span class="v">${relTime(p.updated_at)}</span></div>
+    `, { maxWidth: 210 }).addTo(map);
+    portMarkers.push(m);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER CHOKEPOINT MAP MARKERS
+// ══════════════════════════════════════════════════════════
+function renderCkMapMarkers(hasRisk) {
+  ckMarkers.forEach(m => map.removeLayer(m));
+  ckMarkers = [];
+  for (const [name, coord] of Object.entries(CK_COORDS)) {
+    const risk   = hasRisk;
+    const color  = risk ? "#ef4444" : "rgba(255,255,255,0.55)";
+    const glow   = risk ? "0 0 10px #ef4444" : "0 0 4px rgba(255,255,255,0.25)";
+    const html   = `<div style="
+      width:12px;height:12px;
+      border:2px solid ${color};
+      transform:rotate(45deg);
+      background:${risk ? "rgba(239,68,68,0.12)" : "rgba(255,255,255,0.04)"};
+      box-shadow:${glow};
+    "></div>`;
+    const icon   = L.divIcon({ html, iconSize:[12,12], iconAnchor:[6,6], className:'' });
+    const m = L.marker(coord, { icon })
+      .bindTooltip(`<span style="font-family:monospace;font-size:10px;">${name}</span>`,
+        { direction: 'top', className: '' })
+      .addTo(map);
+    ckMarkers.push(m);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER PANEL A — CHOKEPOINTS
+// ══════════════════════════════════════════════════════════
+function renderCkPanel(ckData) {
+  const tbody = document.getElementById("ckBody");
+  if (!ckData || !ckData.length) {
+    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-dim);font-size:10px;padding:10px;text-align:center;">데이터 수집 중</td></tr>`;
+    return;
+  }
+
+  // Group by portid
+  const groups = {};
+  ckData.forEach(r => {
+    if (!groups[r.portid]) groups[r.portid] = { name: r.portname, rows: [] };
+    groups[r.portid].rows.push(r);
+  });
+
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  const today     = new Date().toISOString().split("T")[0];
+
+  const html = Object.entries(groups).map(([pid, g]) => {
+    const sorted  = g.rows.sort((a,b) => b.recorded_date.localeCompare(a.recorded_date));
+    const latest  = sorted.find(r => r.recorded_date === yesterday || r.recorded_date === today) || sorted[0];
+    const todayN  = latest?.n_container ?? 0;
+    const last7   = sorted.slice(0, 7);
+    const avg7    = last7.length ? last7.reduce((s,r) => s+(r.n_container||0), 0) / last7.length : 0;
+    const ratio   = avg7 > 0 ? todayN / avg7 : 1;
+
+    let stHtml;
+    if (ratio < 0.4)      stHtml = `<span class="st-badge" style="background:rgba(239,68,68,0.15);color:#fca5a5;">🔴 위험</span>`;
+    else if (ratio < 0.6) stHtml = `<span class="st-badge" style="background:rgba(255,107,43,0.15);color:#fdba74;">⚠️ 주의</span>`;
+    else                  stHtml = `<span class="st-badge" style="background:rgba(34,197,94,0.12);color:#86efac;">✅ 정상</span>`;
+
+    const displayName = (g.name || pid).length > 14
+      ? (g.name || pid).slice(0, 13) + '…'
+      : (g.name || pid);
+
+    return `<tr>
+      <td class="ck-name">${displayName}</td>
+      <td class="ck-num">${todayN.toLocaleString()}</td>
+      <td class="ck-avg">${avg7.toFixed(0)}</td>
+      <td>${stHtml}</td>
+    </tr>`;
+  }).join("");
+
+  tbody.innerHTML = html || `<tr><td colspan="4" style="color:var(--text-dim);font-size:10px;padding:10px;text-align:center;">데이터 수집 중</td></tr>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER PANEL B — ANOMALIES
+// ══════════════════════════════════════════════════════════
+function renderAnomalyPanel(anomalies) {
+  const el = document.getElementById("anomalyContent");
+  if (!anomalies || !anomalies.length) {
+    el.innerHTML = `<div class="no-anomaly">✅ 알림 없음 · 정상 운영 중</div>`;
+    return;
+  }
+  el.innerHTML = anomalies.map(a => `
+    <div class="anomaly-card s${a.severity}">
+      <div class="anomaly-top">
+        <span class="sev-tag">${a.severity}</span>
+        <span class="anom-code">${a.target_code}</span>
+        <span class="anom-time">${relTime(a.detected_at)}</span>
+      </div>
+      <div class="anom-detail">${a.detail || a.target_name || ""}</div>
+      ${a.ratio != null ? `<div class="anom-ratio">ratio ${Number(a.ratio).toFixed(2)}×</div>` : ""}
+    </div>
+  `).join("");
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER PANEL C — LEVEL SUMMARY
+// ══════════════════════════════════════════════════════════
+function renderSummary(ports) {
+  const counts = { CONGESTED: 0, BUSY: 0, STABLE: 0, LOW: 0 };
+  (ports || []).forEach(p => { if (counts[p.level] != null) counts[p.level]++; });
+  Object.entries(counts).forEach(([lv, n]) => {
+    const el = document.getElementById(`cnt-${lv}`);
+    if (el) el.textContent = n;
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER TABLE
+// ══════════════════════════════════════════════════════════
+function renderTable(ports) {
+  if (!ports) return;
+
+  // Country dropdown
+  const countries = [...new Set(ports.map(p => p.country).filter(Boolean))].sort();
+  const sel = document.getElementById("countrySel");
+  const prev = sel.value;
+  sel.innerHTML = `<option value="">전체</option>` +
+    countries.map(c => `<option value="${c}"${c===prev?" selected":""}>${c}</option>`).join("");
+
+  applyFilters();
+}
+
+function applyFilters() {
+  const countryF = document.getElementById("countrySel").value;
+  let filtered = allPorts.filter(p => {
+    if (levelFilter !== "ALL" && p.level !== levelFilter) return false;
+    if (countryF && p.country !== countryF) return false;
+    return true;
+  });
+
+  // Sort
+  filtered.sort((a, b) => {
+    let av = a[sortKey], bv = b[sortKey];
+    if (av == null) av = typeof av === "number" ? 0 : "";
+    if (bv == null) bv = typeof bv === "number" ? 0 : "";
+    if (typeof av === "string") { av = av.toLowerCase(); bv = String(bv).toLowerCase(); }
+    if (av < bv) return sortDir === "asc" ? -1 :  1;
+    if (av > bv) return sortDir === "asc" ?  1 : -1;
+    return 0;
+  });
+
+  const tbody = document.getElementById("portBody");
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:18px;">해당 항만 없음</td></tr>`;
+  } else {
+    tbody.innerHTML = filtered.map(p => `
+      <tr>
+        <td class="td-name">${p.port_name || p.port_code}</td>
+        <td class="td-country">${p.country || "—"}</td>
+        <td>${lvBadge(p.level)}</td>
+        <td class="td-tpfs">${fmt1(p.tpfs)}</td>
+        <td class="td-num">${p.vessels_anchored ?? 0}</td>
+        <td class="td-num">${p.vessels_berthed ?? 0}</td>
+        <td class="td-time">${relTime(p.updated_at)}</td>
+      </tr>
+    `).join("");
+  }
+
+  document.getElementById("rowCount").textContent =
+    `${filtered.length} / ${allPorts.length}개 항만`;
+}
+
+// ══════════════════════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════════════════════
+function setLevelFilter(lv) {
+  levelFilter = lv;
+  document.querySelectorAll(".level-tile").forEach(el =>
+    el.classList.toggle("active", el.dataset.lv === lv));
+  document.querySelectorAll(".f-btn").forEach(btn =>
+    btn.classList.toggle("active", btn.dataset.lv === lv));
+  applyFilters();
+}
+
+const TBL_KEYS = ["port_name","country","level","tpfs","vessels_anchored","vessels_berthed","updated_at"];
+function setSort(key) {
+  if (sortKey === key) {
+    sortDir = sortDir === "asc" ? "desc" : "asc";
+  } else {
+    sortKey = key;
+    sortDir = key === "tpfs" ? "desc" : "asc";
+  }
+  document.querySelectorAll(".port-tbl th").forEach((th, i) => {
+    th.classList.remove("s-asc", "s-desc");
+    if (TBL_KEYS[i] === key) th.classList.add(`s-${sortDir}`);
+  });
+  applyFilters();
+}
+
+// ══════════════════════════════════════════════════════════
+// DATA LOADING
+// ══════════════════════════════════════════════════════════
+async function loadAllData() {
+  showLoad(true);
+  try {
+    // 1. port_snapshots
+    const { data: ports, error: pErr } = await db
+      .from("port_snapshots")
+      .select("*")
+      .order("tpfs", { ascending: false });
+    if (pErr) throw pErr;
+
+    // 2. chokepoint_daily (last 8 days)
+    const since = new Date();
+    since.setDate(since.getDate() - 8);
+    const { data: ckData } = await db
+      .from("chokepoint_daily")
+      .select("portid,portname,recorded_date,n_container,n_total")
+      .gte("recorded_date", since.toISOString().split("T")[0])
+      .order("recorded_date", { ascending: false });
+
+    // 3. anomaly_flags (unacknowledged, latest 5)
+    const { data: anomalies } = await db
+      .from("anomaly_flags")
+      .select("*")
+      .eq("acknowledged", false)
+      .order("detected_at", { ascending: false })
+      .limit(5);
+
+    allPorts = ports || [];
+
+    renderMap(allPorts);
+    renderCkMapMarkers((anomalies || []).length > 0);
+    renderCkPanel(ckData   || []);
+    renderAnomalyPanel(anomalies || []);
+    renderSummary(allPorts);
+    renderTable(allPorts);
+
+    document.getElementById("lastRefresh").textContent =
+      new Date().toLocaleTimeString("ko-KR", { hour:"2-digit", minute:"2-digit", second:"2-digit" });
+
+    firstLoad = false;
+  } catch (err) {
+    console.error("loadAllData error:", err);
+  } finally {
+    showLoad(false);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+loadAllData();
+setInterval(loadAllData, CONFIG.REFRESH_INTERVAL_MS);
+</script>
+</body>
+</html>
