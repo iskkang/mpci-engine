@@ -39,7 +39,6 @@ section{margin-bottom:68px}
 .sum-card .val{font-family:'Bebas Neue',sans-serif;font-size:54px;line-height:1;margin-bottom:3px}
 .sum-card .sub{font-size:13px;color:var(--muted)}
 .sum-card.red .val{color:var(--red)}
-.sum-card.ora .val{color:var(--orange)}
 .today-card{background:linear-gradient(135deg,var(--card),rgba(20,184,166,.07));border:1px solid rgba(20,184,166,.28);border-radius:12px;padding:24px}
 .today-card .tlbl{font-size:11px;color:var(--mint);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-family:'Space Grotesk',sans-serif}
 .today-card .ttxt{font-size:17px;font-weight:500;line-height:1.55}
@@ -49,19 +48,22 @@ section{margin-bottom:68px}
 .rc:hover{transform:translateY(-2px)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .rc:nth-child(1){animation-delay:.05s}.rc:nth-child(2){animation-delay:.10s}.rc:nth-child(3){animation-delay:.15s}.rc:nth-child(4){animation-delay:.20s}.rc:nth-child(5){animation-delay:.25s}.rc:nth-child(6){animation-delay:.30s}.rc:nth-child(7){animation-delay:.35s}.rc:nth-child(8){animation-delay:.40s}.rc:nth-child(9){animation-delay:.45s}
-.rc.C{border-left-color:var(--red)}.rc.B{border-left-color:var(--orange)}.rc.S{border-left-color:var(--yellow)}.rc.L{border-left-color:var(--green)}
+.rc.C{border-left-color:var(--red)}.rc.B{border-left-color:var(--orange)}.rc.S{border-left-color:var(--yellow)}.rc.L{border-left-color:var(--green)}.rc.N{border-left-color:var(--border)}
 .rc-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .rc-name{font-size:16px;font-weight:700}
 .rc-badge{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600}
-.bC{background:rgba(239,68,68,.15);color:var(--red)}.bB{background:rgba(249,115,22,.15);color:var(--orange)}.bS{background:rgba(234,179,8,.15);color:var(--yellow)}.bL{background:rgba(34,197,94,.15);color:var(--green)}
+.bC{background:rgba(239,68,68,.15);color:var(--red)}.bB{background:rgba(249,115,22,.15);color:var(--orange)}.bS{background:rgba(234,179,8,.15);color:var(--yellow)}.bL{background:rgba(34,197,94,.15);color:var(--green)}.bN{background:rgba(148,163,184,.1);color:var(--muted)}
 .rc-score{font-family:'Bebas Neue',sans-serif;font-size:56px;line-height:1;margin-bottom:1px}
-.sC{color:var(--red)}.sB{color:var(--orange)}.sS{color:var(--yellow)}.sL{color:var(--green)}
+.sC{color:var(--red)}.sB{color:var(--orange)}.sS{color:var(--yellow)}.sL{color:var(--green)}.sN{color:var(--muted)}
 .rc-score-lbl{font-size:12px;color:var(--muted);margin-bottom:14px}
 .prog-wrap{background:rgba(255,255,255,.06);border-radius:4px;height:6px;margin-bottom:14px;overflow:hidden}
 .prog-fill{height:100%;border-radius:4px;transition:width 1s ease}
 .fC{background:var(--red)}.fB{background:var(--orange)}.fS{background:var(--yellow)}.fL{background:var(--green)}
 .rc-counts{display:flex;gap:14px;margin-bottom:10px;font-size:13px;color:var(--muted)}
 .rc-wait{font-size:14px}.rc-wait strong{color:var(--mint)}
+.rc-nodata-msg{font-size:14px;color:var(--muted);padding:18px 0 4px;text-align:center}
+.rc-nodata-count{font-size:12px;color:var(--border);text-align:center;margin-top:2px}
+.stale-tag{display:inline-block;font-size:11px;color:var(--orange);background:rgba(249,115,22,.12);border-radius:4px;padding:1px 6px;margin-left:5px;vertical-align:middle}
 .t5-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .t5{width:100%;border-collapse:collapse}
 .t5 th{text-align:left;padding:12px 16px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);background:var(--surface);font-family:'Space Grotesk',sans-serif}
@@ -71,14 +73,8 @@ section{margin-bottom:68px}
 .t5 tbody tr:last-child td{border-bottom:none}
 .pname{font-weight:600}.pcode{font-size:12px;color:var(--muted)}
 .score-big{font-family:'Bebas Neue',sans-serif;font-size:30px}
-.wb{display:inline-block;padding:4px 10px;border-radius:6px;font-size:13px;font-weight:600;background:rgba(239,68,68,.1);color:var(--red)}
-.wb.o{background:rgba(249,115,22,.1);color:var(--orange)}.wb.y{background:rgba(234,179,8,.1);color:var(--yellow)}.wb.g{background:rgba(34,197,94,.1);color:var(--green)}
-.ew-list{display:flex;flex-direction:column;gap:12px}
-.ew-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--orange);border-radius:10px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
-.ew-name{font-size:17px;font-weight:700}.ew-status{font-size:13px;color:var(--muted);margin-top:2px}
-.ew-rate{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--orange);text-align:right}
-.ew-rate-lbl{font-size:12px;color:var(--muted);text-align:right}
-.ew-empty{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:28px;text-align:center;color:var(--muted);font-size:15px}
+.coming-soon{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:40px;text-align:center;color:var(--muted);font-size:15px;line-height:1.9}
+.coming-soon strong{color:var(--text);display:block;font-size:18px;margin-bottom:10px}
 .cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .cp-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
 .cp-name{font-size:18px;font-weight:700;margin-bottom:4px}
@@ -117,20 +113,11 @@ section{margin-bottom:68px}
 .eta-info strong{color:var(--mint)}
 .nm-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:11px 14px;font-size:15px;font-family:'Noto Sans KR',sans-serif;outline:none;margin-top:8px;display:none;transition:border-color .2s}
 .nm-input:focus{border-color:var(--mint)}
-.car-list{display:flex;flex-direction:column;gap:4px}
-.car-row{display:grid;grid-template-columns:180px 1fr 70px 110px;align-items:center;gap:14px;cursor:pointer;padding:13px 18px;border-radius:10px;border:1px solid transparent;transition:all .2s}
-.car-row:hover{background:rgba(20,184,166,.05);border-color:rgba(20,184,166,.2)}
-.car-name{font-weight:600;font-size:15px}
-.car-bar-wrap{height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden}
-.car-bar{height:100%;border-radius:5px;background:var(--mint);transition:width 1.2s ease;width:0}
-.car-pct{font-family:'Bebas Neue',sans-serif;font-size:26px;text-align:right}
-.car-stars{font-size:14px;text-align:right}.sf{color:var(--yellow)}.se{color:var(--border)}
-.car-grade{font-size:11px;color:var(--mint);text-align:right;margin-top:1px}
 .loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted);gap:12px;font-size:14px}
 .spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .no-data{text-align:center;color:var(--muted);padding:32px;font-size:14px}
-@media(max-width:960px){.sum-grid{grid-template-columns:1fr 1fr}.region-grid{grid-template-columns:1fr 1fr}.cp-grid{grid-template-columns:1fr}.eta-wrap{grid-template-columns:1fr}.car-row{grid-template-columns:140px 1fr 60px}.car-stars{display:none}}
+@media(max-width:960px){.sum-grid{grid-template-columns:1fr 1fr}.region-grid{grid-template-columns:1fr 1fr}.cp-grid{grid-template-columns:1fr}.eta-wrap{grid-template-columns:1fr}}
 @media(max-width:600px){main{padding:24px 16px 60px}.hdr-top{padding:11px 16px}.sum-grid,.region-grid{grid-template-columns:1fr}.brand-sub{display:none}}
 </style>
 </head>
@@ -158,7 +145,6 @@ section{margin-bottom:68px}
     <a href="#sec4" data-i18n="nav4">조기 경보</a>
     <a href="#sec5" data-i18n="nav5">해협 현황</a>
     <a href="#sec6" data-i18n="nav6">도착일 예측</a>
-    <a href="#sec7" data-i18n="nav7">선사 정시율</a>
   </nav>
 </header>
 
@@ -166,7 +152,7 @@ section{margin-bottom:68px}
 <section id="sec1">
   <div class="sec-label" data-i18n="s1lbl">실시간 현황</div>
   <div class="sec-title" data-i18n="s1ttl">🌏 글로벌 항만 혼잡도 현황</div>
-  <div class="sec-desc" data-i18n="s1dsc">주요 항만의 실시간 혼잡도를 모니터링합니다</div>
+  <div class="sec-desc" data-i18n="s1dsc">EconDB 실데이터 기반 · 데이터가 없는 항만은 "수집 중"으로 표시됩니다</div>
   <div class="sum-grid" id="sum-grid"><div class="loading" style="grid-column:1/-1"><div class="spin"></div>데이터 로딩 중...</div></div>
   <div class="last-upd" id="last-upd"></div>
 </section>
@@ -184,18 +170,23 @@ section{margin-bottom:68px}
   <div class="sec-desc" data-i18n="s3dsc">혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다</div>
   <div class="t5-wrap"><table class="t5">
     <thead><tr>
-      <th data-i18n="th1">항만</th><th data-i18n="th2">국가</th>
-      <th data-i18n="th3">혼잡도 지수</th><th data-i18n="th4">예상 추가 대기</th><th data-i18n="th5">상태</th>
+      <th data-i18n="th1">항만</th>
+      <th data-i18n="th2">국가</th>
+      <th data-i18n="th3">혼잡도 지수</th>
+      <th data-i18n="th_turn">재항 일수</th>
+      <th data-i18n="th_delay">지연율</th>
+      <th data-i18n="th_anc">대기 선박</th>
+      <th data-i18n="th5">상태</th>
     </tr></thead>
-    <tbody id="t5-body"><tr><td colspan="5"><div class="loading"><div class="spin"></div></div></td></tr></tbody>
+    <tbody id="t5-body"><tr><td colspan="7"><div class="loading"><div class="spin"></div></div></td></tr></tbody>
   </table></div>
 </section>
 
 <section id="sec4">
   <div class="sec-label" data-i18n="s4lbl">선제 모니터링</div>
   <div class="sec-title" data-i18n="s4ttl">📡 조기 혼잡 경보</div>
-  <div class="sec-desc" data-i18n="s4dsc">현재는 원활하지만 대기 선박이 빠르게 증가 중인 항만입니다. 해당 항만으로 화물을 보내기 전 상황을 확인하세요</div>
-  <div id="ew-box"><div class="loading"><div class="spin"></div></div></div>
+  <div class="sec-desc" data-i18n="s4dsc">EconDB 지연율 추세가 급증 중인 항만을 조기에 감지합니다</div>
+  <div id="ew-box"></div>
 </section>
 
 <section id="sec5">
@@ -236,15 +227,6 @@ section{margin-bottom:68px}
     </div>
   </div>
 </section>
-
-<section id="sec7">
-  <div class="sec-label" data-i18n="s7lbl">선사 성과</div>
-  <div class="sec-title" data-i18n="s7ttl">🚢 선사별 정시 도착률</div>
-  <div class="sec-desc" data-i18n="s7dsc">최근 데이터 기준 · 숫자가 높을수록 제 시간에 도착할 확률이 높습니다. 선사를 클릭하면 ETA 계산기에 자동 입력됩니다</div>
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:26px">
-    <div class="car-list" id="car-list"><div class="loading"><div class="spin"></div></div></div>
-  </div>
-</section>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -252,76 +234,178 @@ section{margin-bottom:68px}
 const CFG={SB_URL:"https://tsxerizaaldykqksxxid.supabase.co",SB_ANON:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzeGVyaXphYWxkeWtxa3N4eGlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NzA3MzEsImV4cCI6MjA5NTE0NjczMX0.cxHXPlLsa5cT4dpjnQtsEpCLLHolnPX4RIAC3jgT0Rs",API_URL:"https://mpci-engine-production.up.railway.app",REFRESH:5*60*1000};
 let LANG='ko';
 const T={
-ko:{brand:"MTL 항만 혼잡도 모니터",brand_sub:"글로벌 항만 실시간 혼잡도 · ETA 보정 서비스",nav1:"항만 현황",nav2:"권역별 혼잡도",nav3:"주의 항만 TOP 5",nav4:"조기 경보",nav5:"해협 현황",nav6:"도착일 예측",nav7:"선사 정시율",s1lbl:"실시간 현황",s1ttl:"🌏 글로벌 항만 혼잡도 현황",s1dsc:"주요 항만의 실시간 혼잡도를 모니터링합니다",s2lbl:"권역별 분석",s2ttl:"🗺️ 권역별 혼잡도 지수",s2dsc:"전 세계 주요 항만을 9개 권역으로 나누어 보여드립니다",s3lbl:"주요 혼잡 항만",s3ttl:"⚠️ 지금 주의해야 할 항만 TOP 5",s3dsc:"혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다",s4lbl:"선제 모니터링",s4ttl:"📡 조기 혼잡 경보",s4dsc:"현재는 원활하지만 대기 선박이 빠르게 증가 중인 항만입니다. 해당 항만으로 화물을 보내기 전 상황을 확인하세요",s5lbl:"주요 해협",s5ttl:"🗺️ 주요 해협 통과 현황",s5dsc:"글로벌 해운 화물의 대부분이 이 해협을 통과합니다. 통과 선박이 급감하면 항로 우회로 ETA가 크게 늘어납니다",s6lbl:"도착일 예측",s6ttl:"📦 화물 도착일 예측",s6dsc:"도착 항만, 선사, 출발일만 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다",s7lbl:"선사 성과",s7ttl:"🚢 선사별 정시 도착률",s7dsc:"최근 데이터 기준 · 숫자가 높을수록 제 시간에 도착할 확률이 높습니다. 선사를 클릭하면 ETA 계산기에 자동 입력됩니다",th1:"항만",th2:"국가",th3:"혼잡도 지수",th4:"예상 추가 대기",th5:"상태",ef_ttl:"도착 정보 입력",ef_dsc:"아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다",ef_l0:"🛳️ 출발 항만",ef_l1:"📍 도착 항만",ef_l2:"🚢 이용 선사",ef_l3:"📅 출발 예정일",ef_l4:"🗺️ 출발지 → 도착지 거리",ef_btn:"도착일 예측하기",ef_ph:"왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요",lv_C:"🔴 혼잡",lv_B:"🟠 주의",lv_S:"🟡 보통",lv_L:"🟢 원활",w3:"약 3일",w15:"약 1.5일",w1:"약 1일",wh:"약 반나절",cp_ok:"🟢 정상 운항 중",cp_caut:"🟠 주의 필요",cp_alert:"🔴 통과 급감 경보",cp_suez:"유럽↔아시아 최단 항로 (홍해 경유).\n통과량이 평균 40% 이하면 우회 경보 발령",cp_pan:"태평양↔대서양 최단 항로.\n가뭄 시 통항 제한 발생 가능",cp_mal:"동남아↔인도양 핵심 통로.\n전 세계 무역량의 약 40% 통과",ew_none:"현재 조기 경보 대상 항만이 없습니다 ✅",ew_inc:"48시간 대비 대기 선박 증가율",today_s:"오늘 컨테이너선",avg7:"7일 평균",car_top:"최우수",car_approx:"※ API 서버 배포 전 추정값입니다",sum_mon:"모니터링 항만",sum_con:"🔴 혼잡 항만",sum_busy:"🟠 주의 항만",sum_today:"오늘의 한 줄 요약",idx_lbl:"혼잡도 지수 (0~100)",avg_wait:"평균 항만 대기",arr_early:"🟢 빠른 경우",arr_likely:"🎯 가장 가능성 높음",arr_late:"🔴 늦은 경우",arr_early_d:"순조로운 항해, 항만 혼잡 완화 시",arr_likely_d:"현재 항만 혼잡도 반영",arr_late_d:"혼잡 악화, 기상 불량 시",dnd_ttl:"ℹ️ 지체료 (D&D) 안내",dnd_body:"컨테이너 반납 기한이 <strong>%D%</strong> 이전이면 지체료가 발생할 수 있습니다. 선사에 Free Time 연장 요청을 권장합니다.",arr_dest:"도착 예상일",arr_approx:"도착 예상일 (추정)",nodata:"데이터 없음"},
-en:{brand:"MTL Port Congestion Monitor",brand_sub:"Global Port Real-time Congestion & ETA Service",nav1:"Port Status",nav2:"By Region",nav3:"Watch Ports TOP 5",nav4:"Early Warning",nav5:"Straits",nav6:"ETA Forecast",nav7:"Carrier OTR",s1lbl:"Live Status",s1ttl:"🌏 Global Port Congestion Status",s1dsc:"Real-time monitoring of major ports worldwide",s2lbl:"Regional Analysis",s2ttl:"🗺️ Regional Congestion Index",s2dsc:"9 global shipping regions at a glance",s3lbl:"High Alert Ports",s3ttl:"⚠️ Top 5 Ports to Watch Now",s3dsc:"High congestion may delay cargo. Click a port to calculate ETA instantly.",s4lbl:"Early Warning",s4ttl:"📡 Congestion Early Warning",s4dsc:"Currently clear but vessel queue is rising rapidly. Check status before shipping cargo here.",s5lbl:"Key Straits",s5ttl:"🗺️ Strategic Straits Status",s5dsc:"Most global cargo passes through these straits. A sharp drop in transits signals rerouting risk.",s6lbl:"ETA Forecast",s6ttl:"📦 Cargo Arrival Date Forecast",s6dsc:"Enter destination port, carrier, and departure date for an arrival estimate reflecting current congestion.",s7lbl:"Carrier Performance",s7ttl:"🚢 Carrier On-Time Rate",s7dsc:"Based on recent data · Higher = more likely to arrive on schedule. Click to auto-fill ETA calculator.",th1:"Port",th2:"Country",th3:"Congestion Index",th4:"Est. Extra Wait",th5:"Status",ef_ttl:"Enter Arrival Info",ef_dsc:"Fill in what you know — the rest is calculated automatically.",ef_l0:"🛳️ Origin Port",ef_l1:"📍 Destination Port",ef_l2:"🚢 Carrier",ef_l3:"📅 Departure Date (ETD)",ef_l4:"🗺️ Origin → Destination Distance",ef_btn:"Forecast Arrival Date",ef_ph:"Enter info on the left<br>and click Forecast",lv_C:"🔴 Congested",lv_B:"🟠 Busy",lv_S:"🟡 Stable",lv_L:"🟢 Clear",w3:"~3 days",w15:"~1.5 days",w1:"~1 day",wh:"~half day",cp_ok:"🟢 Normal",cp_caut:"🟠 Caution",cp_alert:"🔴 Transit Drop Alert",cp_suez:"Shortest Europe↔Asia route (via Red Sea).\nBelow 40% of avg = rerouting alert.",cp_pan:"Shortest Pacific↔Atlantic route.\nDrought can restrict transits.",cp_mal:"SE Asia↔Indian Ocean gateway.\n~40% of global trade passes through.",ew_none:"No early warning ports at this time ✅",ew_inc:"Waiting vessels vs 48h ago",today_s:"Today containers",avg7:"7-day avg",car_top:"Best",car_approx:"※ Approximate — API server not yet deployed",sum_mon:"Monitored Ports",sum_con:"🔴 Congested",sum_busy:"🟠 Busy",sum_today:"Today's Summary",idx_lbl:"Congestion Index (0–100)",avg_wait:"Avg. port wait",arr_early:"🟢 Best case",arr_likely:"🎯 Most likely",arr_late:"🔴 Worst case",arr_early_d:"Smooth voyage, congestion improves",arr_likely_d:"Reflects current port congestion",arr_late_d:"Congestion worsens, bad weather",dnd_ttl:"ℹ️ Detention & Demurrage Note",dnd_body:"If container return deadline is before <strong>%D%</strong>, D&D charges may apply. Consider requesting a Free Time extension.",arr_dest:"Estimated Arrival",arr_approx:"Estimated Arrival (Approximate)",nodata:"No data"}
+ko:{brand:"MTL 항만 혼잡도 모니터",brand_sub:"글로벌 항만 실시간 혼잡도 · ETA 보정 서비스",
+nav1:"항만 현황",nav2:"권역별 혼잡도",nav3:"주의 항만 TOP 5",nav4:"조기 경보",nav5:"해협 현황",nav6:"도착일 예측",
+s1lbl:"실시간 현황",s1ttl:"🌏 글로벌 항만 혼잡도 현황",s1dsc:"EconDB 실데이터 기반 · 데이터가 없는 항만은 \"수집 중\"으로 표시됩니다",
+s2lbl:"권역별 분석",s2ttl:"🗺️ 권역별 혼잡도 지수",s2dsc:"전 세계 주요 항만을 9개 권역으로 나누어 보여드립니다",
+s3lbl:"주요 혼잡 항만",s3ttl:"⚠️ 지금 주의해야 할 항만 TOP 5",s3dsc:"혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다",
+s4lbl:"선제 모니터링",s4ttl:"📡 조기 혼잡 경보",s4dsc:"EconDB 지연율 추세가 급증 중인 항만을 조기에 감지합니다",
+s5lbl:"주요 해협",s5ttl:"🗺️ 주요 해협 통과 현황",s5dsc:"글로벌 해운 화물의 대부분이 이 해협을 통과합니다. 통과 선박이 급감하면 항로 우회로 ETA가 크게 늘어납니다",
+s6lbl:"도착일 예측",s6ttl:"📦 화물 도착일 예측",s6dsc:"도착 항만, 선사, 출발일만 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다",
+th1:"항만",th2:"국가",th3:"혼잡도 지수",th_turn:"재항 일수",th_delay:"지연율",th_anc:"대기 선박",th5:"상태",
+ef_ttl:"도착 정보 입력",ef_dsc:"아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다",
+ef_l0:"🛳️ 출발 항만",ef_l1:"📍 도착 항만",ef_l2:"🚢 이용 선사",ef_l3:"📅 출발 예정일",
+ef_btn:"도착일 예측하기",ef_ph:"왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요",
+lv_C:"🔴 혼잡",lv_B:"🟠 주의",lv_S:"🟡 보통",lv_L:"🟢 원활",lv_N:"— 수집 중",
+w3:"약 3일",w15:"약 1.5일",w1:"약 1일",wh:"약 반나절",
+cp_ok:"🟢 정상 운항 중",cp_caut:"🟠 주의 필요",cp_alert:"🔴 통과 급감 경보",
+cp_suez:"유럽↔아시아 최단 항로 (홍해 경유).\n통과량이 평균 40% 이하면 우회 경보 발령",
+cp_pan:"태평양↔대서양 최단 항로.\n가뭄 시 통항 제한 발생 가능",
+cp_mal:"동남아↔인도양 핵심 통로.\n전 세계 무역량의 약 40% 통과",
+today_s:"오늘 컨테이너선",avg7:"7일 평균",
+sum_mon:"전체 항만",sum_data:"데이터 확보",sum_con:"🔴 혼잡 항만",sum_today:"오늘의 한 줄 요약",
+idx_lbl:"혼잡도 지수 (0~100)",avg_wait:"평균 재항 일수",
+arr_early:"🟢 빠른 경우",arr_likely:"🎯 가장 가능성 높음",arr_late:"🔴 늦은 경우",
+arr_early_d:"순조로운 항해, 항만 혼잡 완화 시",arr_likely_d:"현재 항만 혼잡도 반영",arr_late_d:"혼잡 악화, 기상 불량 시",
+dnd_ttl:"ℹ️ 지체료 (D&D) 안내",
+dnd_body:"컨테이너 반납 기한이 <strong>%D%</strong> 이전이면 지체료가 발생할 수 있습니다. 선사에 Free Time 연장 요청을 권장합니다.",
+arr_dest:"도착 예상일",arr_approx:"도착 예상일 (추정)",
+s4_coming:"EconDB 이력 데이터 축적 후 제공됩니다. 데이터 수집 시작일로부터 약 7일 후 활성화됩니다.",
+eta_nodata:"해당 항만 EconDB 데이터 없음 — 기본값으로 계산됨",
+stale_warn:"⚠️ 데이터 오래됨",nodata:"데이터 없음"},
+en:{brand:"MTL Port Congestion Monitor",brand_sub:"Global Port Real-time Congestion & ETA Service",
+nav1:"Port Status",nav2:"By Region",nav3:"Watch Ports TOP 5",nav4:"Early Warning",nav5:"Straits",nav6:"ETA Forecast",
+s1lbl:"Live Status",s1ttl:"🌏 Global Port Congestion Status",s1dsc:"EconDB-based · Ports without data shown as 'Collecting'",
+s2lbl:"Regional Analysis",s2ttl:"🗺️ Regional Congestion Index",s2dsc:"9 global shipping regions at a glance",
+s3lbl:"High Alert Ports",s3ttl:"⚠️ Top 5 Ports to Watch Now",s3dsc:"High congestion may delay cargo. Click a port to calculate ETA instantly.",
+s4lbl:"Early Warning",s4ttl:"📡 Congestion Early Warning",s4dsc:"Detects ports with rapidly rising EconDB delay rates.",
+s5lbl:"Key Straits",s5ttl:"🗺️ Strategic Straits Status",s5dsc:"Most global cargo passes through these straits. A sharp drop in transits signals rerouting risk.",
+s6lbl:"ETA Forecast",s6ttl:"📦 Cargo Arrival Date Forecast",s6dsc:"Enter destination port, carrier, and departure date for an arrival estimate reflecting current congestion.",
+th1:"Port",th2:"Country",th3:"Congestion Index",th_turn:"Turnaround",th_delay:"Delay Rate",th_anc:"Waiting",th5:"Status",
+ef_ttl:"Enter Arrival Info",ef_dsc:"Fill in what you know — the rest is calculated automatically.",
+ef_l0:"🛳️ Origin Port",ef_l1:"📍 Destination Port",ef_l2:"🚢 Carrier",ef_l3:"📅 Departure Date (ETD)",
+ef_btn:"Forecast Arrival Date",ef_ph:"Enter info on the left<br>and click Forecast",
+lv_C:"🔴 Congested",lv_B:"🟠 Busy",lv_S:"🟡 Stable",lv_L:"🟢 Clear",lv_N:"— Collecting",
+w3:"~3 days",w15:"~1.5 days",w1:"~1 day",wh:"~half day",
+cp_ok:"🟢 Normal",cp_caut:"🟠 Caution",cp_alert:"🔴 Transit Drop Alert",
+cp_suez:"Shortest Europe↔Asia route (via Red Sea).\nBelow 40% of avg = rerouting alert.",
+cp_pan:"Shortest Pacific↔Atlantic route.\nDrought can restrict transits.",
+cp_mal:"SE Asia↔Indian Ocean gateway.\n~40% of global trade passes through.",
+today_s:"Today containers",avg7:"7-day avg",
+sum_mon:"Total Ports",sum_data:"With Data",sum_con:"🔴 Congested",sum_today:"Today's Summary",
+idx_lbl:"Congestion Index (0–100)",avg_wait:"Avg. turnaround",
+arr_early:"🟢 Best case",arr_likely:"🎯 Most likely",arr_late:"🔴 Worst case",
+arr_early_d:"Smooth voyage, congestion improves",arr_likely_d:"Reflects current port congestion",arr_late_d:"Congestion worsens, bad weather",
+dnd_ttl:"ℹ️ Detention & Demurrage Note",
+dnd_body:"If container return deadline is before <strong>%D%</strong>, D&D charges may apply. Consider requesting a Free Time extension.",
+arr_dest:"Estimated Arrival",arr_approx:"Estimated Arrival (Approximate)",
+s4_coming:"Will be available after 7 days of EconDB history data collection.",
+eta_nodata:"No EconDB data for this port — using defaults",
+stale_warn:"⚠️ Outdated",nodata:"No data"}
 };
 const t=k=>(T[LANG]||T.ko)[k]||k;
-function setLang(l){LANG=l;document.getElementById('btn-ko').className=l==='ko'?'active':'';document.getElementById('btn-en').className=l==='en'?'active':'';document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(T[l][k]!==undefined)el.innerHTML=T[l][k]});if(window._snaps)renderAll(window._snaps,window._cps,window._cars)}
+function setLang(l){LANG=l;document.getElementById('btn-ko').className=l==='ko'?'active':'';document.getElementById('btn-en').className=l==='en'?'active':'';document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(T[l][k]!==undefined)el.innerHTML=T[l][k]});if(window._snaps)renderAll(window._snaps,window._cps)}
 
 const PM={KRPUS:{n:"Busan",nk:"부산",c:"대한민국",ce:"South Korea",r:"kr-jp"},KRKAN:{n:"Gwangyang",nk:"광양",c:"대한민국",ce:"South Korea",r:"kr-jp"},JPYOK:{n:"Yokohama",nk:"요코하마",c:"일본",ce:"Japan",r:"kr-jp"},JPOSA:{n:"Osaka",nk:"오사카",c:"일본",ce:"Japan",r:"kr-jp"},JPTYO:{n:"Tokyo",nk:"도쿄",c:"일본",ce:"Japan",r:"kr-jp"},CNSHA:{n:"Shanghai",nk:"상하이",c:"중국",ce:"China",r:"china"},CNNBO:{n:"Ningbo",nk:"닝보",c:"중국",ce:"China",r:"china"},CNSZX:{n:"Shenzhen",nk:"선전",c:"중국",ce:"China",r:"china"},CNQIN:{n:"Qingdao",nk:"칭다오",c:"중국",ce:"China",r:"china"},CNGZU:{n:"Guangzhou",nk:"광저우",c:"중국",ce:"China",r:"china"},HKHKG:{n:"Hong Kong",nk:"홍콩",c:"홍콩",ce:"Hong Kong",r:"china"},TWKHH:{n:"Kaohsiung",nk:"가오슝",c:"대만",ce:"Taiwan",r:"china"},SGSIN:{n:"Singapore",nk:"싱가포르",c:"싱가포르",ce:"Singapore",r:"sea"},MYPKG:{n:"Port Klang",nk:"포트클랑",c:"말레이시아",ce:"Malaysia",r:"sea"},MYTPP:{n:"Tg. Pelepas",nk:"탄중펠레파스",c:"말레이시아",ce:"Malaysia",r:"sea"},IDTPP:{n:"Tanjung Priok",nk:"탄중프리옥",c:"인도네시아",ce:"Indonesia",r:"sea"},VHSGN:{n:"Ho Chi Minh",nk:"호치민",c:"베트남",ce:"Vietnam",r:"sea"},THBKK:{n:"Bangkok",nk:"방콕",c:"태국",ce:"Thailand",r:"sea"},PHMNL:{n:"Manila",nk:"마닐라",c:"필리핀",ce:"Philippines",r:"sea"},INNSA:{n:"Nhava Sheva",nk:"나바셰바",c:"인도",ce:"India",r:"sa-me"},INCCU:{n:"Kolkata",nk:"콜카타",c:"인도",ce:"India",r:"sa-me"},PKKAR:{n:"Karachi",nk:"카라치",c:"파키스탄",ce:"Pakistan",r:"sa-me"},AEJEA:{n:"Jebel Ali",nk:"제벨알리",c:"UAE",ce:"UAE",r:"sa-me"},OMMSQ:{n:"Muscat",nk:"무스카트",c:"오만",ce:"Oman",r:"sa-me"},NLRTM:{n:"Rotterdam",nk:"로테르담",c:"네덜란드",ce:"Netherlands",r:"europe"},BEANR:{n:"Antwerp",nk:"앤트워프",c:"벨기에",ce:"Belgium",r:"europe"},DEHAM:{n:"Hamburg",nk:"함부르크",c:"독일",ce:"Germany",r:"europe"},GBFXT:{n:"Felixstowe",nk:"펠릭스토",c:"영국",ce:"UK",r:"europe"},ESBCN:{n:"Barcelona",nk:"바르셀로나",c:"스페인",ce:"Spain",r:"europe"},ITGOA:{n:"Genoa",nk:"제노바",c:"이탈리아",ce:"Italy",r:"europe"},USLAX:{n:"Los Angeles",nk:"로스앤젤레스",c:"미국",ce:"USA",r:"namerica"},USLGB:{n:"Long Beach",nk:"롱비치",c:"미국",ce:"USA",r:"namerica"},USNYC:{n:"New York",nk:"뉴욕",c:"미국",ce:"USA",r:"namerica"},USSAV:{n:"Savannah",nk:"사바나",c:"미국",ce:"USA",r:"namerica"},CAHAL:{n:"Halifax",nk:"핼리팩스",c:"캐나다",ce:"Canada",r:"namerica"},MXZLO:{n:"Manzanillo",nk:"만사니요",c:"멕시코",ce:"Mexico",r:"latam"},BRSAO:{n:"Santos",nk:"산토스",c:"브라질",ce:"Brazil",r:"latam"},ARBUE:{n:"Buenos Aires",nk:"부에노스아이레스",c:"아르헨티나",ce:"Argentina",r:"latam"},CLSAI:{n:"San Antonio",nk:"산안토니오",c:"칠레",ce:"Chile",r:"latam"},ZADUR:{n:"Durban",nk:"더반",c:"남아공",ce:"S. Africa",r:"africa"},EGPSD:{n:"Port Said",nk:"포트사이드",c:"이집트",ce:"Egypt",r:"africa"},NGAPP:{n:"Apapa",nk:"아파파",c:"나이지리아",ce:"Nigeria",r:"africa"},RUMME:{n:"Novorossiysk",nk:"노보로시스크",c:"러시아",ce:"Russia",r:"ru-cis"},RUVVO:{n:"Vladivostok",nk:"블라디보스토크",c:"러시아",ce:"Russia",r:"ru-cis"}};
 const REGS={"kr-jp":{ko:"동북아시아",en:"NE Asia"},"china":{ko:"중국·홍콩·대만",en:"Greater China"},"sea":{ko:"동남아시아",en:"SE Asia"},"sa-me":{ko:"남아시아·중동",en:"S.Asia & ME"},"europe":{ko:"유럽",en:"Europe"},"namerica":{ko:"북미",en:"N. America"},"latam":{ko:"중남미",en:"Latin America"},"africa":{ko:"아프리카",en:"Africa"},"ru-cis":{ko:"러시아·CIS",en:"Russia/CIS"}};
 const DISTANCE_TABLE={"CNSHA-NLRTM":11500,"CNSHA-BEANR":11800,"CNSHA-DEHAM":11800,"CNSHA-USLAX":6200,"CNSHA-USNYC":11500,"CNSHA-GBFXT":12000,"CNSHA-FRLEH":11700,"CNSHA-KRPUS":520,"CNSHA-SGSIN":2300,"KRPUS-NLRTM":11000,"KRPUS-BEANR":11300,"KRPUS-DEHAM":11300,"KRPUS-USLAX":5600,"KRPUS-USNYC":11000,"KRPUS-SGSIN":2600,"SGSIN-NLRTM":8400,"SGSIN-BEANR":8700,"SGSIN-DEHAM":8700,"SGSIN-USLAX":8800,"SGSIN-USNYC":10500,"SGSIN-FRLEH":8500,"HKHKG-NLRTM":10500,"HKHKG-USLAX":5900,"HKHKG-USNYC":10800,"CNNGB-NLRTM":11400,"CNNGB-USLAX":6100,"JPTYO-USLAX":4800,"JPTYO-NLRTM":11500};
 const ORIGIN_PORTS=[{code:'CNSHA',ko:'상하이',en:'Shanghai'},{code:'KRPUS',ko:'부산',en:'Busan'},{code:'CNNGB',ko:'닝보',en:'Ningbo'},{code:'SGSIN',ko:'싱가포르',en:'Singapore'},{code:'HKHKG',ko:'홍콩',en:'Hong Kong'},{code:'JPTYO',ko:'도쿄',en:'Tokyo'},{code:'JPKOB',ko:'고베',en:'Kobe'},{code:'CNGZU',ko:'광저우',en:'Guangzhou'},{code:'CNYTN',ko:'옌티안',en:'Yantian'},{code:'custom',ko:'기타 (직접 입력)',en:'Other (manual)'}];
-const CAR_FB=[{carrier:"Hapag-Lloyd",avg:.807},{carrier:"Maersk",avg:.773},{carrier:"ZIM",avg:.715},{carrier:"MSC",avg:.652},{carrier:"CMA CGM",avg:.615},{carrier:"Evergreen",avg:.548},{carrier:"HMM",avg:.548},{carrier:"ONE",avg:.487}];
 
 const sb=supabase.createClient(CFG.SB_URL,CFG.SB_ANON);
-function lvl(v){return v>=75?'C':v>=50?'B':v>=25?'S':'L'}
-function lvlFull(v){return v>=75?'CONGESTED':v>=50?'BUSY':v>=25?'STABLE':'LOW'}
-function lvlLabel(v){return{C:t('lv_C'),B:t('lv_B'),S:t('lv_S'),L:t('lv_L')}[lvl(v)]||'--'}
-function waitDays(v){return v>=75?3:v>=50?1.5:v>=25?.75:.25}
-function waitLbl(v){const d=waitDays(v);return d>=3?t('w3'):d>=1.5?t('w15'):d>=.75?t('w1'):t('wh')}
-function waitCls(v){return v>=75?'wb':v>=50?'wb o':v>=25?'wb y':'wb g'}
+
+// ── MPCI 계산 (EconDB 기반) ─────────────────────────────────────
+function calcMPCI(port){
+  const cong=port.econdb_congestion,dp=port.econdb_delay_pct,turn=port.econdb_turnaround;
+  if(cong==null||dp==null||turn==null)return null;
+  const cs=(cong/18)*100,ds=Math.min(dp,100),ts=Math.min((turn-0.5)/4.5*100,100);
+  return Math.round(Math.min(cs*.35+ds*.35+ts*.30,100)*10)/10;
+}
+function getMPCILevel(mpci){
+  if(mpci===null)return null;
+  return mpci>=75?'CONGESTED':mpci>=50?'BUSY':mpci>=25?'STABLE':'LOW';
+}
+function isOlderThan(ts,ms){return!ts||Date.now()-new Date(ts).getTime()>ms}
+
+// ── 공통 헬퍼 ───────────────────────────────────────────────────
+function lvlCode(mpci){if(mpci===null)return'N';return mpci>=75?'C':mpci>=50?'B':mpci>=25?'S':'L'}
+function lvlLabel(mpci){const m={C:t('lv_C'),B:t('lv_B'),S:t('lv_S'),L:t('lv_L'),N:t('lv_N')};return m[lvlCode(mpci)]||'--'}
+function waitDays(mpci){if(!mpci)return 0;return mpci>=75?3:mpci>=50?1.5:mpci>=25?.75:.25}
+function waitLbl(mpci){const d=waitDays(mpci);return d>=3?t('w3'):d>=1.5?t('w15'):d>=.75?t('w1'):t('wh')}
 function pn(c){const m=PM[c]||{};return LANG==='ko'?(m.nk||m.n||c):(m.n||c)}
 function ctry(c){const m=PM[c]||{};return LANG==='ko'?(m.c||''):(m.ce||'')}
 function reg(c){return(PM[c]||{}).r||null}
 function fmtD(s){if(!s)return'--';const d=new Date(s);return d.toLocaleDateString(LANG==='ko'?'ko-KR':'en-US',{month:'short',day:'numeric'})}
+function staleTag(ts){return isOlderThan(ts,6*36e5)?`<span class="stale-tag">${t('stale_warn')}</span>`:''}
 
 function tick(){const n=new Date(),h=String(n.getUTCHours()).padStart(2,'0'),m=String(n.getUTCMinutes()).padStart(2,'0'),s=String(n.getUTCSeconds()).padStart(2,'0');document.getElementById('utc').innerHTML=`<span class="dot">●</span> UTC ${h}:${m}:${s}`}
 setInterval(tick,1000);tick();
 
-async function fetchSnaps(){const{data,error}=await sb.from('port_snapshots').select('port_code,port_name,region,tpfs,level,vessels_anchored,vessels_berthed,updated_at').order('tpfs',{ascending:false});if(error){console.error(error);return[]}return data||[]}
-async function fetchHist48(){const t50=new Date(Date.now()-50*36e5).toISOString(),t46=new Date(Date.now()-46*36e5).toISOString();const{data,error}=await sb.from('port_history').select('port_code,vessels_anchored,recorded_at').gte('recorded_at',t50).lte('recorded_at',t46).order('recorded_at',{ascending:false});if(error){console.error(error);return[]}const seen=new Set();return(data||[]).filter(r=>{if(seen.has(r.port_code))return false;seen.add(r.port_code);return true})}
-async function fetchCPs(){const ago=new Date(Date.now()-8*864e5).toISOString().split('T')[0];const{data,error}=await sb.from('chokepoint_daily').select('portid,recorded_date,container_count,ratio_to_avg').gte('recorded_date',ago).order('recorded_date',{ascending:false});if(error){console.error(error);return[]}return data||[]}
-async function fetchCars(){const{data,error}=await sb.from('carrier_port_ontime').select('carrier,ontime_pct');if(error||!data||!data.length)return null;const m={};data.forEach(r=>{if(!m[r.carrier])m[r.carrier]=[];m[r.carrier].push(r.ontime_pct)});return Object.entries(m).map(([c,v])=>({carrier:c,avg:v.reduce((a,b)=>a+b,0)/v.length})).sort((a,b)=>b.avg-a.avg)}
+// ── Supabase 쿼리 ────────────────────────────────────────────────
+async function fetchSnaps(){
+  const{data,error}=await sb.from('port_snapshots')
+    .select('port_code,port_name,country,region,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at')
+    .order('port_code');
+  if(error){console.error(error);return[]}
+  return data||[];
+}
+async function fetchCPs(){
+  const ago=new Date(Date.now()-8*864e5).toISOString().split('T')[0];
+  const{data,error}=await sb.from('chokepoint_daily').select('portid,recorded_date,container_count,ratio_to_avg').gte('recorded_date',ago).order('recorded_date',{ascending:false});
+  if(error){console.error(error);return[]}
+  return data||[];
+}
 
-function renderS1(snaps){
-  const total=snaps.length,con=snaps.filter(p=>(p.tpfs||0)>=75).length,busy=snaps.filter(p=>(p.tpfs||0)>=50&&(p.tpfs||0)<75).length;
-  const ts=snaps[0]?.updated_at;
-  if(ts)document.getElementById('last-upd').textContent=`최종 갱신: ${new Date(ts).toLocaleString(LANG==='ko'?'ko-KR':'en-US')}`;
-  const rmap={};snaps.forEach(p=>{const r=p.region||reg(p.port_code)||'other';if(!rmap[r])rmap[r]={t:0,c:0};rmap[r].t++;if((p.tpfs||0)>=75)rmap[r].c++});
+// ── 섹션 렌더링 ──────────────────────────────────────────────────
+function renderS1(ports){
+  const valid=ports.filter(p=>calcMPCI(p)!==null);
+  const total=ports.length,wd=valid.length;
+  const con=valid.filter(p=>getMPCILevel(calcMPCI(p))==='CONGESTED').length;
+  const ts=ports[0]?.econdb_updated_at||ports[0]?.updated_at;
+  if(ts)document.getElementById('last-upd').textContent=`EconDB 기준: ${new Date(ts).toLocaleString(LANG==='ko'?'ko-KR':'en-US')}`;
+  const rmap={};valid.forEach(p=>{const r=p.region||reg(p.port_code)||'other';if(!rmap[r])rmap[r]={t:0,c:0};rmap[r].t++;if(getMPCILevel(calcMPCI(p))==='CONGESTED')rmap[r].c++});
   const conRegs=Object.entries(rmap).filter(([,v])=>v.t>0&&v.c/v.t>=.5).map(([k])=>k);
   let summary;
-  if(LANG==='ko'){if(!conRegs.length&&con/Math.max(total,1)<.2)summary='전반적으로 안정. 주의 항만 없음';else if(conRegs.length)summary=`${conRegs.map(r=>(REGS[r]||{}).ko||r).join('·')} 항만 전반 혼잡. ETA +2~3일 예상`;else summary=`전반 안정. ${con}개 항만 혼잡 모니터링 중`}
-  else{if(!conRegs.length&&con/Math.max(total,1)<.2)summary='Overall stable. No major congestion alerts.';else if(conRegs.length)summary=`${conRegs.map(r=>(REGS[r]||{}).en||r).join(' & ')} broadly congested. ETA +2–3 days expected.`;else summary=`Overall stable. ${con} port(s) congested.`}
-  document.getElementById('sum-grid').innerHTML=`<div class="sum-card"><div class="lbl">${t('sum_mon')}</div><div class="val">${total}</div><div class="sub">${LANG==='ko'?'개 항만':'ports'}</div></div><div class="sum-card red"><div class="lbl">${t('sum_con')}</div><div class="val">${con}</div><div class="sub">${LANG==='ko'?'개 항만':'ports'}</div></div><div class="sum-card ora"><div class="lbl">${t('sum_busy')}</div><div class="val">${busy}</div><div class="sub">${LANG==='ko'?'개 항만':'ports'}</div></div><div class="today-card"><div class="tlbl">${t('sum_today')}</div><div class="ttxt">"${summary}"</div></div>`;
+  if(LANG==='ko'){
+    if(!wd)summary='EconDB 데이터 수집 중입니다. 잠시 후 다시 확인해 주세요.';
+    else if(!conRegs.length&&con/Math.max(wd,1)<.2)summary='전반적으로 안정. 주의 항만 없음';
+    else if(conRegs.length)summary=`${conRegs.map(r=>(REGS[r]||{}).ko||r).join('·')} 항만 전반 혼잡. ETA +2~3일 예상`;
+    else summary=`전반 안정. ${con}개 항만 혼잡 모니터링 중`;
+  }else{
+    if(!wd)summary='Collecting EconDB data. Please check back shortly.';
+    else if(!conRegs.length&&con/Math.max(wd,1)<.2)summary='Overall stable. No major congestion alerts.';
+    else if(conRegs.length)summary=`${conRegs.map(r=>(REGS[r]||{}).en||r).join(' & ')} broadly congested. ETA +2–3 days expected.`;
+    else summary=`Overall stable. ${con} port(s) congested.`;
+  }
+  document.getElementById('sum-grid').innerHTML=
+    `<div class="sum-card"><div class="lbl">${t('sum_mon')}</div><div class="val">${total}</div><div class="sub">${LANG==='ko'?'개 항만':'ports'}</div></div>`+
+    `<div class="sum-card"><div class="lbl">${t('sum_data')}</div><div class="val" style="font-size:40px">${wd}<span style="font-size:22px;color:var(--muted)">/${total}</span></div><div class="sub">${LANG==='ko'?'개 항만 데이터 확보':'ports with data'}</div></div>`+
+    `<div class="sum-card red"><div class="lbl">${t('sum_con')}</div><div class="val">${con}</div><div class="sub">${LANG==='ko'?'개 항만':'ports'}</div></div>`+
+    `<div class="today-card"><div class="tlbl">${t('sum_today')}</div><div class="ttxt">"${summary}"</div></div>`;
 }
 
-function renderS2(snaps){
-  const rmap={};snaps.forEach(p=>{const r=p.region||reg(p.port_code);if(!r)return;if(!rmap[r])rmap[r]=[];rmap[r].push(p)});
+function renderS2(ports){
+  const rmap={};ports.forEach(p=>{const r=p.region||reg(p.port_code);if(!r)return;if(!rmap[r])rmap[r]=[];rmap[r].push(p)});
   document.getElementById('region-grid').innerHTML=Object.entries(REGS).map(([key,info])=>{
-    const ports=rmap[key]||[],rname=LANG==='ko'?info.ko:info.en;
-    if(!ports.length)return`<div class="rc L"><div class="rc-hdr"><span class="rc-name">${rname}</span><span class="rc-badge bL">${t('lv_L')}</span></div><div class="rc-score sL">--</div><div class="rc-score-lbl">${t('idx_lbl')}</div><div class="prog-wrap"><div class="prog-fill fL" style="width:0%"></div></div><div class="rc-counts"><span>${t('nodata')}</span></div></div>`;
-    const avg=ports.reduce((s,p)=>s+(p.tpfs||0),0)/ports.length,lv=lvl(avg),con=ports.filter(p=>(p.tpfs||0)>=75).length,bus=ports.filter(p=>(p.tpfs||0)>=50&&(p.tpfs||0)<75).length;
-    const wd=waitDays(avg),wstr=wd>=1?`${wd.toFixed(1)}${LANG==='ko'?'일':' days'}`:`${Math.round(wd*24)}${LANG==='ko'?'시간':'h'}`;
-    return`<div class="rc ${lv}"><div class="rc-hdr"><span class="rc-name">${rname}</span><span class="rc-badge b${lv}">${lvlLabel(avg)}</span></div><div class="rc-score s${lv}">${avg.toFixed(1)}</div><div class="rc-score-lbl">${t('idx_lbl')}</div><div class="prog-wrap"><div class="prog-fill f${lv}" style="width:${Math.min(100,avg)}%"></div></div><div class="rc-counts"><span>🔴 ${LANG==='ko'?'혼잡':'Congested'} ${con}${LANG==='ko'?'개':''}</span><span>🟠 ${LANG==='ko'?'주의':'Busy'} ${bus}${LANG==='ko'?'개':''}</span></div><div class="rc-wait">${t('avg_wait')} <strong>약 ${wstr}</strong></div></div>`;
+    const rp=rmap[key]||[],rname=LANG==='ko'?info.ko:info.en;
+    const vp=rp.filter(p=>calcMPCI(p)!==null);
+    if(!vp.length){
+      return`<div class="rc N"><div class="rc-hdr"><span class="rc-name">${rname}</span><span class="rc-badge bN">${t('lv_N')}</span></div><div class="rc-score sN">--</div><div class="rc-score-lbl">${t('idx_lbl')}</div><div class="prog-wrap"><div class="prog-fill" style="width:0%;background:var(--border)"></div></div><div class="rc-nodata-msg">📡 ${LANG==='ko'?'데이터 수집 중...':'Collecting data...'}</div><div class="rc-nodata-count">${LANG==='ko'?`0 / ${rp.length}개 항만 데이터 확보`:`0 / ${rp.length} ports with data`}</div></div>`;
+    }
+    const avg=vp.reduce((s,p)=>s+calcMPCI(p),0)/vp.length,lv=lvlCode(avg);
+    const con=vp.filter(p=>getMPCILevel(calcMPCI(p))==='CONGESTED').length,bus=vp.filter(p=>getMPCILevel(calcMPCI(p))==='BUSY').length;
+    const avgTurn=vp.reduce((s,p)=>s+(p.econdb_turnaround||0),0)/vp.length;
+    const tstr=avgTurn>=1?`${avgTurn.toFixed(1)}${LANG==='ko'?'일':' days'}`:`${Math.round(avgTurn*24)}${LANG==='ko'?'시간':'h'}`;
+    return`<div class="rc ${lv}"><div class="rc-hdr"><span class="rc-name">${rname}</span><span class="rc-badge b${lv}">${lvlLabel(avg)}</span></div><div class="rc-score s${lv}">${avg.toFixed(1)}</div><div class="rc-score-lbl">${t('idx_lbl')} (${LANG==='ko'?`${vp.length}/${rp.length}개`:`${vp.length}/${rp.length}`})</div><div class="prog-wrap"><div class="prog-fill f${lv}" style="width:${Math.min(100,avg)}%"></div></div><div class="rc-counts"><span>🔴 ${LANG==='ko'?'혼잡':'Congested'} ${con}${LANG==='ko'?'개':''}</span><span>🟠 ${LANG==='ko'?'주의':'Busy'} ${bus}${LANG==='ko'?'개':''}</span></div><div class="rc-wait">${t('avg_wait')} <strong>${tstr}</strong></div></div>`;
   }).join('');
 }
 
-function renderS3(snaps){
-  const top=snaps.filter(p=>(p.tpfs||0)>0).slice(0,5);
-  if(!top.length){document.getElementById('t5-body').innerHTML=`<tr><td colspan="5" class="no-data">${t('nodata')}</td></tr>`;return}
+function renderS3(ports){
+  const top=ports.filter(p=>calcMPCI(p)!==null).sort((a,b)=>calcMPCI(b)-calcMPCI(a)).slice(0,5);
+  if(!top.length){document.getElementById('t5-body').innerHTML=`<tr><td colspan="7" class="no-data">📡 ${LANG==='ko'?'EconDB 데이터 수집 중입니다':'Collecting EconDB data'}</td></tr>`;return}
   document.getElementById('t5-body').innerHTML=top.map(p=>{
-    const v=Math.round(p.tpfs||0),lv=lvl(v),col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)'}[lv];
-    return`<tr onclick="pickPort('${p.port_code}')"><td><span class="pname">${pn(p.port_code)}</span><br><span class="pcode">${p.port_code}</span></td><td style="color:var(--muted)">${ctry(p.port_code)}</td><td><span class="score-big" style="color:${col}">${v}</span></td><td><span class="${waitCls(v)}">${waitLbl(v)}</span></td><td style="font-size:14px;font-weight:600">${lvlLabel(v)}</td></tr>`;
+    const mpci=calcMPCI(p),lv=lvlCode(mpci);
+    const col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)',N:'var(--muted)'}[lv];
+    const stale=staleTag(p.econdb_updated_at);
+    const turn=p.econdb_turnaround!=null?`${p.econdb_turnaround.toFixed(1)}${LANG==='ko'?'일':' d'}`:'--';
+    const delay=p.econdb_delay_pct!=null?`${Math.round(p.econdb_delay_pct)}%`:'--';
+    const anc=p.vessels_anchored!=null?`${p.vessels_anchored}${LANG==='ko'?'척':''}`:'--';
+    return`<tr onclick="pickPort('${p.port_code}')"><td><span class="pname">${pn(p.port_code)}</span>${stale}<br><span class="pcode">${p.port_code}</span></td><td style="color:var(--muted)">${ctry(p.port_code)}</td><td><span class="score-big" style="color:${col}">${mpci!=null?mpci.toFixed(1):'--'}</span></td><td style="color:var(--muted)">${turn}</td><td style="color:var(--muted)">${delay}</td><td style="color:var(--muted)">${anc}</td><td style="font-size:14px;font-weight:600">${lvlLabel(mpci)}</td></tr>`;
   }).join('');
 }
 
-async function renderS4(snaps){
-  const hist=await fetchHist48(),hmap={};hist.forEach(r=>{hmap[r.port_code]=r});
-  const warns=snaps.filter(p=>['LOW','STABLE'].includes(lvlFull(p.tpfs||0))).map(p=>{const prev=hmap[p.port_code];if(!prev)return null;const cur=p.vessels_anchored||0,old=prev.vessels_anchored||0;if(old<2)return null;const rate=(cur-old)/old*100;return rate>20?{...p,rate}:null}).filter(Boolean).sort((a,b)=>b.rate-a.rate).slice(0,3);
-  const box=document.getElementById('ew-box');
-  if(!warns.length){box.innerHTML=`<div class="ew-empty">${t('ew_none')}</div>`;return}
-  box.innerHTML=`<div class="ew-list">`+warns.map(p=>`<div class="ew-card"><div><div class="ew-name">${pn(p.port_code)} <span style="font-size:13px;color:var(--muted)">(${p.port_code})</span></div><div class="ew-status">${lvlLabel(p.tpfs||0)} · ${p.vessels_anchored||0}${LANG==='ko'?'척 대기':' vessels waiting'}</div></div><div><div class="ew-rate">+${p.rate.toFixed(0)}%</div><div class="ew-rate-lbl">${t('ew_inc')}</div></div></div>`).join('')+`</div>`;
+function renderS4(){
+  document.getElementById('ew-box').innerHTML=
+    `<div class="coming-soon"><strong>📡 ${LANG==='ko'?'조기 경보 준비 중':'Early Warning Coming Soon'}</strong>${t('s4_coming')}</div>`;
 }
 
 function renderS5(raw){
@@ -339,33 +423,25 @@ function renderS5(raw){
   }).join('');
 }
 
-function renderS7(data){
-  const rows=[...(data||CAR_FB)].sort((a,b)=>b.avg-a.avg),best=rows[0]?.avg||1;
-  document.getElementById('car-list').innerHTML=rows.map((c,i)=>{
-    const pct=Math.round(c.avg*100),bw=Math.round(c.avg/best*100),col=c.avg>=.75?'var(--mint)':c.avg>=.6?'var(--text)':'var(--muted)';
-    const stars='<span class="sf">'+'★'.repeat(Math.round(c.avg*5))+'</span><span class="se">'+'☆'.repeat(5-Math.round(c.avg*5))+'</span>';
-    return`<div class="car-row" onclick="pickCarrier('${c.carrier}')"><div class="car-name">${c.carrier}</div><div class="car-bar-wrap"><div class="car-bar" style="width:${bw}%"></div></div><div><div class="car-pct" style="color:${col}">${pct}%</div></div><div><div class="car-stars">${stars}</div>${i===0?`<div class="car-grade">${t('car_top')}</div>`:''}</div></div>`;
-  }).join('');
-  requestAnimationFrame(()=>{document.querySelectorAll('.car-bar').forEach(b=>{const w=b.style.width;b.style.width='0';setTimeout(()=>b.style.width=w,60)})});
-}
-
-function buildEtaForm(snaps){
+function buildEtaForm(ports){
   const os=document.getElementById('e-origin');
   os.innerHTML=`<option value="">-- ${LANG==='ko'?'항만 선택':'Select Port'} --</option>`+ORIGIN_PORTS.map(o=>`<option value="${o.code}">${LANG==='ko'?o.ko:o.en}</option>`).join('');
   const ps=document.getElementById('e-port');
-  ps.innerHTML=`<option value="">-- ${LANG==='ko'?'항만 선택':'Select Port'} --</option>`+snaps.map(p=>`<option value="${p.port_code}">${pn(p.port_code)} (${p.port_code})</option>`).join('');
+  ps.innerHTML=`<option value="">-- ${LANG==='ko'?'항만 선택':'Select Port'} --</option>`+ports.map(p=>`<option value="${p.port_code}">${pn(p.port_code)} (${p.port_code})</option>`).join('');
   document.getElementById('e-etd').value=new Date().toISOString().split('T')[0];
   os.onchange=()=>updateDist();
-  ps.onchange=()=>{updateHint(snaps);updateDist();};
+  ps.onchange=()=>{updateHint(ports);updateDist();};
   document.getElementById('e-btn').onclick=runEta;
 }
 
-function updateHint(snaps){
+function updateHint(ports){
   const code=document.getElementById('e-port').value,hint=document.getElementById('port-hint');
   if(!code){hint.innerHTML='';return}
-  const s=snaps.find(p=>p.port_code===code);if(!s){hint.innerHTML='';return}
-  const v=Math.round(s.tpfs||0),lv=lvl(v),col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)'}[lv];
-  hint.innerHTML=`<span style="color:${col}">${lvlLabel(v)}</span> <span style="color:var(--muted)">— ${LANG==='ko'?'혼잡도':'Index'} ${v}</span>`;
+  const p=ports.find(x=>x.port_code===code);if(!p){hint.innerHTML='';return}
+  const mpci=calcMPCI(p);
+  if(mpci===null){hint.innerHTML=`<span style="color:var(--muted)">📡 ${LANG==='ko'?'데이터 수집 중':'Collecting data'}</span>`;return}
+  const lv=lvlCode(mpci),col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)'}[lv];
+  hint.innerHTML=`<span style="color:${col}">${lvlLabel(mpci)}</span>${staleTag(p.econdb_updated_at)} <span style="color:var(--muted)">— ${LANG==='ko'?'혼잡도':'Index'} ${mpci.toFixed(1)}</span>`;
 }
 
 function updateDist(){
@@ -384,7 +460,6 @@ function updateDist(){
 }
 
 function pickPort(code){const s=document.getElementById('e-port');s.value=code;s.dispatchEvent(new Event('change'));document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'})}
-function pickCarrier(c){document.getElementById('e-carrier').value=c;document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'})}
 
 async function runEta(){
   const code=document.getElementById('e-port').value,carrier=document.getElementById('e-carrier').value,etd=document.getElementById('e-etd').value;
@@ -397,7 +472,6 @@ async function runEta(){
   document.getElementById('eta-rc').style.display='none';
   document.getElementById('eta-result').style.justifyContent='center';
   try{
-    if(CFG.API_URL.includes('YOUR-RAILWAY-URL'))throw new Error('no-api');
     const res=await fetch(`${CFG.API_URL}/eta/calculate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({port_code:code,carrier:carrier||null,etd,distance_nm:nm,v_design:20,bn:4,heading_deg:90})});
     if(!res.ok)throw new Error('api-err');
     showResult(await res.json(),code,false);
@@ -409,27 +483,44 @@ function showResult(d,code,approx){
   document.getElementById('eta-ph').style.display='none';
   document.getElementById('eta-result').style.justifyContent='flex-start';
   const rc=document.getElementById('eta-rc');rc.style.display='block';
-  const name=pn(code),sv=(window._snaps||[]).find(p=>p.port_code===code),tpfs=sv?.tpfs||d.breakdown?.mpci_score||0,isBad=tpfs>=50;
-  rc.innerHTML=`<div class="eta-rtitle">${name} ${t(approx?'arr_approx':'arr_dest')}</div><div class="eta-rows"><div class="eta-row p10"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_early')}</span><span class="eta-rdate">${fmtD(d.p10)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:60%"></div></div><div class="eta-rnote">${t('arr_early_d')}</div></div><div class="eta-row p50"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_likely')}</span><span class="eta-rdate">${fmtD(d.p50)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:100%"></div></div><div class="eta-rnote">${t('arr_likely_d')}</div></div><div class="eta-row p90"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_late')}</span><span class="eta-rdate">${fmtD(d.p90)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:80%"></div></div><div class="eta-rnote">${t('arr_late_d')}</div></div></div>${isBad?`<div class="eta-warn">⚠️ ${name} ${LANG==='ko'?`현재 ${lvlLabel(tpfs)} — 선사 공지 ETA보다 약 ${waitLbl(tpfs)} 늦을 수 있습니다`:`is currently ${lvlLabel(tpfs)} — may arrive ${waitLbl(tpfs)} later than carrier ETA`}</div>`:''}<div class="eta-info"><strong>${t('dnd_ttl')}</strong><br>${t('dnd_body').replace('%D%',fmtD(d.p50))}</div>${approx?`<div style="font-size:12px;color:var(--muted);margin-top:12px">${t('car_approx')}</div>`:''}`;
+  const name=pn(code);
+  const portData=(window._snaps||[]).find(p=>p.port_code===code);
+  const mpci=portData?calcMPCI(portData):(d.breakdown?.mpci_score??null);
+  const isBad=mpci!==null&&mpci>=50;
+  const mpciNote=portData&&calcMPCI(portData)!==null
+    ?`<div class="eta-info" style="margin-bottom:11px">📊 ${name} ${LANG==='ko'?'현재 혼잡도':'Congestion'}: <strong>${mpci!=null?mpci.toFixed(1):'--'}</strong> (${lvlLabel(mpci)})${staleTag(portData.econdb_updated_at)}</div>`
+    :`<div class="eta-info" style="margin-bottom:11px"><span style="color:var(--muted)">${t('eta_nodata')}</span></div>`;
+  rc.innerHTML=
+    `<div class="eta-rtitle">${name} ${t(approx?'arr_approx':'arr_dest')}</div>`+
+    `<div class="eta-rows">`+
+    `<div class="eta-row p10"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_early')}</span><span class="eta-rdate">${fmtD(d.p10)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:60%"></div></div><div class="eta-rnote">${t('arr_early_d')}</div></div>`+
+    `<div class="eta-row p50"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_likely')}</span><span class="eta-rdate">${fmtD(d.p50)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:100%"></div></div><div class="eta-rnote">${t('arr_likely_d')}</div></div>`+
+    `<div class="eta-row p90"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_late')}</span><span class="eta-rdate">${fmtD(d.p90)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:80%"></div></div><div class="eta-rnote">${t('arr_late_d')}</div></div>`+
+    `</div>`+
+    mpciNote+
+    (isBad?`<div class="eta-warn">⚠️ ${name} ${LANG==='ko'?`현재 ${lvlLabel(mpci)} — 선사 공지 ETA보다 약 ${waitLbl(mpci)} 늦을 수 있습니다`:`is currently ${lvlLabel(mpci)} — may arrive ${waitLbl(mpci)} later than carrier ETA`}</div>`:'')+
+    `<div class="eta-info"><strong>${t('dnd_ttl')}</strong><br>${t('dnd_body').replace('%D%',fmtD(d.p50))}</div>`+
+    (approx?`<div style="font-size:12px;color:var(--muted);margin-top:12px">※ ${LANG==='ko'?'API 서버 연결 전 추정값입니다':'Approximate — API server not connected'}</div>`:'');
 }
 
 function showFallback(code,etd,nm){
-  const sv=(window._snaps||[]).find(p=>p.port_code===code),tpfs=sv?.tpfs||50;
-  const bh=nm/20,pd=waitDays(tpfs)*24,tot=bh+pd,sig=Math.max(24,tot*.15);
+  const portData=(window._snaps||[]).find(p=>p.port_code===code);
+  const mpci=portData?calcMPCI(portData):null;
+  const waitH=portData?.econdb_turnaround!=null?portData.econdb_turnaround*24:waitDays(mpci??50)*24;
+  const bh=nm/20,tot=bh+waitH,sig=Math.max(24,tot*.15);
   const etdD=new Date(etd),p50=new Date(etdD.getTime()+tot*36e5);
   const p10=new Date(p50.getTime()-1.28*sig*36e5),p90=new Date(p50.getTime()+1.28*sig*36e5);
-  showResult({p10:p10.toISOString(),p50:p50.toISOString(),p90:p90.toISOString(),breakdown:{mpci_score:tpfs}},code,true);
+  showResult({p10:p10.toISOString(),p50:p50.toISOString(),p90:p90.toISOString(),breakdown:{mpci_score:mpci}},code,true);
 }
 
-function renderAll(snaps,cps,cars){renderS1(snaps);renderS2(snaps);renderS3(snaps);renderS5(cps);renderS7(cars)}
+function renderAll(ports,cps){renderS1(ports);renderS2(ports);renderS3(ports);renderS4();renderS5(cps)}
 
 async function init(){
   try{
-    const[snaps,cps,cars]=await Promise.all([fetchSnaps(),fetchCPs(),fetchCars()]);
-    window._snaps=snaps;window._cps=cps;window._cars=cars;
-    renderAll(snaps,cps,cars);
-    await renderS4(snaps);
-    buildEtaForm(snaps);
+    const[ports,cps]=await Promise.all([fetchSnaps(),fetchCPs()]);
+    window._snaps=ports;window._cps=cps;
+    renderAll(ports,cps);
+    buildEtaForm(ports);
   }catch(e){
     console.error('init error',e);
     document.getElementById('sum-grid').innerHTML=`<div class="no-data" style="grid-column:1/-1">⚠️ 데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.</div>`;
