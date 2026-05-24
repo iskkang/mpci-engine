@@ -19,6 +19,12 @@ ANOMALY_RATIO_HIGH   = 2.5  # 기준선 대비 250% 이상 = HIGH
 ANOMALY_RATIO_MEDIUM = 1.8  # 기준선 대비 180% 이상 = MEDIUM
 MIN_SAMPLE_COUNT     = 5    # 기준선 최소 샘플 수
 HISTORY_RETAIN_DAYS  = 90   # port_history 보관 기간
+AIS_RECENT_HOURS     = 24   # AIS 보조 지표 최근 평균 윈도우
+AIS_DAILY_RETAIN_DAYS = 395 # 일별 AIS 롤업 보관 기간
+
+
+def clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(value, high))
 
 
 def get_supabase() -> Client:
@@ -162,6 +168,114 @@ def detect_ais_anomalies(supabase: Client, baselines: dict[str, dict]) -> None:
         )
 
 
+def update_ais_supplement(supabase: Client, baselines: dict[str, dict]) -> None:
+    """
+    Compute AIS supplemental signal from aggregated port_history only.
+    This updates port_snapshots for dashboard/ETA context without changing
+    EconDB-derived MPCI directly.
+    """
+    recent_cutoff = (datetime.now(timezone.utc) - timedelta(hours=AIS_RECENT_HOURS)).isoformat()
+    now_str = datetime.now(timezone.utc).isoformat()
+    updates = 0
+
+    for port_code, baseline in baselines.items():
+        if baseline["sample_count"] < MIN_SAMPLE_COUNT:
+            continue
+
+        recent_resp = (
+            supabase.table("port_history")
+            .select("vessels_anchored,vessels_berthed,tpfs")
+            .eq("port_code", port_code)
+            .gte("snapshot_at", recent_cutoff)
+            .execute()
+        )
+        recent = recent_resp.data or []
+        if not recent:
+            continue
+
+        avg_recent_anchored = sum(r["vessels_anchored"] for r in recent) / len(recent)
+        avg_recent_berthed = sum(r["vessels_berthed"] for r in recent) / len(recent)
+        base_anchored = float(baseline["avg_anchored_7d"])
+
+        if base_anchored > 0:
+            ratio = avg_recent_anchored / base_anchored
+            wait_index = clamp(50.0 + (ratio - 1.0) * 35.0, 0.0, 100.0)
+        else:
+            ratio = None
+            wait_index = clamp(avg_recent_anchored * 20.0, 0.0, 100.0)
+
+        if ratio is not None and ratio >= ANOMALY_RATIO_HIGH:
+            level = "HIGH"
+        elif ratio is not None and ratio >= ANOMALY_RATIO_MEDIUM:
+            level = "MEDIUM"
+        elif wait_index >= 70:
+            level = "WATCH"
+        else:
+            level = "NORMAL"
+
+        data = {
+            "ais_recent_anchored_avg": round(avg_recent_anchored, 2),
+            "ais_recent_berthed_avg": round(avg_recent_berthed, 2),
+            "ais_baseline_anchored_avg": round(base_anchored, 2),
+            "ais_wait_ratio": round(ratio, 4) if ratio is not None else None,
+            "ais_wait_index": round(wait_index, 1),
+            "ais_anomaly_level": level,
+            "ais_sample_count_7d": baseline["sample_count"],
+            "ais_updated_at": now_str,
+        }
+        try:
+            supabase.table("port_snapshots").update(data).eq("port_code", port_code).execute()
+            updates += 1
+        except Exception as e:
+            logger.warning(f"Failed to update AIS supplement for {port_code}: {e}")
+
+    logger.info(f"Updated AIS supplemental metrics for {updates} ports.")
+
+
+def update_ais_daily_rollups(supabase: Client) -> None:
+    """Roll up recent 15-minute AIS aggregates into daily rows."""
+    start_date = date.today() - timedelta(days=1)
+    cutoff = start_date.isoformat() + "T00:00:00+00:00"
+    resp = (
+        supabase.table("port_history")
+        .select("port_code,snapshot_at,vessels_anchored,vessels_berthed,tpfs")
+        .gte("snapshot_at", cutoff)
+        .execute()
+    )
+    rows = resp.data or []
+
+    buckets: dict[tuple[str, str], list[dict]] = {}
+    for row in rows:
+        snapshot_at = row.get("snapshot_at", "")
+        observed_date = snapshot_at[:10]
+        if not observed_date:
+            continue
+        key = (row["port_code"], observed_date)
+        buckets.setdefault(key, []).append(row)
+
+    now_str = datetime.now(timezone.utc).isoformat()
+    upserts = []
+    for (port_code, observed_date), samples in buckets.items():
+        n = len(samples)
+        upserts.append({
+            "port_code": port_code,
+            "observed_date": observed_date,
+            "avg_vessels_anchored": round(sum(s["vessels_anchored"] for s in samples) / n, 2),
+            "avg_vessels_berthed": round(sum(s["vessels_berthed"] for s in samples) / n, 2),
+            "max_vessels_anchored": max(s["vessels_anchored"] for s in samples),
+            "max_vessels_berthed": max(s["vessels_berthed"] for s in samples),
+            "avg_tpfs": round(sum(s["tpfs"] for s in samples) / n, 2),
+            "sample_count": n,
+            "updated_at": now_str,
+        })
+
+    if upserts:
+        supabase.table("port_ais_daily").upsert(
+            upserts, on_conflict="port_code,observed_date"
+        ).execute()
+        logger.info(f"Upserted {len(upserts)} AIS daily rollup rows.")
+
+
 def cleanup_old_history(supabase: Client) -> None:
     """90일 이전 port_history 데이터 삭제"""
     cutoff = (datetime.now(timezone.utc) - timedelta(days=HISTORY_RETAIN_DAYS)).isoformat()
@@ -174,6 +288,16 @@ def cleanup_old_history(supabase: Client) -> None:
     deleted = len(resp.data) if resp.data else 0
     logger.info(f"Deleted {deleted} old port_history rows (before {cutoff[:10]})")
 
+    daily_cutoff = (date.today() - timedelta(days=AIS_DAILY_RETAIN_DAYS)).isoformat()
+    daily_resp = (
+        supabase.table("port_ais_daily")
+        .delete()
+        .lt("observed_date", daily_cutoff)
+        .execute()
+    )
+    daily_deleted = len(daily_resp.data) if daily_resp.data else 0
+    logger.info(f"Deleted {daily_deleted} old port_ais_daily rows (before {daily_cutoff})")
+
 
 def main() -> None:
     logger.info("anomaly_detector.py starting...")
@@ -185,7 +309,11 @@ def main() -> None:
     # 2. 이상 감지
     detect_ais_anomalies(supabase, baselines)
 
-    # 3. 오래된 이력 정리
+    # 3. AIS 보조 지표/일별 롤업 갱신
+    update_ais_supplement(supabase, baselines)
+    update_ais_daily_rollups(supabase)
+
+    # 4. 오래된 이력 정리
     cleanup_old_history(supabase)
 
     logger.info("anomaly_detector.py completed.")

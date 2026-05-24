@@ -329,7 +329,7 @@ setInterval(tick,1000);tick();
 // ── Supabase 쿼리 ────────────────────────────────────────────────
 async function fetchSnaps(){
   const{data,error}=await sb.from('port_snapshots')
-    .select('port_code,port_name,country,region,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at,econdb_current_index,historic_percentile_index,trend_change_index,final_mpci,mpci_confidence,mpci_history_days,mpci_delta_prev,mpci_delta_pct_prev')
+    .select('port_code,port_name,country,region,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at,econdb_current_index,historic_percentile_index,trend_change_index,final_mpci,mpci_confidence,mpci_history_days,mpci_delta_prev,mpci_delta_pct_prev,ais_recent_anchored_avg,ais_baseline_anchored_avg,ais_wait_ratio,ais_wait_index,ais_anomaly_level,ais_updated_at')
     .order('port_code');
   if(error){console.error(error);return[]}
   return data||[];
@@ -398,7 +398,8 @@ function renderS3(ports){
     const turn=p.econdb_turnaround!=null?`${p.econdb_turnaround.toFixed(1)}${LANG==='ko'?'일':' d'}`:'--';
     const delay=p.econdb_delay_pct!=null?`${Math.round(p.econdb_delay_pct)}%`:'--';
     const anc=p.vessels_anchored!=null?`${p.vessels_anchored}${LANG==='ko'?'척':''}`:'--';
-    return`<tr onclick="pickPort('${p.port_code}')"><td><span class="pname">${pn(p.port_code)}</span>${stale}<br><span class="pcode">${p.port_code}</span></td><td style="color:var(--muted)">${ctry(p.port_code)}</td><td><span class="score-big" style="color:${col}">${mpci!=null?mpci.toFixed(1):'--'}</span></td><td style="color:var(--muted)">${turn}</td><td style="color:var(--muted)">${delay}</td><td style="color:var(--muted)">${anc}</td><td style="font-size:14px;font-weight:600">${lvlLabel(mpci)}</td></tr>`;
+    const ais=p.ais_wait_index!=null?`<br><span class="pcode">AIS ${Math.round(p.ais_wait_index)} · ${p.ais_anomaly_level||'NORMAL'}</span>`:'';
+    return`<tr onclick="pickPort('${p.port_code}')"><td><span class="pname">${pn(p.port_code)}</span>${stale}<br><span class="pcode">${p.port_code}</span>${ais}</td><td style="color:var(--muted)">${ctry(p.port_code)}</td><td><span class="score-big" style="color:${col}">${mpci!=null?mpci.toFixed(1):'--'}</span></td><td style="color:var(--muted)">${turn}</td><td style="color:var(--muted)">${delay}</td><td style="color:var(--muted)">${anc}</td><td style="font-size:14px;font-weight:600">${lvlLabel(mpci)}</td></tr>`;
   }).join('');
 }
 
@@ -489,6 +490,9 @@ function showResult(d,code,approx){
   const mpciNote=portData&&calcMPCI(portData)!==null
     ?`<div class="eta-info" style="margin-bottom:11px">📊 ${name} ${LANG==='ko'?'현재 혼잡도':'Congestion'}: <strong>${mpci!=null?mpci.toFixed(1):'--'}</strong> (${lvlLabel(mpci)})${staleTag(portData.econdb_updated_at)}</div>`
     :`<div class="eta-info" style="margin-bottom:11px"><span style="color:var(--muted)">${t('eta_nodata')}</span></div>`;
+  const aisNote=portData&&portData.ais_wait_index!=null
+    ?`<div class="eta-info" style="margin-bottom:11px">AIS ${LANG==='ko'?'대기 지표':'waiting index'}: <strong>${Math.round(portData.ais_wait_index)}</strong> · ${portData.ais_anomaly_level||'NORMAL'}</div>`
+    :'';
   rc.innerHTML=
     `<div class="eta-rtitle">${name} ${t(approx?'arr_approx':'arr_dest')}</div>`+
     `<div class="eta-rows">`+
@@ -497,6 +501,7 @@ function showResult(d,code,approx){
     `<div class="eta-row p90"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_late')}</span><span class="eta-rdate">${fmtD(d.p90)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:80%"></div></div><div class="eta-rnote">${t('arr_late_d')}</div></div>`+
     `</div>`+
     mpciNote+
+    aisNote+
     (isBad?`<div class="eta-warn">⚠️ ${name} ${LANG==='ko'?`현재 ${lvlLabel(mpci)} — 선사 공지 ETA보다 약 ${waitLbl(mpci)} 늦을 수 있습니다`:`is currently ${lvlLabel(mpci)} — may arrive ${waitLbl(mpci)} later than carrier ETA`}</div>`:'')+
     `<div class="eta-info"><strong>${t('dnd_ttl')}</strong><br>${t('dnd_body').replace('%D%',fmtD(d.p50))}</div>`+
     (approx?`<div style="font-size:12px;color:var(--muted);margin-top:12px">※ ${LANG==='ko'?'API 서버 연결 전 추정값입니다':'Approximate — API server not connected'}</div>`:'');

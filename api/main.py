@@ -61,7 +61,9 @@ def list_ports():
             "vessels_anchored,vessels_berthed,"
             "econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at,"
             "econdb_current_index,historic_percentile_index,trend_change_index,"
-            "final_mpci,mpci_confidence,mpci_history_days,mpci_delta_prev,mpci_delta_pct_prev"
+            "final_mpci,mpci_confidence,mpci_history_days,mpci_delta_prev,mpci_delta_pct_prev,"
+            "ais_recent_anchored_avg,ais_baseline_anchored_avg,ais_wait_ratio,"
+            "ais_wait_index,ais_anomaly_level,ais_updated_at"
         )
         .order("port_code")
         .execute()
@@ -95,7 +97,8 @@ def calculate(req: ETARequest):
         warnings.append(f"Manual buffer applied: +{override['delay_days']} days ({reason})")
 
     mpci = calc_econdb_mpci(snap)
-    has_anomaly = mpci is not None and mpci >= 75
+    ais_level = snap.get("ais_anomaly_level") if snap else None
+    has_anomaly = (mpci is not None and mpci >= 75) or ais_level in {"HIGH", "MEDIUM"}
     has_chokepoint_risk = False
     if has_anomaly:
         warnings.append(f"{port_name} is CONGESTED; uncertainty range expanded")
