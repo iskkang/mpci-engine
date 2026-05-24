@@ -317,14 +317,16 @@ const ORIGIN_PORTS=[{code:'CNSHA',ko:'상하이',en:'Shanghai'},{code:'KRPUS',ko
 
 const sb=supabase.createClient(CFG.SB_URL,CFG.SB_ANON);
 
-// ── MPCI 계산 (EconDB 기반) ─────────────────────────────────────
+// ── MPCI 계산 (EconDB 실데이터 기반) ───────────────────────────────
+// 세 값 중 하나라도 없으면 null 반환 — 값 날조 금지
 function calcMPCI(port){
-  if(port.final_mpci!=null)return Math.round(Number(port.final_mpci)*10)/10;
   const cong=port.econdb_congestion,dp=port.econdb_delay_pct,turn=port.econdb_turnaround;
   if(cong==null||dp==null||turn==null)return null;
-  const clamp=(v,min,max)=>Math.max(min,Math.min(v,max));
-  const cs=clamp((cong/18)*100,0,100),ds=clamp(dp,0,100),ts=clamp((turn-0.5)/4.5*100,0,100);
-  return Math.round(clamp(cs*.35+ds*.35+ts*.30,0,100)*10)/10;
+  const congScore=(cong/18)*100;
+  const delayScore=Math.min(dp,100);
+  const turnScore=Math.min((turn-0.5)/4.5*100,100);
+  const mpci=congScore*0.35+delayScore*0.35+turnScore*0.30;
+  return Math.round(Math.min(mpci,100)*10)/10;
 }
 function getMPCILevel(mpci){
   if(mpci===null)return null;
@@ -349,7 +351,7 @@ setInterval(tick,1000);tick();
 // ── Supabase 쿼리 ────────────────────────────────────────────────
 async function fetchSnaps(){
   const{data,error}=await sb.from('port_snapshots')
-    .select('port_code,port_name,country,region,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at,econdb_current_index,historic_percentile_index,trend_change_index,final_mpci,mpci_confidence,mpci_history_days,mpci_delta_prev,mpci_delta_pct_prev,portwatch_portid,portwatch_updated_at,portwatch_history_days,portwatch_recent_activity,portwatch_previous_activity,portwatch_activity_percentile,portwatch_trend_index,portwatch_historic_index,portwatch_activity_delta_pct,ais_recent_anchored_avg,ais_baseline_anchored_avg,ais_wait_ratio,ais_wait_index,ais_anomaly_level,ais_updated_at')
+    .select('port_code,port_name,country,region,lat,lon,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at')
     .order('port_code');
   if(error){console.error(error);return[]}
   return data||[];
@@ -423,10 +425,9 @@ function renderS3(ports){
     const stale=staleTag(p.econdb_updated_at);
     const turn=p.econdb_turnaround!=null?`${p.econdb_turnaround.toFixed(1)}${LANG==='ko'?'일':' d'}`:'--';
     const delay=p.econdb_delay_pct!=null?`${Math.round(p.econdb_delay_pct)}%`:'--';
+    // vessels_anchored: AIS 보조 정보 (대기 선박 수) — MPCI 계산에는 사용하지 않음
     const anc=p.vessels_anchored!=null?`${p.vessels_anchored}${LANG==='ko'?'척':''}`:'--';
-    const ais=p.ais_wait_index!=null?`<br><span class="pcode">AIS ${Math.round(p.ais_wait_index)} · ${p.ais_anomaly_level||'NORMAL'}</span>`:'';
-    const pw=p.portwatch_historic_index!=null?`<br><span class="pcode">PW ${Math.round(p.portwatch_historic_index)} · ${p.portwatch_history_days||0}d</span>`:'';
-    return`<tr onclick="pickPort('${p.port_code}')"><td><span class="pname">${pn(p.port_code)}</span>${stale}<br><span class="pcode">${p.port_code}</span>${pw}${ais}</td><td style="color:var(--muted)">${ctry(p.port_code)}</td><td><span class="score-big" style="color:${col}">${mpci!=null?mpci.toFixed(1):'--'}</span></td><td style="color:var(--muted)">${turn}</td><td style="color:var(--muted)">${delay}</td><td style="color:var(--muted)">${anc}</td><td style="font-size:14px;font-weight:600">${lvlLabel(mpci)}</td></tr>`;
+    return`<tr onclick="pickPort('${p.port_code}')"><td><span class="pname">${pn(p.port_code)}</span>${stale}<br><span class="pcode">${p.port_code}</span></td><td style="color:var(--muted)">${ctry(p.port_code)}</td><td><span class="score-big" style="color:${col}">${mpci!=null?mpci.toFixed(1):'--'}</span></td><td style="color:var(--muted)">${turn}</td><td style="color:var(--muted)">${delay}</td><td style="color:var(--muted)">${anc}</td><td style="font-size:14px;font-weight:600">${lvlLabel(mpci)}</td></tr>`;
   }).join('');
 }
 
@@ -561,15 +562,10 @@ function showResult(d,code,approx){
   const portData=(window._snaps||[]).find(p=>p.port_code===code);
   const mpci=portData?calcMPCI(portData):(d.breakdown?.mpci_score??null);
   const isBad=mpci!==null&&mpci>=50;
+  // EconDB 기반 혼잡도 정보 표시 (AIS/PortWatch 제거 — EconDB 실데이터만 사용)
   const mpciNote=portData&&calcMPCI(portData)!==null
     ?`<div class="eta-info" style="margin-bottom:11px">📊 ${name} ${LANG==='ko'?'현재 혼잡도':'Congestion'}: <strong>${mpci!=null?mpci.toFixed(1):'--'}</strong> (${lvlLabel(mpci)})${staleTag(portData.econdb_updated_at)}</div>`
     :`<div class="eta-info" style="margin-bottom:11px"><span style="color:var(--muted)">${t('eta_nodata')}</span></div>`;
-  const aisNote=portData&&portData.ais_wait_index!=null
-    ?`<div class="eta-info" style="margin-bottom:11px">AIS ${LANG==='ko'?'대기 지표':'waiting index'}: <strong>${Math.round(portData.ais_wait_index)}</strong> · ${portData.ais_anomaly_level||'NORMAL'}</div>`
-    :'';
-  const pwNote=portData&&portData.portwatch_historic_index!=null
-    ?`<div class="eta-info" style="margin-bottom:11px">PortWatch ${LANG==='ko'?'1년 기준선':'historic baseline'}: <strong>${Math.round(portData.portwatch_historic_index)}</strong> · ${portData.portwatch_history_days||0}d</div>`
-    :'';
   rc.innerHTML=
     `<div class="eta-rtitle">${name} ${t(approx?'arr_approx':'arr_dest')}</div>`+
     `<div class="eta-rows">`+
@@ -578,8 +574,6 @@ function showResult(d,code,approx){
     `<div class="eta-row p90"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_late')}</span><span class="eta-rdate">${fmtD(d.p90)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:80%"></div></div><div class="eta-rnote">${t('arr_late_d')}</div></div>`+
     `</div>`+
     mpciNote+
-    pwNote+
-    aisNote+
     (isBad?`<div class="eta-warn">⚠️ ${name} ${LANG==='ko'?`현재 ${lvlLabel(mpci)} — 선사 공지 ETA보다 약 ${waitLbl(mpci)} 늦을 수 있습니다`:`is currently ${lvlLabel(mpci)} — may arrive ${waitLbl(mpci)} later than carrier ETA`}</div>`:'')+
     `<div class="eta-info"><strong>${t('dnd_ttl')}</strong><br>${t('dnd_body').replace('%D%',fmtD(d.p50))}</div>`+
     (approx?`<div style="font-size:12px;color:var(--muted);margin-top:12px">※ ${LANG==='ko'?'API 서버 연결 전 추정값입니다':'Approximate — API server not connected'}</div>`:'');
