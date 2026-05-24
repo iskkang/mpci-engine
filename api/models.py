@@ -8,9 +8,9 @@ class ETARequest(BaseModel):
     carrier: Optional[str] = Field(None, description="선사명 (예: Hapag-Lloyd)")
     etd: date = Field(..., description="출발일 (YYYY-MM-DD)")
     distance_nm: float = Field(..., ge=100, le=25000, description="잔여 항로 거리 (해리)")
-    v_design: Optional[float] = Field(20.0, ge=10, le=30, description="선박 설계속도 (kts)")
-    bn: Optional[int] = Field(4, ge=0, le=12, description="보포트 풍력계급 (0-12)")
-    heading_deg: Optional[float] = Field(
+    v_design: float = Field(20.0, ge=10, le=30, description="선박 설계속도 (kts)")
+    bn: int = Field(4, ge=0, le=12, description="보포트 풍력계급 (0-12)")
+    heading_deg: float = Field(
         90.0, ge=0, le=180,
         description="조우각 (0=정면파, 90=측면파, 180=순풍)"
     )

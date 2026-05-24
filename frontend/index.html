@@ -209,12 +209,6 @@ section{margin-bottom:68px}
       <div class="fg"><label data-i18n="ef_l1">📍 도착 항만</label>
         <select id="e-port"><option value="">-- 항만 선택 --</option></select>
         <div class="port-hint" id="port-hint"></div></div>
-      <div class="fg"><label data-i18n="ef_l2">🚢 이용 선사 <span style="color:var(--muted);font-size:12px">(선택 사항)</span></label>
-        <select id="e-carrier">
-          <option value="">-- 선사 선택 --</option>
-          <option>Hapag-Lloyd</option><option>Maersk</option><option>MSC</option>
-          <option>CMA CGM</option><option>Evergreen</option><option>ONE</option><option>HMM</option><option>ZIM</option>
-        </select></div>
       <div class="fg"><label data-i18n="ef_l3">📅 출발 예정일</label><input type="date" id="e-etd"></div>
       <div class="fg" id="nm-fg">
         <div id="nm-auto" style="font-size:14px;min-height:20px;display:none;padding-bottom:6px;"></div>
@@ -241,10 +235,10 @@ s2lbl:"권역별 분석",s2ttl:"🗺️ 권역별 혼잡도 지수",s2dsc:"전 �
 s3lbl:"주요 혼잡 항만",s3ttl:"⚠️ 지금 주의해야 할 항만 TOP 5",s3dsc:"혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다",
 s4lbl:"선제 모니터링",s4ttl:"📡 조기 혼잡 경보",s4dsc:"EconDB 지연율 추세가 급증 중인 항만을 조기에 감지합니다",
 s5lbl:"주요 해협",s5ttl:"🗺️ 주요 해협 통과 현황",s5dsc:"글로벌 해운 화물의 대부분이 이 해협을 통과합니다. 통과 선박이 급감하면 항로 우회로 ETA가 크게 늘어납니다",
-s6lbl:"도착일 예측",s6ttl:"📦 화물 도착일 예측",s6dsc:"도착 항만, 선사, 출발일만 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다",
+s6lbl:"도착일 예측",s6ttl:"📦 화물 도착일 예측",s6dsc:"도착 항만과 출발일을 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다",
 th1:"항만",th2:"국가",th3:"혼잡도 지수",th_turn:"재항 일수",th_delay:"지연율",th_anc:"대기 선박",th5:"상태",
 ef_ttl:"도착 정보 입력",ef_dsc:"아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다",
-ef_l0:"🛳️ 출발 항만",ef_l1:"📍 도착 항만",ef_l2:"🚢 이용 선사",ef_l3:"📅 출발 예정일",
+ef_l0:"🛳️ 출발 항만",ef_l1:"📍 도착 항만",ef_l3:"📅 출발 예정일",
 ef_btn:"도착일 예측하기",ef_ph:"왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요",
 lv_C:"🔴 혼잡",lv_B:"🟠 주의",lv_S:"🟡 보통",lv_L:"🟢 원활",lv_N:"— 수집 중",
 w3:"약 3일",w15:"약 1.5일",w1:"약 1일",wh:"약 반나절",
@@ -270,10 +264,10 @@ s2lbl:"Regional Analysis",s2ttl:"🗺️ Regional Congestion Index",s2dsc:"9 glo
 s3lbl:"High Alert Ports",s3ttl:"⚠️ Top 5 Ports to Watch Now",s3dsc:"High congestion may delay cargo. Click a port to calculate ETA instantly.",
 s4lbl:"Early Warning",s4ttl:"📡 Congestion Early Warning",s4dsc:"Detects ports with rapidly rising EconDB delay rates.",
 s5lbl:"Key Straits",s5ttl:"🗺️ Strategic Straits Status",s5dsc:"Most global cargo passes through these straits. A sharp drop in transits signals rerouting risk.",
-s6lbl:"ETA Forecast",s6ttl:"📦 Cargo Arrival Date Forecast",s6dsc:"Enter destination port, carrier, and departure date for an arrival estimate reflecting current congestion.",
+s6lbl:"ETA Forecast",s6ttl:"📦 Cargo Arrival Date Forecast",s6dsc:"Enter destination port and departure date for an arrival estimate reflecting current congestion.",
 th1:"Port",th2:"Country",th3:"Congestion Index",th_turn:"Turnaround",th_delay:"Delay Rate",th_anc:"Waiting",th5:"Status",
 ef_ttl:"Enter Arrival Info",ef_dsc:"Fill in what you know — the rest is calculated automatically.",
-ef_l0:"🛳️ Origin Port",ef_l1:"📍 Destination Port",ef_l2:"🚢 Carrier",ef_l3:"📅 Departure Date (ETD)",
+ef_l0:"🛳️ Origin Port",ef_l1:"📍 Destination Port",ef_l3:"📅 Departure Date (ETD)",
 ef_btn:"Forecast Arrival Date",ef_ph:"Enter info on the left<br>and click Forecast",
 lv_C:"🔴 Congested",lv_B:"🟠 Busy",lv_S:"🟡 Stable",lv_L:"🟢 Clear",lv_N:"— Collecting",
 w3:"~3 days",w15:"~1.5 days",w1:"~1 day",wh:"~half day",
@@ -305,10 +299,12 @@ const sb=supabase.createClient(CFG.SB_URL,CFG.SB_ANON);
 
 // ── MPCI 계산 (EconDB 기반) ─────────────────────────────────────
 function calcMPCI(port){
+  if(port.final_mpci!=null)return Math.round(Number(port.final_mpci)*10)/10;
   const cong=port.econdb_congestion,dp=port.econdb_delay_pct,turn=port.econdb_turnaround;
   if(cong==null||dp==null||turn==null)return null;
-  const cs=(cong/18)*100,ds=Math.min(dp,100),ts=Math.min((turn-0.5)/4.5*100,100);
-  return Math.round(Math.min(cs*.35+ds*.35+ts*.30,100)*10)/10;
+  const clamp=(v,min,max)=>Math.max(min,Math.min(v,max));
+  const cs=clamp((cong/18)*100,0,100),ds=clamp(dp,0,100),ts=clamp((turn-0.5)/4.5*100,0,100);
+  return Math.round(clamp(cs*.35+ds*.35+ts*.30,0,100)*10)/10;
 }
 function getMPCILevel(mpci){
   if(mpci===null)return null;
@@ -333,14 +329,14 @@ setInterval(tick,1000);tick();
 // ── Supabase 쿼리 ────────────────────────────────────────────────
 async function fetchSnaps(){
   const{data,error}=await sb.from('port_snapshots')
-    .select('port_code,port_name,country,region,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at')
+    .select('port_code,port_name,country,region,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at,econdb_current_index,historic_percentile_index,trend_change_index,final_mpci,mpci_confidence,mpci_history_days,mpci_delta_prev,mpci_delta_pct_prev')
     .order('port_code');
   if(error){console.error(error);return[]}
   return data||[];
 }
 async function fetchCPs(){
   const ago=new Date(Date.now()-8*864e5).toISOString().split('T')[0];
-  const{data,error}=await sb.from('chokepoint_daily').select('portid,recorded_date,container_count,ratio_to_avg').gte('recorded_date',ago).order('recorded_date',{ascending:false});
+  const{data,error}=await sb.from('chokepoint_daily').select('portid,recorded_date,n_container').gte('recorded_date',ago).order('recorded_date',{ascending:false});
   if(error){console.error(error);return[]}
   return data||[];
 }
@@ -350,7 +346,10 @@ function renderS1(ports){
   const valid=ports.filter(p=>calcMPCI(p)!==null);
   const total=ports.length,wd=valid.length;
   const con=valid.filter(p=>getMPCILevel(calcMPCI(p))==='CONGESTED').length;
-  const ts=ports[0]?.econdb_updated_at||ports[0]?.updated_at;
+  const latestPort=ports
+    .filter(p=>p.econdb_updated_at||p.updated_at)
+    .sort((a,b)=>new Date(b.econdb_updated_at||b.updated_at)-new Date(a.econdb_updated_at||a.updated_at))[0];
+  const ts=latestPort?.econdb_updated_at||latestPort?.updated_at;
   if(ts)document.getElementById('last-upd').textContent=`EconDB 기준: ${new Date(ts).toLocaleString(LANG==='ko'?'ko-KR':'en-US')}`;
   const rmap={};valid.forEach(p=>{const r=p.region||reg(p.port_code)||'other';if(!rmap[r])rmap[r]={t:0,c:0};rmap[r].t++;if(getMPCILevel(calcMPCI(p))==='CONGESTED')rmap[r].c++});
   const conRegs=Object.entries(rmap).filter(([,v])=>v.t>0&&v.c/v.t>=.5).map(([k])=>k);
@@ -415,11 +414,11 @@ function renderS5(raw){
     const nm=LANG==='ko'?def.nk:def.ne,desc=t(def.dk).split('\n');
     const recs=(pmap[def.id]||[]).sort((a,b)=>b.recorded_date.localeCompare(a.recorded_date));
     if(!recs.length)return`<div class="cp-card"><div class="cp-name">${nm}</div><div class="cp-subdesc">${desc[0]}</div><div class="cp-vals"><div><div class="cp-val-lbl">${t('today_s')}</div><div class="cp-val-num" style="color:var(--muted)">--</div></div><div><div class="cp-val-lbl">${t('avg7')}</div><div class="cp-val-num" style="color:var(--muted)">--</div></div></div><div class="cp-status">${t('cp_ok')}</div><div class="cp-info">${desc[1]||''}</div></div>`;
-    const today=recs[0],last7=recs.slice(0,7),avg7=last7.reduce((s,r)=>s+(r.container_count||0),0)/last7.length;
-    const ratio=today.ratio_to_avg??(avg7>0?(today.container_count||0)/avg7:null);
+    const today=recs[0],last7=recs.slice(0,7),avg7=last7.reduce((s,r)=>s+(r.n_container||0),0)/last7.length;
+    const ratio=avg7>0?(today.n_container||0)/avg7:null;
     const status=ratio===null?t('cp_ok'):ratio<.4?t('cp_alert'):ratio<.6?t('cp_caut'):t('cp_ok');
     const col=ratio===null?'var(--text)':ratio<.4?'var(--red)':ratio<.6?'var(--orange)':'var(--green)';
-    return`<div class="cp-card"><div class="cp-name">${nm}</div><div class="cp-subdesc">${desc[0]}</div><div class="cp-vals"><div><div class="cp-val-lbl">${t('today_s')}</div><div class="cp-val-num" style="color:${col}">${today.container_count||0}</div></div><div><div class="cp-val-lbl">${t('avg7')}</div><div class="cp-val-num" style="color:var(--muted)">${Math.round(avg7)}</div></div></div><div class="cp-status">${status}</div><div class="cp-info">${desc[1]||''}</div></div>`;
+    return`<div class="cp-card"><div class="cp-name">${nm}</div><div class="cp-subdesc">${desc[0]}</div><div class="cp-vals"><div><div class="cp-val-lbl">${t('today_s')}</div><div class="cp-val-num" style="color:${col}">${today.n_container||0}</div></div><div><div class="cp-val-lbl">${t('avg7')}</div><div class="cp-val-num" style="color:var(--muted)">${Math.round(avg7)}</div></div></div><div class="cp-status">${status}</div><div class="cp-info">${desc[1]||''}</div></div>`;
   }).join('');
 }
 
@@ -462,7 +461,7 @@ function updateDist(){
 function pickPort(code){const s=document.getElementById('e-port');s.value=code;s.dispatchEvent(new Event('change'));document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'})}
 
 async function runEta(){
-  const code=document.getElementById('e-port').value,carrier=document.getElementById('e-carrier').value,etd=document.getElementById('e-etd').value;
+  const code=document.getElementById('e-port').value,etd=document.getElementById('e-etd').value;
   const nm=parseFloat(document.getElementById('e-nm').value);
   if(!code||!etd||!nm||isNaN(nm)){alert(LANG==='ko'?'출발항, 도착항, 출발일, 거리를 모두 입력해주세요.':'Please fill in origin port, destination port, departure date, and distance.');return}
   const btn=document.getElementById('e-btn');
@@ -472,7 +471,7 @@ async function runEta(){
   document.getElementById('eta-rc').style.display='none';
   document.getElementById('eta-result').style.justifyContent='center';
   try{
-    const res=await fetch(`${CFG.API_URL}/eta/calculate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({port_code:code,carrier:carrier||null,etd,distance_nm:nm,v_design:20,bn:4,heading_deg:90})});
+    const res=await fetch(`${CFG.API_URL}/eta/calculate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({port_code:code,carrier:null,etd,distance_nm:nm,v_design:20,bn:4,heading_deg:90})});
     if(!res.ok)throw new Error('api-err');
     showResult(await res.json(),code,false);
   }catch(e){showFallback(code,etd,nm)}
