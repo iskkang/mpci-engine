@@ -320,13 +320,11 @@ const sb=supabase.createClient(CFG.SB_URL,CFG.SB_ANON);
 // ── MPCI 계산 (EconDB 실데이터 기반) ───────────────────────────────
 // 세 값 중 하나라도 없으면 null 반환 — 값 날조 금지
 function calcMPCI(port){
-  const cong=port.econdb_congestion,dp=port.econdb_delay_pct,turn=port.econdb_turnaround;
-  if(cong==null||dp==null||turn==null)return null;
-  const congScore=(cong/18)*100;
-  const delayScore=Math.min(dp,100);
-  const turnScore=Math.min((turn-0.5)/4.5*100,100);
-  const mpci=congScore*0.35+delayScore*0.35+turnScore*0.30;
-  return Math.round(Math.min(mpci,100)*10)/10;
+  // 3값 중 하나라도 없으면 null (날조 없음) — 가드는 유지
+  if(port.econdb_congestion==null||port.econdb_delay_pct==null||port.econdb_turnaround==null)return null;
+  // 공식 JS 재구현 금지: 백엔드 mpci_core가 계산한 econdb_current_index를 단일 출처로 사용
+  if(port.econdb_current_index==null)return null;
+  return Math.round(Number(port.econdb_current_index)*10)/10;
 }
 function getMPCILevel(mpci){
   if(mpci===null)return null;
