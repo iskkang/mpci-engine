@@ -253,11 +253,34 @@ def fetch_metric_history(supabase: Client, port_codes: list[str]) -> dict[str, l
     return grouped
 
 
+def fetch_signal_context(supabase: Client, port_codes: list[str]) -> dict[str, dict]:
+    if not port_codes:
+        return {}
+
+    try:
+        resp = (
+            supabase.table("port_snapshots")
+            .select(
+                "port_code,portwatch_historic_index,portwatch_trend_index,"
+                "portwatch_history_days,portwatch_activity_delta_pct,"
+                "ais_wait_index,ais_anomaly_level"
+            )
+            .in_("port_code", port_codes)
+            .execute()
+        )
+    except Exception as e:
+        logger.warning("Could not read PortWatch/AIS signal context: %s", e)
+        return {}
+
+    return {row["port_code"]: row for row in (resp.data or []) if row.get("port_code")}
+
+
 def calculate_historical_index(
     port_code: str,
     current_index: float,
     history: list[dict],
     now_dt: datetime,
+    signal_context: dict | None = None,
 ) -> dict:
     current_start = now_dt - timedelta(days=PERIOD_DAYS)
     previous_start = now_dt - timedelta(days=PERIOD_DAYS * 2)
@@ -298,6 +321,60 @@ def calculate_historical_index(
         history_days = max(1, (values[-1][0].date() - values[0][0].date()).days + 1)
     else:
         history_days = 0
+
+    portwatch_index = None
+    if signal_context:
+        try:
+            raw_portwatch = signal_context.get("portwatch_historic_index")
+            portwatch_index = None if raw_portwatch is None else clamp(float(raw_portwatch), 0.0, 100.0)
+        except (TypeError, ValueError):
+            portwatch_index = None
+
+    if portwatch_index is not None:
+        trend_score = signal_context.get("portwatch_trend_index") or trend_score
+        try:
+            trend_score = clamp(float(trend_score), 0.0, 100.0)
+        except (TypeError, ValueError):
+            trend_score = 50.0
+
+        ais_index = signal_context.get("ais_wait_index")
+        if ais_index is not None:
+            try:
+                final_mpci = current_index * 0.50 + portwatch_index * 0.35 + clamp(float(ais_index), 0.0, 100.0) * 0.15
+                confidence = "portwatch_ais"
+            except (TypeError, ValueError):
+                final_mpci = current_index * 0.60 + portwatch_index * 0.40
+                confidence = "portwatch_history"
+        else:
+            final_mpci = current_index * 0.60 + portwatch_index * 0.40
+            confidence = "portwatch_history"
+
+        portwatch_days = signal_context.get("portwatch_history_days")
+        try:
+            history_days = int(portwatch_days or history_days)
+        except (TypeError, ValueError):
+            pass
+
+        delta_pct_prev = signal_context.get("portwatch_activity_delta_pct")
+        try:
+            delta_pct_prev = None if delta_pct_prev is None else round(float(delta_pct_prev), 4)
+        except (TypeError, ValueError):
+            delta_pct_prev = None
+
+        return {
+            "econdb_current_index": round(current_index, 1),
+            "historic_percentile_index": round(portwatch_index, 1),
+            "trend_change_index": round(trend_score, 1),
+            "final_mpci": round(clamp(final_mpci, 0.0, 100.0), 1),
+            "mpci_confidence": confidence,
+            "mpci_history_days": history_days,
+            "mpci_period_start": current_start.date().isoformat(),
+            "mpci_period_end": now_dt.date().isoformat(),
+            "mpci_previous_start": previous_start.date().isoformat(),
+            "mpci_previous_end": (previous_end - timedelta(days=1)).date().isoformat(),
+            "mpci_delta_prev": delta_prev,
+            "mpci_delta_pct_prev": delta_pct_prev,
+        }
 
     if history_days < PERIOD_DAYS or previous_avg is None:
         final_mpci = current_index
@@ -340,6 +417,8 @@ def update_supabase(supabase: Client, ports: list[dict]) -> None:
         supabase,
         [normalize_locode(str(port.get("locode", ""))) for port in ports if port.get("locode")],
     )
+    port_codes = [normalize_locode(str(port.get("locode", ""))) for port in ports if port.get("locode")]
+    signal_by_port = fetch_signal_context(supabase, port_codes)
     upsert_rows: list[dict] = []
     history_rows: list[dict] = []
 
@@ -370,7 +449,11 @@ def update_supabase(supabase: Client, ports: list[dict]) -> None:
             continue
 
         index_data = calculate_historical_index(
-            port_code, current_index, history_by_port.get(port_code, []), now_dt
+            port_code,
+            current_index,
+            history_by_port.get(port_code, []),
+            now_dt,
+            signal_by_port.get(port_code),
         )
 
         lat, lon = parse_coord(port.get("coord"))

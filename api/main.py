@@ -62,6 +62,10 @@ def list_ports():
             "econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at,"
             "econdb_current_index,historic_percentile_index,trend_change_index,"
             "final_mpci,mpci_confidence,mpci_history_days,mpci_delta_prev,mpci_delta_pct_prev,"
+            "portwatch_portid,portwatch_updated_at,portwatch_history_days,"
+            "portwatch_recent_activity,portwatch_previous_activity,"
+            "portwatch_activity_percentile,portwatch_trend_index,"
+            "portwatch_historic_index,portwatch_activity_delta_pct,"
             "ais_recent_anchored_avg,ais_baseline_anchored_avg,ais_wait_ratio,"
             "ais_wait_index,ais_anomaly_level,ais_updated_at"
         )

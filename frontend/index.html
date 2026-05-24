@@ -329,7 +329,7 @@ setInterval(tick,1000);tick();
 // ── Supabase 쿼리 ────────────────────────────────────────────────
 async function fetchSnaps(){
   const{data,error}=await sb.from('port_snapshots')
-    .select('port_code,port_name,country,region,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at,econdb_current_index,historic_percentile_index,trend_change_index,final_mpci,mpci_confidence,mpci_history_days,mpci_delta_prev,mpci_delta_pct_prev,ais_recent_anchored_avg,ais_baseline_anchored_avg,ais_wait_ratio,ais_wait_index,ais_anomaly_level,ais_updated_at')
+    .select('port_code,port_name,country,region,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at,econdb_current_index,historic_percentile_index,trend_change_index,final_mpci,mpci_confidence,mpci_history_days,mpci_delta_prev,mpci_delta_pct_prev,portwatch_portid,portwatch_updated_at,portwatch_history_days,portwatch_recent_activity,portwatch_previous_activity,portwatch_activity_percentile,portwatch_trend_index,portwatch_historic_index,portwatch_activity_delta_pct,ais_recent_anchored_avg,ais_baseline_anchored_avg,ais_wait_ratio,ais_wait_index,ais_anomaly_level,ais_updated_at')
     .order('port_code');
   if(error){console.error(error);return[]}
   return data||[];
@@ -399,7 +399,8 @@ function renderS3(ports){
     const delay=p.econdb_delay_pct!=null?`${Math.round(p.econdb_delay_pct)}%`:'--';
     const anc=p.vessels_anchored!=null?`${p.vessels_anchored}${LANG==='ko'?'척':''}`:'--';
     const ais=p.ais_wait_index!=null?`<br><span class="pcode">AIS ${Math.round(p.ais_wait_index)} · ${p.ais_anomaly_level||'NORMAL'}</span>`:'';
-    return`<tr onclick="pickPort('${p.port_code}')"><td><span class="pname">${pn(p.port_code)}</span>${stale}<br><span class="pcode">${p.port_code}</span>${ais}</td><td style="color:var(--muted)">${ctry(p.port_code)}</td><td><span class="score-big" style="color:${col}">${mpci!=null?mpci.toFixed(1):'--'}</span></td><td style="color:var(--muted)">${turn}</td><td style="color:var(--muted)">${delay}</td><td style="color:var(--muted)">${anc}</td><td style="font-size:14px;font-weight:600">${lvlLabel(mpci)}</td></tr>`;
+    const pw=p.portwatch_historic_index!=null?`<br><span class="pcode">PW ${Math.round(p.portwatch_historic_index)} · ${p.portwatch_history_days||0}d</span>`:'';
+    return`<tr onclick="pickPort('${p.port_code}')"><td><span class="pname">${pn(p.port_code)}</span>${stale}<br><span class="pcode">${p.port_code}</span>${pw}${ais}</td><td style="color:var(--muted)">${ctry(p.port_code)}</td><td><span class="score-big" style="color:${col}">${mpci!=null?mpci.toFixed(1):'--'}</span></td><td style="color:var(--muted)">${turn}</td><td style="color:var(--muted)">${delay}</td><td style="color:var(--muted)">${anc}</td><td style="font-size:14px;font-weight:600">${lvlLabel(mpci)}</td></tr>`;
   }).join('');
 }
 
@@ -493,6 +494,9 @@ function showResult(d,code,approx){
   const aisNote=portData&&portData.ais_wait_index!=null
     ?`<div class="eta-info" style="margin-bottom:11px">AIS ${LANG==='ko'?'대기 지표':'waiting index'}: <strong>${Math.round(portData.ais_wait_index)}</strong> · ${portData.ais_anomaly_level||'NORMAL'}</div>`
     :'';
+  const pwNote=portData&&portData.portwatch_historic_index!=null
+    ?`<div class="eta-info" style="margin-bottom:11px">PortWatch ${LANG==='ko'?'1년 기준선':'historic baseline'}: <strong>${Math.round(portData.portwatch_historic_index)}</strong> · ${portData.portwatch_history_days||0}d</div>`
+    :'';
   rc.innerHTML=
     `<div class="eta-rtitle">${name} ${t(approx?'arr_approx':'arr_dest')}</div>`+
     `<div class="eta-rows">`+
@@ -501,6 +505,7 @@ function showResult(d,code,approx){
     `<div class="eta-row p90"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_late')}</span><span class="eta-rdate">${fmtD(d.p90)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:80%"></div></div><div class="eta-rnote">${t('arr_late_d')}</div></div>`+
     `</div>`+
     mpciNote+
+    pwNote+
     aisNote+
     (isBad?`<div class="eta-warn">⚠️ ${name} ${LANG==='ko'?`현재 ${lvlLabel(mpci)} — 선사 공지 ETA보다 약 ${waitLbl(mpci)} 늦을 수 있습니다`:`is currently ${lvlLabel(mpci)} — may arrive ${waitLbl(mpci)} later than carrier ETA`}</div>`:'')+
     `<div class="eta-info"><strong>${t('dnd_ttl')}</strong><br>${t('dnd_body').replace('%D%',fmtD(d.p50))}</div>`+
