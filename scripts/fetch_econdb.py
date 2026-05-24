@@ -28,8 +28,17 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 ECONDB_URL = "https://www.econdb.com/maritime/search/ports/"
-ECONDB_PORT_URL = "https://www.econdb.com/maritime/ports/async/"  # 단건(async) 폴백
 WARMUP_URL = "https://www.econdb.com/maritime/search/"            # 세션/쿠키 발급용
+
+# EconDB 가 돌려주는 locode → 내부 코드 매핑.
+# EconDB 실제 UN/LOCODE 와 내부 코드(collector/snapshots/frontend 에서 쓰는 코드)가
+# 다른 경우만 등록한다. (첨부 Solr 응답으로 확정)
+#   CN TAO = Qingdao  → 내부 CNQIN
+#   VN VUT = Vung Tau(≈Cai Mep) → 내부 VNTOT
+ECONDB_LOCODE_ALIAS = {
+    "CNTAO": "CNQIN",
+    "VNVUT": "VNTOT",
+}
 
 # page>=2 의 WAF/캐시-미스 차단을 피하려면 비브라우저 티를 내면 안 된다.
 # 정직한 봇 UA(MTLLink-MPCI-Monitor)는 EconDB와 정식 계약 후 다시 사용할 것.
@@ -45,7 +54,6 @@ BROWSER_HEADERS = {
     "Referer": WARMUP_URL,
 }
 PAGE_SLEEP_SECONDS = (1.0, 3.0)
-PER_PORT_SLEEP_SECONDS = (1.0, 2.5)
 MAX_RETRIES = 3
 
 ECONDB_FIELDS = (
@@ -59,7 +67,7 @@ HISTORY_LOOKBACK_DAYS = int(os.getenv("MPCI_HISTORY_LOOKBACK_DAYS", "365"))
 PERIOD_DAYS = int(os.getenv("MPCI_PERIOD_DAYS", "14"))
 DEFAULT_WATCHLIST = {
     "USLAX", "USLGB", "USNYC", "USSAV", "CAVAN",
-    "CNSHA", "CNNGB", "CNSZX", "CNQIN", "CNYTN", "CNYAT", "HKHKG",
+    "CNSHA", "CNNGB", "CNQIN", "CNYTN", "HKHKG",
     "SGSIN", "MYTPP", "MYPKG", "THLCH", "VNTOT", "PHMNL",
     "KRPUS", "JPTYO", "JPYOK", "JPNGO",
     "NLRTM", "BEANR", "DEHAM", "GBFXT", "FRLEH", "ESVLC", "ITGOA",
@@ -253,11 +261,13 @@ def _fetch_paginated(client, watchlist: set[str] | None) -> tuple[list[dict], se
             if not locode:
                 continue
             code = normalize_locode(str(locode))
+            code = ECONDB_LOCODE_ALIAS.get(code, code)  # EconDB locode → 내부 코드
             if not code or code in seen:
                 continue
             if watchlist is not None and code not in watchlist:
                 continue
             seen.add(code)
+            doc["locode"] = code  # downstream(update_supabase)이 내부 코드로 저장하도록 재기록
             ports.append(doc)
             added += 1
 
@@ -279,117 +289,19 @@ def _fetch_paginated(client, watchlist: set[str] | None) -> tuple[list[dict], se
     return ports, seen, blocked
 
 
-def _deep_get(obj, keys: tuple[str, ...]):
-    """중첩 dict/list 어디에 있든 keys 중 첫 번째로 존재하는 non-null 값 반환.
-
-    async 단건 엔드포인트의 정확한 응답 스키마가 미확인이라 방어적으로 탐색한다.
-    첫 폴백 호출 때 로그로 찍히는 'ASYNC SAMPLE' 키 목록을 보고 keys 후보를 보정할 것.
-    """
-    if isinstance(obj, dict):
-        for k in keys:
-            if k in obj and obj[k] is not None:
-                return obj[k]
-        for v in obj.values():
-            found = _deep_get(v, keys)
-            if found is not None:
-                return found
-    elif isinstance(obj, list):
-        for item in obj:
-            found = _deep_get(item, keys)
-            if found is not None:
-                return found
-    return None
-
-
-def _normalize_async_doc(raw, code: str) -> dict | None:
-    """async 응답을 검색 docs와 동일한 스키마로 변환.
-
-    ⚠️ 키 이름은 추정값이다. 실제 응답(로그의 ASYNC SAMPLE)을 보고 아래 후보 목록을
-    반드시 검증/보정해야 한다. 셋 다 못 찾으면 None 반환(스킵).
-    """
-    congestion = _deep_get(raw, ("port_congestion", "congestion"))
-    delay = _deep_get(raw, ("delay_percent", "delay_pct", "delay"))
-    turnaround = _deep_get(raw, ("turnaround", "turnaround_days", "median_turnaround"))
-    if congestion is None and delay is None and turnaround is None:
-        return None
-    return {
-        "locode": f"{code[:2]} {code[2:]}",
-        "name": _deep_get(raw, ("name", "port_name")) or code,
-        "country": _deep_get(raw, ("country", "country_code")),
-        "region": _deep_get(raw, ("region",)),
-        "coord": _deep_get(raw, ("coord", "coordinates")),
-        "turnaround": turnaround,
-        "schedule": _deep_get(raw, ("schedule", "schedule_reliability")),
-        "delay_percent": delay,
-        "port_congestion": congestion,
-    }
-
-
-def _fetch_per_port(client, codes: set[str]) -> list[dict]:
-    """[3번] 항만별 단건(async) 폴백. 각 호출은 direct GET(page=1 등가)이라 차단 회피."""
-    from urllib.parse import quote
-
-    out: list[dict] = []
-    logged_sample = False
-    for code in sorted(codes):
-        # 'USLAX' -> 'US LAX' (표준 5자리 LOCODE: 국가 2 + 위치 3)
-        locode = f"{code[:2]} {code[2:]}"
-        url = f"{ECONDB_PORT_URL}{quote(locode)}/"
-        try:
-            resp = client.get(url, timeout=60)
-            if resp.status_code in (403, 429):
-                logger.warning("per-port blocked status=%s code=%s", resp.status_code, code)
-                continue
-            resp.raise_for_status()
-            raw = resp.json()
-        except Exception as e:
-            logger.warning("per-port fetch failed code=%s: %s", code, e)
-            continue
-
-        if not logged_sample:
-            sample = list(raw.keys()) if isinstance(raw, dict) else type(raw).__name__
-            logger.info("ASYNC SAMPLE (%s) top-level keys=%s", code, sample)
-            logged_sample = True
-
-        doc = _normalize_async_doc(raw, code)
-        if doc:
-            out.append(doc)
-        else:
-            logger.warning("per-port: %s 지표 추출 실패 (스키마 불일치? _normalize_async_doc 보정 필요)", code)
-
-        time.sleep(random.uniform(*PER_PORT_SLEEP_SECONDS))
-
-    logger.info("per-port fallback recovered %s/%s ports", len(out), len(codes))
-    return out
-
-
 def fetch_econdb_ports() -> list[dict]:
-    """[2번] 워밍업 세션 페이지네이션 → 차단/누락 시 [3번] 항만별 단건 폴백."""
+    """워밍업 세션으로 search 엔드포인트를 페이지네이션해 watchlist 항만 수집.
+
+    올바른 locode(ECONDB_LOCODE_ALIAS 포함)로 watchlist 항만이 페이지네이션에서 모두
+    잡히므로 별도 단건(async) 폴백은 두지 않는다. EconDB 미수록 항만은 커버리지 ERROR 로 표면화.
+    """
     watchlist = get_watchlist()
     client, backend = make_client()
 
     try:
-        # ── 2번: 페이지네이션 ──────────────────────────────────────────
         ports, seen, blocked = _fetch_paginated(client, watchlist)
         logger.info("Pagination done (backend=%s, blocked=%s): %s ports",
                     backend, blocked, len(ports))
-
-        # ── 3번: 폴백 (watchlist 누락분만) ────────────────────────────
-        if watchlist is not None:
-            missing = watchlist - seen
-            if missing:
-                logger.warning(
-                    "Pagination incomplete %s/%s. Per-port fallback for %s ports: %s",
-                    len(seen), len(watchlist), len(missing), sorted(missing),
-                )
-                for doc in _fetch_per_port(client, missing):
-                    code = normalize_locode(str(doc.get("locode", "")))
-                    if code and code not in seen:
-                        seen.add(code)
-                        ports.append(doc)
-        elif blocked:
-            # ALL 모드는 누락 목록을 특정할 수 없어 단건 폴백 불가
-            logger.warning("ALL 모드에서 차단 발생 — 단건 폴백 불가. watchlist 지정을 권장.")
     finally:
         try:
             client.close()
