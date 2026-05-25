@@ -25,22 +25,42 @@ import argparse
 import json
 import logging
 import os
+import sys
 import time
 from datetime import date, datetime, timedelta, timezone
 
 import httpx
 from supabase import create_client, Client
 
+# _econdb_http 가 같은 scripts/ 디렉터리에 있으므로 sys.path 보정
+_SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+if _SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPTS_DIR)
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
 # ── 엔드포인트 상수 ───────────────────────────────────────────────────────────
 
-REGION_PORTS_URL = "https://www.econdb.com/maritime/congestion_region_ports/"
-CONTAINERS_URL   = "https://www.econdb.com/widgets/containers-in-terminal/data/"
-OMISSIONS_URL    = "https://www.econdb.com/widgets/omissions-time-series/data/"
-SCHEDULE_URL     = "https://www.econdb.com/widgets/weekly-schedule-profile/data/"
-SEARCH_URL       = "https://www.econdb.com/maritime/search/ports/"
+ECONDB_BASE      = "https://www.econdb.com"
+REGION_PORTS_URL = f"{ECONDB_BASE}/maritime/congestion_region_ports/"
+CONTAINERS_URL   = f"{ECONDB_BASE}/widgets/containers-in-terminal/data/"
+OMISSIONS_URL    = f"{ECONDB_BASE}/widgets/omissions-time-series/data/"
+SCHEDULE_URL     = f"{ECONDB_BASE}/widgets/weekly-schedule-profile/data/"
+SEARCH_URL       = f"{ECONDB_BASE}/maritime/search/ports/"
+
+# EconDB 단건 GET에도 브라우저 헤더 필요 (_econdb_http.py와 동일)
+BROWSER_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9,ko;q=0.8",
+    "X-Requested-With": "XMLHttpRequest",
+    "Referer": f"{ECONDB_BASE}/maritime/search/",
+}
 
 SEARCH_FL = (
     "rank,name,locode,id,schedule,port_congestion,delay_percent,"
@@ -97,22 +117,50 @@ def get_sb() -> Client:
 
 # ── [A] 지역별 locode 수집 ────────────────────────────────────────────────────
 
+def _region_get(client: httpx.Client, url: str) -> dict | None:
+    """EconDB 단건 GET + 지수 백오프 재시도(최대 3회)."""
+    for attempt in range(1, 4):
+        try:
+            resp = client.get(url, timeout=60)
+            if resp.status_code in (403, 429):
+                logger.warning("EconDB blocked status=%s url=%s", resp.status_code, url)
+                return None
+            resp.raise_for_status()
+            data = resp.json()
+            if not isinstance(data, dict):
+                logger.warning("Unexpected response type %s url=%s", type(data).__name__, url)
+                return None
+            return data
+        except Exception as exc:
+            if attempt == 3:
+                logger.error("EconDB GET failed after 3 attempts url=%s: %s", url, exc)
+                return None
+            logger.warning("Retry %s/3 url=%s: %s", attempt, url, exc)
+            time.sleep(2 ** attempt)
+    return None
+
+
 def job_regions(sb: Client) -> None:
     """congestion_region_ports × 18지역 → econdb_ports 저장."""
     total = 0
-    for region in REGIONS:
-        try:
-            resp = httpx.get(REGION_PORTS_URL, params={"region": region}, timeout=20)
-            resp.raise_for_status()
-            raw = resp.json()
+    # 브라우저 헤더 세팅 (WAF 우회)
+    client = httpx.Client(headers=BROWSER_HEADERS, follow_redirects=True, timeout=60.0)
+    try:
+        for region in REGIONS:
+            # 공백을 + 로 인코딩 (EconDB URL 규칙)
+            encoded = region.replace(" ", "+")
+            url = f"{REGION_PORTS_URL}?region={encoded}"
+            data = _region_get(client, url)
+            if data is None:
+                continue
 
-            # 응답이 list면 그대로, dict면 내부 배열 추출
-            ports = raw if isinstance(raw, list) else (
-                raw.get("ports") or raw.get("results") or raw.get("data") or []
-            )
+            ports_raw = data.get("ports")
+            if not isinstance(ports_raw, list):
+                logger.warning("[regions] %s: 예상치 못한 응답 키=%s", region, list(data.keys()))
+                continue
 
             rows = []
-            for p in ports:
+            for p in ports_raw:
                 locode = (p.get("locode") or p.get("port_code") or "").strip()
                 if not locode:
                     continue
@@ -130,15 +178,18 @@ def job_regions(sb: Client) -> None:
                 })
 
             if rows:
-                sb.table("econdb_ports").upsert(
-                    rows, on_conflict="locode"
-                ).execute()
-                total += len(rows)
-                logger.info("[regions] %s: %d개", region, len(rows))
+                try:
+                    sb.table("econdb_ports").upsert(rows, on_conflict="locode").execute()
+                    total += len(rows)
+                    logger.info("[regions] %s: %d개", region, len(rows))
+                except Exception as e:
+                    logger.error("[regions] %s upsert 실패: %s", region, e)
+            else:
+                logger.warning("[regions] %s: 0개 (응답 ports 비어있음)", region)
 
-        except Exception as e:
-            logger.warning("[regions] %s 실패: %s", region, e)
-        time.sleep(0.5)
+            time.sleep(0.5)
+    finally:
+        client.close()
 
     logger.info("[regions] 완료: 총 %d개 항만", total)
 
@@ -180,7 +231,7 @@ def _fetch_one_port(sb: Client, locode: str) -> None:
 
     for series_type, url, params in endpoints:
         try:
-            resp = httpx.get(url, params=params, timeout=20)
+            resp = httpx.get(url, headers=BROWSER_HEADERS, params=params, timeout=30)
 
             if resp.status_code == 429:
                 logger.error("429 Too Many Requests — 수집 중단")
@@ -257,7 +308,7 @@ def job_snapshots(sb: Client) -> None:
 
     for sort_type, sort_by in sorts:
         try:
-            resp = httpx.get(SEARCH_URL, params={
+            resp = httpx.get(SEARCH_URL, headers=BROWSER_HEADERS, params={
                 "page_size": 20, "page": 1, "s": "",
                 "sort_by": sort_by, "fl": SEARCH_FL,
             }, timeout=20)
