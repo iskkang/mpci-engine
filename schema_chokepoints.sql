@@ -132,8 +132,38 @@ create table if not exists hormuz_ai_brief (
   fetched_at  timestamptz not null default now()
 );
 
+-- ── 최근 통과 선박 (EconDB latest_crossings, 버그2 추가) ────
+create table if not exists chokepoint_latest_crossings (
+  chokepoint  text        not null,
+  mmsi        bigint      not null,
+  start_date  timestamptz not null,
+  name        text,
+  teu         integer,
+  direction   text,
+  operator    text,
+  country     text,
+  updated_at  timestamptz not null default now(),
+  primary key (chokepoint, mmsi, start_date)
+);
+
+-- ── 기존 테이블 컬럼 추가 (버그1: 방향 코드 동적화) ─────────
+-- 중복 실행 시 IF NOT EXISTS로 무시됨
+
+ALTER TABLE chokepoint_pass_weekly
+  ADD COLUMN IF NOT EXISTS dir_a_code  text,
+  ADD COLUMN IF NOT EXISTS dir_b_code  text,
+  ADD COLUMN IF NOT EXISTS teu_dir_a   double precision,
+  ADD COLUMN IF NOT EXISTS teu_dir_b   double precision;
+
+ALTER TABLE chokepoint_index
+  ADD COLUMN IF NOT EXISTS dir_a_code  text,
+  ADD COLUMN IF NOT EXISTS dir_b_code  text,
+  ADD COLUMN IF NOT EXISTS teu_dir_a   double precision,
+  ADD COLUMN IF NOT EXISTS teu_dir_b   double precision;
+
 -- ── RLS 활성화 (프론트 anon read-only) ─────────────────────
 
+alter table chokepoint_latest_crossings enable row level security;
 alter table chokepoint_catalog        enable row level security;
 alter table chokepoint_pass_weekly    enable row level security;
 alter table chokepoint_water_level    enable row level security;
@@ -200,5 +230,10 @@ end $$;
 
 do $$ begin
   execute 'create policy "anon_read_hormuz_ai_brief" on hormuz_ai_brief for select to anon using (true)';
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  execute 'create policy "anon_read_chokepoint_latest_crossings" on chokepoint_latest_crossings for select to anon using (true)';
 exception when duplicate_object then null;
 end $$;

@@ -42,7 +42,8 @@ SOURCE       = "ShipFinder"
 MAX_RETRIES  = 3
 
 # 기본 베이스 URL — 환경변수로 재정의 가능
-SHIPFINDER_BASE = os.getenv("SHIPFINDER_BASE_URL", "https://www.shipfinder.co").rstrip("/")
+# ⚠️ 버그 수정: .co → .com (정상 도메인)
+SHIPFINDER_BASE = os.getenv("SHIPFINDER_BASE_URL", "https://www.shipfinder.com").rstrip("/")
 
 # shiptype 중→영 매핑 (미매핑은 원문 그대로)
 SHIPTYPE_MAP: dict[str, str] = {
@@ -67,8 +68,11 @@ _BROWSER_HEADERS: dict[str, str] = {
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/124.0.0.0 Safari/537.36"
     ),
-    "Accept": "application/json, text/plain, */*",
+    # AJAX 클라이언트가 정상적으로 보내는 헤더 — 봇 차단 우회
+    "Accept": "application/json, text/javascript, */*; q=0.01",
     "Accept-Language": "en-US,en;q=0.9",
+    "Referer": f"{SHIPFINDER_BASE}/",
+    "X-Requested-With": "XMLHttpRequest",
 }
 
 

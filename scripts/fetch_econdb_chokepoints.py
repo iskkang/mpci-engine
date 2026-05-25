@@ -5,14 +5,16 @@ GitHub Actions: 일 1회 실행
 수집 대상:
   - chokepoints_list: 해협 목록 (Suez/Panama/Cape/Malacca/Bosphorus/Hormuz)
   - chokepoint-pass: 방향별 TEU 주간 통과량 (unit=teu, group_by=direction)
+      → series 코드를 동적으로 읽음 (N/S·E/W 등 해협마다 다름)
   - chokepoint-water-level: 파나마 운하 일별 수위
-  - chokepoint_index: 파생 집계 (pct_of_normal, trend, status, narrative)
+  - latest_crossings: 최근 통과 컨테이너선 목록
+  - chokepoint_index: 파생 집계 (pct_of_normal, status, narrative)
 
 데이터 함정:
   1. 부분주: max(week_start) <= today-7인 것만 완전주(is_partial=false) 처리
   2. 기준선: 고정 참조기간 REFERENCE_MEDIAN (trailing 기준선 사용 금지)
   3. 수위 미래 null: 최신 non-null "Current year" 값만 사용
-  4. status/draft_status: 룰 기반 (예측·지정학 추측 금지) + "보정 필요" 상수
+  4. 방향 코드: series[].code 에서 동적 추출 — N/S 하드코딩 금지
 
 가드레일:
   - 응답 스키마 불일치 → 로그+스킵, 값 날조/추정 채움 금지
@@ -99,20 +101,23 @@ def fetch_chokepoint_list(client) -> list[dict]:
     return chokepoints
 
 
-def fetch_pass_data(client, chokepoint_name: str) -> list[dict]:
+def fetch_pass_plot(client, chokepoint_name: str) -> dict | None:
+    """
+    chokepoint-pass 전체 plot dict 반환.
+    series 코드(N/S·E/W 등)를 읽기 위해 plot 전체를 반환한다.
+    """
     url = (
         f"{ECONDB_BASE}/widgets/chokepoint-pass/data/"
         f"?unit=teu&group_by=direction&chokepoint_name={chokepoint_name}"
     )
     resp = region_get(client, url)
     if not resp:
-        return []
+        return None
     plots = resp.get("plots") or []
     if not plots:
-        return []
-    plot = plots[0] if isinstance(plots[0], dict) else {}
-    data = plot.get("data") or []
-    return data if isinstance(data, list) else []
+        return None
+    plot = plots[0] if isinstance(plots[0], dict) else None
+    return plot
 
 
 def fetch_water_level(client) -> list[dict]:
@@ -128,15 +133,50 @@ def fetch_water_level(client) -> list[dict]:
     return data if isinstance(data, list) else []
 
 
+def fetch_latest_crossings(client, chokepoint_name: str) -> list[dict]:
+    """최근 통과 컨테이너선 목록 (EconDB latest_crossings)."""
+    url = (
+        f"{ECONDB_BASE}/maritime/latest_crossings/"
+        f"?chokepoint_name={chokepoint_name}"
+    )
+    resp = region_get(client, url)
+    if not resp:
+        return []
+    data = resp.get("data") or []
+    return data if isinstance(data, list) else []
+
+
+def extract_series_codes(plot: dict) -> tuple[str, str] | None:
+    """
+    plot["series"] 에서 방향 코드 2개를 동적 추출.
+    예: [{"code":"N",...},{"code":"S",...}] → ("N","S")
+        [{"code":"E",...},{"code":"W",...}] → ("E","W")
+    시리즈가 2개 미만이면 None 반환 (스킵 신호).
+    """
+    series = plot.get("series") or []
+    codes = []
+    for s in series:
+        if isinstance(s, dict) and s.get("code"):
+            codes.append(str(s["code"]))
+    if len(codes) < 2:
+        return None
+    return codes[0], codes[1]
+
+
 def parse_pass_rows(
-    raw: list[dict], today: date
+    plot: dict,
+    dir_a: str,
+    dir_b: str,
+    today: date,
 ) -> tuple[list[dict], list[dict]]:
     """
-    EconDB chokepoint-pass rows 파싱.
+    EconDB chokepoint-pass plot 파싱.
+    dir_a / dir_b: 동적으로 추출한 시리즈 코드 (예: "N","S" 또는 "E","W").
     완전주 판별: week_start <= today - 7 → is_partial = False
     반환: (complete_rows, all_rows) 모두 week_start 내림차순
     """
     cutoff = today - timedelta(days=7)
+    raw = plot.get("data") or []
     rows: list[dict] = []
 
     for row in raw:
@@ -149,19 +189,24 @@ def parse_pass_rows(
             logger.warning("Unparseable week_start: %s", d)
             continue
 
-        n = row.get("N")
-        s = row.get("S")
+        teu_a = row.get(dir_a)
+        teu_b = row.get(dir_b)
         total: Optional[float] = None
-        if n is not None or s is not None:
-            total = float(n or 0) + float(s or 0)
+        if teu_a is not None or teu_b is not None:
+            total = float(teu_a or 0) + float(teu_b or 0)
 
         rows.append(
             {
-                "week_start": week_start,
-                "teu_north":  float(n) if n is not None else None,
-                "teu_south":  float(s) if s is not None else None,
-                "teu_total":  total,
-                "is_partial": week_start > cutoff,
+                "week_start":  week_start,
+                "dir_a_code":  dir_a,
+                "dir_b_code":  dir_b,
+                "teu_dir_a":   float(teu_a) if teu_a is not None else None,
+                "teu_dir_b":   float(teu_b) if teu_b is not None else None,
+                # 하위 호환: N/S 해협이면 teu_north/teu_south도 채움
+                "teu_north":   float(teu_a) if dir_a == "N" and teu_a is not None else None,
+                "teu_south":   float(teu_b) if dir_b == "S" and teu_b is not None else None,
+                "teu_total":   total,
+                "is_partial":  week_start > cutoff,
             }
         )
 
@@ -285,8 +330,12 @@ def upsert_pass_weekly(
         {
             "chokepoint":  chokepoint,
             "week_start":  r["week_start"].isoformat(),
-            "teu_north":   r["teu_north"],
-            "teu_south":   r["teu_south"],
+            "dir_a_code":  r["dir_a_code"],
+            "dir_b_code":  r["dir_b_code"],
+            "teu_dir_a":   r["teu_dir_a"],
+            "teu_dir_b":   r["teu_dir_b"],
+            "teu_north":   r["teu_north"],   # 하위 호환 (N/S 해협)
+            "teu_south":   r["teu_south"],   # 하위 호환 (N/S 해협)
             "teu_total":   r["teu_total"],
             "is_partial":  r["is_partial"],
             "updated_at":  now,
@@ -323,6 +372,58 @@ def upsert_water_level(supabase: Client, rows: list[dict]) -> None:
     logger.info("Upserted %s chokepoint_water_level rows", len(records))
 
 
+def upsert_latest_crossings(
+    supabase: Client, chokepoint: str, rows: list[dict]
+) -> None:
+    """
+    chokepoint_latest_crossings upsert.
+    teu는 int() 캐스팅 (부동소수 방지).
+    """
+    if not rows:
+        return
+    now = datetime.now(timezone.utc).isoformat()
+    records = []
+    for r in rows:
+        mmsi = r.get("mmsi")
+        start_date = r.get("start_date")
+        if not mmsi or not start_date:
+            continue
+        try:
+            mmsi_int = int(mmsi)
+        except (TypeError, ValueError):
+            logger.warning("latest_crossings: invalid mmsi=%s — skip", mmsi)
+            continue
+        teu_raw = r.get("teu")
+        teu_int = None
+        if teu_raw is not None:
+            try:
+                teu_int = int(teu_raw)
+            except (TypeError, ValueError):
+                teu_int = None
+        records.append(
+            {
+                "chokepoint":  chokepoint,
+                "mmsi":        mmsi_int,
+                "start_date":  str(start_date),   # timestamptz — Postgres가 파싱
+                "name":        r.get("name"),
+                "teu":         teu_int,
+                "direction":   r.get("direction"),
+                "operator":    r.get("operator"),
+                "country":     r.get("country"),
+                "updated_at":  now,
+            }
+        )
+    if not records:
+        return
+    supabase.table("chokepoint_latest_crossings").upsert(
+        records, on_conflict="chokepoint,mmsi,start_date"
+    ).execute()
+    logger.info(
+        "Upserted %s chokepoint_latest_crossings rows for %s",
+        len(records), chokepoint,
+    )
+
+
 # ── Phase 2: chokepoint_index 파생 ─────────────────────────────────────────
 def compute_and_upsert_index(
     supabase: Client,
@@ -346,6 +447,10 @@ def compute_and_upsert_index(
     teu_total  = latest["teu_total"]
     teu_north  = latest["teu_north"]
     teu_south  = latest["teu_south"]
+    dir_a_code = latest["dir_a_code"]
+    dir_b_code = latest["dir_b_code"]
+    teu_dir_a  = latest["teu_dir_a"]
+    teu_dir_b  = latest["teu_dir_b"]
     data_week  = latest["week_start"].isoformat()
 
     # 정상 대비 % — 고정 참조기간 중앙값 기준
@@ -396,6 +501,10 @@ def compute_and_upsert_index(
         "teu_total":        teu_total,
         "teu_north":        teu_north,
         "teu_south":        teu_south,
+        "dir_a_code":       dir_a_code,
+        "dir_b_code":       dir_b_code,
+        "teu_dir_a":        teu_dir_a,
+        "teu_dir_b":        teu_dir_b,
         "pct_of_normal":    pct_of_normal,
         "trend_pct":        trend_pct,
         "status":           status,
@@ -411,8 +520,8 @@ def compute_and_upsert_index(
     }
     supabase.table("chokepoint_index").upsert([row], on_conflict="chokepoint").execute()
     logger.info(
-        "Upserted chokepoint_index: %s pct=%.1f status=%s",
-        cp_name, pct_of_normal or 0, status,
+        "Upserted chokepoint_index: %s dir=%s/%s pct=%.1f status=%s",
+        cp_name, dir_a_code, dir_b_code, pct_of_normal or 0, status,
     )
 
 
@@ -446,18 +555,29 @@ def main() -> None:
                 len(water_rows), latest_nonnull,
             )
 
-        # 3. 해협별 주간 통과량 + index 파생
+        # 3. 해협별 주간 통과량 + latest_crossings + index 파생
         for cp in chokepoints:
             cp_name = (cp.get("name") or "").strip()
             if not cp_name:
                 continue
 
-            raw = fetch_pass_data(client, cp_name)
-            if not raw:
-                logger.warning("No pass data for %s — skip", cp_name)
+            # ── chokepoint-pass ─────────────────────────────────────────────
+            plot = fetch_pass_plot(client, cp_name)
+            if not plot:
+                logger.warning("No pass plot for %s — skip", cp_name)
                 continue
 
-            complete_rows, all_rows = parse_pass_rows(raw, today)
+            codes = extract_series_codes(plot)
+            if codes is None:
+                logger.warning(
+                    "%s: series 코드 < 2 → pass 스킵 (응답 확인 필요)", cp_name
+                )
+                continue
+
+            dir_a, dir_b = codes
+            logger.info("%s: series codes = [%s, %s]", cp_name, dir_a, dir_b)
+
+            complete_rows, all_rows = parse_pass_rows(plot, dir_a, dir_b, today)
             logger.info(
                 "%s: %s total rows, %s complete weeks",
                 cp_name, len(all_rows), len(complete_rows),
@@ -465,7 +585,14 @@ def main() -> None:
 
             upsert_pass_weekly(supabase, cp_name, all_rows)
 
-            # Phase 2: chokepoint_index 파생 (완전주만 사용)
+            # ── latest_crossings (버그2 추가) ───────────────────────────────
+            lc_rows = fetch_latest_crossings(client, cp_name)
+            if lc_rows:
+                upsert_latest_crossings(supabase, cp_name, lc_rows)
+            else:
+                logger.info("%s: no latest_crossings data (ok if not available)", cp_name)
+
+            # ── chokepoint_index 파생 (완전주만 사용) ───────────────────────
             # 파나마만 water_rows 전달, 나머지는 빈 리스트 → 수위 필드 null
             is_panama = _ref_key(cp_name) == "Panama"
             compute_and_upsert_index(
