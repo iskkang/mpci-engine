@@ -419,7 +419,7 @@ button { cursor: pointer; font-family: inherit; }
 .intel-item:last-child { border-bottom: none; }
 .intel-dot   { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
 .intel-body  { flex: 1; min-width: 0; }
-.intel-title { font-size: 11px; font-weight: 500; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.intel-title { font-size: 11px; font-weight: 500; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
 .intel-title a { color: var(--text-main); }
 .intel-title a:hover { color: var(--mint); }
 .intel-time  { font-size: 10px; color: var(--text-muted); }
@@ -1434,10 +1434,12 @@ function setLang(l){
 ══════════════════════════════════════════════════════ */
 async function fetchSnaps(){
   const{data,error}=await sb.from('port_snapshots')
-    .select('port_code,port_name,country,region,lat,lon,updated_at,vessels_anchored,vessels_berthed,ais_recent_anchored_avg,ais_recent_berthed_avg,econdb_congestion,econdb_current_index,econdb_delay_pct,econdb_turnaround,econdb_updated_at,ais_anomaly_level')
+    .select('port_code,port_name,country,region,lat,lon,updated_at,vessels_anchored,vessels_berthed,ais_recent_anchored_avg,ais_recent_berthed_avg,econdb_congestion,econdb_current_index,econdb_delay_pct,econdb_turnaround,econdb_updated_at,ais_anomaly_level,econdb_rank,econdb_region,port_congestion_raw,last_import_teu,last_export_teu,schedule_count')
     .order('port_code');
   if(error){console.error('fetchSnaps',error);return[];}
-  return data||[];
+  const d=data||[];
+  console.log(`[MTL] ports fetched: ${d.length}, with coords: ${d.filter(p=>p.lat&&p.lon).length}`);
+  return d;
 }
 async function fetchCPs(){
   const ago=new Date(Date.now()-8*864e5).toISOString().split('T')[0];
@@ -1570,7 +1572,8 @@ async function initMap(ports){
 
 function drawMap(container,ports){
   container.innerHTML='';
-  const w=container.clientWidth||600,h=container.clientHeight||300;
+  // clientWidth가 0일 때(탭 숨김 상태 초기화) 고정값으로 폴백 — viewBox로 반응형 유지
+  const w=Math.max(container.clientWidth,760),h=Math.max(container.clientHeight,400);
   const proj=d3.geoNaturalEarth1().scale(w/6.5).translate([w/2,h/2]);
   const path=d3.geoPath().projection(proj);
   const seaColor=_isDark?'#0a1929':'#dbeafe';

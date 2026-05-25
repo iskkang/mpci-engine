@@ -40,6 +40,51 @@ ECONDB_LOCODE_ALIAS = {
     "VNVUT": "VNTOT",
 }
 
+# locode(공백 제거) → (lat, lon) 정적 좌표 사전
+# EconDB coord 필드가 null 인 항만 대상 폴백
+PORT_COORDS: dict[str, tuple[float, float]] = {
+    'SGSIN':(1.264,103.820),'CNSHA':(31.234,121.476),'KRPUS':(35.099,129.043),
+    'CNNGH':(29.867,121.544),'MYTPP':(1.363,103.549),'CNQIN':(36.067,120.387),
+    'MAPTM':(35.888,-5.510),'BEANR':(51.221,4.404),'NLRTM':(51.950,4.140),
+    'TWKHH':(22.617,120.297),'CNYTN':(22.577,114.267),'MYPKG':(2.979,101.397),
+    'AEJEA':(25.007,55.077),'LKCMB':(6.933,79.843),'THLCH':(13.082,100.882),
+    'INMUN':(22.838,69.703),'CNSHK':(22.480,113.900),'USLAX':(33.736,-118.261),
+    'INNSA':(18.914,72.954),'HKHKG':(22.289,114.158),'CNTXG':(38.867,117.720),
+    'USNYC':(40.693,-74.139),'EGPSD':(31.259,32.284),'VNVUT':(10.346,107.084),
+    'VNTOT':(10.346,107.084),
+    'USLGB':(33.754,-118.214),'CNXMN':(24.451,118.068),'PAONX':(9.362,-79.862),
+    'ESVLC':(39.452,-0.327),'DEBRV':(53.544,8.575),'OMSLL':(17.020,54.090),
+    'USSAV':(32.082,-81.096),'BRSSZ':(-23.958,-46.305),'ITGIT':(38.428,15.900),
+    'VNHPH':(20.866,106.684),'PABLB':(8.962,-79.573),'COCTG':(10.394,-75.524),
+    'AEKHL':(24.803,54.648),'USHOU':(29.745,-95.268),'GRPIR':(37.941,23.627),
+    'SAJED':(21.485,39.173),'FRLEH':(49.490,0.107),'MXZLO':(19.055,-104.321),
+    'ESBCN':(41.332,2.167),'TGLFW':(6.137,1.272),'CAVAN':(49.295,-123.111),
+    'TRAMR':(40.983,28.683),'ZADUR':(-29.879,31.026),'GBLGP':(51.497,0.491),
+    'CNDLC':(38.900,121.653),'PECLL':(-12.053,-77.143),'USORF':(36.848,-76.299),
+    'PLGDN':(54.353,18.683),'USCHS':(32.779,-79.944),'MXLZC':(17.959,-102.175),
+    'JPYOK':(35.454,139.640),'USOAK':(37.796,-122.276),'TRMER':(36.800,34.641),
+    'DEHAM':(53.545,9.960),'GHTEM':(5.636,-0.016),'KRINC':(37.458,126.705),
+    'ESALG':(36.129,-5.446),'AUMEL':(-37.818,144.867),'USMIA':(25.774,-80.178),
+    'CIABJ':(5.354,-4.016),'GBFXT':(51.963,1.352),'IDSUB':(-7.241,112.736),
+    'IDJKT':(-6.121,106.843),'INMAA':(13.074,80.287),'VNSGH':(10.778,106.699),
+    'PHMHL':(14.580,120.966),'PHMNL':(14.580,120.966),'JPTYO':(35.621,139.760),
+    'CNNSA':(22.728,113.628),'PTSCE':(37.953,-8.869),'ITGOA':(44.406,8.934),
+    'EGALY':(31.197,29.892),'PKKHI':(24.861,66.990),'KEMBA':(-4.057,39.668),
+    'GBSOU':(50.909,-1.404),'KRKAN':(34.905,127.692),'DOCAU':(18.575,-69.627),
+    'MACAS':(33.615,-7.615),'TRALI':(38.795,26.968),'CAMTR':(45.553,-73.527),
+    'ECGYE':(-2.224,-79.893),'TRAMR':(40.983,28.683),'SADMM':(26.467,50.167),
+    'INCHK':(22.465,88.340),'BDCGP':(22.339,91.830),'SAJBI':(21.485,39.173),
+    'CNNGB':(29.867,121.544),'MYBTU':(5.978,116.075),'MYPTM':(1.363,103.549),
+    'VNSGN':(10.778,106.699),'TRTEKD':(40.984,27.512),'TRTEKJ':(40.984,27.512),
+    'GBHUL':(53.743,-0.333),'JPNGO':(35.064,136.881),'KRKWJ':(34.905,127.692),
+}
+
+
+def get_coords(locode: str) -> tuple[float | None, float | None]:
+    """PORT_COORDS 에서 정적 좌표 반환. 없으면 (None, None)."""
+    key = locode.replace(' ', '').upper() if locode else ''
+    return PORT_COORDS.get(key, (None, None))
+
 # page>=2 의 WAF/캐시-미스 차단을 피하려면 비브라우저 티를 내면 안 된다.
 # 정직한 봇 UA(MTLLink-MPCI-Monitor)는 EconDB와 정식 계약 후 다시 사용할 것.
 BROWSER_HEADERS = {
@@ -287,6 +332,121 @@ def _fetch_paginated(client, watchlist: set[str] | None) -> tuple[list[dict], se
         time.sleep(random.uniform(*PAGE_SLEEP_SECONDS))
 
     return ports, seen, blocked
+
+
+SEARCH_FL = (
+    "rank,name,locode,last_import_teu,last_export_teu,"
+    "import_dwell_time,export_dwell_time,ts_dwell_time,"
+    "schedule,port_congestion,delay_percent,turnaround,region,vessels_berthed,id"
+)
+
+
+def fetch_port_search(supabase: Client, sort_by: str = "global_trade desc", pages: int = 10) -> list[dict]:
+    """EconDB search endpoint → port_snapshots upsert (좌표·추가 통계 포함).
+
+    기존 fetch_econdb_ports / update_supabase 와 독립 실행:
+    lat/lon(PORT_COORDS 정적 좌표), econdb_rank, econdb_region,
+    port_congestion_raw, last_import_teu, last_export_teu, vessels_berthed,
+    schedule_count 를 채운다.
+    """
+    client, backend = make_client()
+    rows: list[dict] = []
+    now = datetime.now(timezone.utc).isoformat()
+
+    try:
+        for page in range(1, pages + 1):
+            try:
+                resp = client.get(
+                    ECONDB_URL,
+                    params={
+                        "page_size": 20,
+                        "page": page,
+                        "s": "",
+                        "sort_by": sort_by,
+                        "fl": SEARCH_FL,
+                    },
+                    timeout=30,
+                )
+                if resp.status_code in (403, 429):
+                    logger.warning("[port_search:%s] page %s blocked: %s", sort_by, page, resp.status_code)
+                    break
+                resp.raise_for_status()
+                docs = resp.json().get("response", {}).get("docs", [])
+                if not docs:
+                    break
+                for doc in docs:
+                    raw_locode = doc.get("locode", "") or ""
+                    locode = normalize_locode(raw_locode)
+                    locode = ECONDB_LOCODE_ALIAS.get(locode, locode)
+                    if not locode:
+                        continue
+                    lat, lon = get_coords(locode)
+                    row: dict = {
+                        "port_code":   locode,
+                        "port_name":   doc.get("name") or locode,
+                        "locode":      locode,
+                        "updated_at":  now,
+                    }
+                    if lat is not None:
+                        row["lat"] = lat
+                        row["lon"] = lon
+                    rank = doc.get("rank")
+                    if rank is not None:
+                        try:
+                            row["econdb_rank"] = int(rank)
+                        except (TypeError, ValueError):
+                            pass
+                    region = doc.get("region")
+                    if region:
+                        row["econdb_region"] = str(region)[:60]
+                    pc = doc.get("port_congestion")
+                    if pc is not None:
+                        try:
+                            row["port_congestion_raw"] = float(pc)
+                        except (TypeError, ValueError):
+                            pass
+                    lit = doc.get("last_import_teu")
+                    if lit is not None:
+                        try:
+                            row["last_import_teu"] = float(lit)
+                        except (TypeError, ValueError):
+                            pass
+                    let_ = doc.get("last_export_teu")
+                    if let_ is not None:
+                        try:
+                            row["last_export_teu"] = float(let_)
+                        except (TypeError, ValueError):
+                            pass
+                    vb = doc.get("vessels_berthed")
+                    if vb is not None:
+                        try:
+                            row["vessels_berthed"] = int(vb)
+                        except (TypeError, ValueError):
+                            pass
+                    sched = doc.get("schedule")
+                    if sched is not None:
+                        try:
+                            row["schedule_count"] = int(sched)
+                        except (TypeError, ValueError):
+                            pass
+                    rows.append(row)
+                time.sleep(random.uniform(0.5, 1.5))
+            except Exception as e:
+                logger.warning("[port_search:%s] page %s error: %s", sort_by, page, e)
+                break
+    finally:
+        try:
+            client.close()
+        except Exception:
+            pass
+
+    if rows:
+        try:
+            supabase.table("port_snapshots").upsert(rows, on_conflict="port_code").execute()
+            logger.info("[port_search:%s] %d개 upsert (좌표 포함)", sort_by, len(rows))
+        except Exception as e:
+            logger.error("[port_search:%s] upsert 실패: %s", sort_by, e)
+    return rows
 
 
 def fetch_econdb_ports() -> list[dict]:
@@ -555,6 +715,8 @@ def update_supabase(supabase: Client, ports: list[dict]) -> None:
         )
 
         lat, lon = parse_coord(port.get("coord"))
+        if lat is None:
+            lat, lon = get_coords(port_code)
         update_data: dict = {
             "port_code": port_code,
             "port_name": port.get("name") or port_code,
@@ -645,6 +807,11 @@ def main() -> None:
 
     supabase = get_supabase()
     update_supabase(supabase, ports)
+
+    # 신규: 좌표·추가 통계 보강 (EconDB search 두 가지 정렬)
+    logger.info("Enriching port_snapshots with coords + extra stats...")
+    fetch_port_search(supabase, sort_by="global_trade desc", pages=10)   # 상위 200항만
+    fetch_port_search(supabase, sort_by="port_congestion desc", pages=5) # 혼잡 상위 100항만
 
     logger.info("fetch_econdb.py completed successfully.")
 
