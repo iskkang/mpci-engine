@@ -1551,9 +1551,16 @@ async function fetchIntelNews(){
   return data||[];
 }
 async function fetchMapPorts(){
-  // econdb_ports v2 스키마에는 lat/lon/region 없음 → port_snapshots 사용
-  // econdb_ports가 lat/lon 컬럼을 갖추면 여기서 쿼리
-  return [];
+  // econdb_ports.lat/lon → 수집된 항만 좌표 (sync-ports 실행 후 채워짐)
+  try{
+    const{data,error}=await sb.from('econdb_ports')
+      .select('locode,port_name,lat,lon')
+      .not('lat','is',null).not('lon','is',null);
+    if(error)throw error;
+    const d=data||[];
+    if(d.length)console.log(`[MTL] econdb_ports map: ${d.length}개 좌표 확보`);
+    return d;
+  }catch(e){console.warn('[MTL] fetchMapPorts:',e.message);return[];}
 }
 async function fetchTopCongestionPorts(){
   // econdb_port_snapshots는 schema_econdb_v2에서 DROP됨
@@ -1623,18 +1630,28 @@ function markerColor(v){
   return _isDark?'#22c55e':'#16a34a';
 }
 
-async function initMap(ports){
+async function initMap(ports, mapPorts){
   const container=document.getElementById('map-container');
   if(!container)return;
   if(!_worldData){
     try{_worldData=await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(r=>r.json());}
     catch(e){container.innerHTML='<div class="no-data">Map unavailable</div>';return;}
   }
-  // port_snapshots에서 lat/lon 있는 항만만 사용
-  const validPorts=(ports||[]).filter(p=>p.lat&&p.lon);
-  console.log(`[MTL] map markers: ${validPorts.length}`);
-  window._mapPorts=validPorts;
-  drawMap(container, validPorts);
+  // econdb_ports(lat/lon 있을 때) 우선 → 없으면 port_snapshots 폴백
+  const ePorts=(mapPorts||[]).filter(p=>p.lat&&p.lon);
+  const legacyPorts=(ports||[]).filter(p=>p.lat&&p.lon);
+  const usePorts=ePorts.length>0?ePorts:legacyPorts;
+  // congestion 값은 port_snapshots와 병합
+  const snapMap=Object.fromEntries((ports||[]).map(p=>[p.port_code,p]));
+  const merged=usePorts.map(p=>{
+    const code=p.locode||p.port_code;
+    const snap=snapMap[code]||snapMap[(code||'').replace(' ','')];
+    return{...p,port_code:code,econdb_congestion:snap?.econdb_congestion,econdb_current_index:snap?.econdb_current_index};
+  });
+  const src=ePorts.length>0?'econdb_ports':'port_snapshots';
+  console.log(`[MTL] map markers: ${merged.length} (${src})`);
+  window._mapPorts=merged;
+  drawMap(container,merged);
 }
 
 function drawMap(container,ports){
@@ -2272,9 +2289,10 @@ async function init(){
   initTheme();
   document.getElementById('themeToggle').addEventListener('click',toggleTheme);
   try{
-    const[ports,cps,ri,cpIdx,macroLatest,flags,news]=await Promise.all([
+    const[ports,cps,ri,cpIdx,macroLatest,flags,news,mapPorts]=await Promise.all([
       fetchSnaps(),fetchCPs(),fetchRegionIndex(),
-      fetchCPIndex(),fetchHzMacroLatest(),fetchAnomalyFlags(),fetchIntelNews()
+      fetchCPIndex(),fetchHzMacroLatest(),fetchAnomalyFlags(),fetchIntelNews(),
+      fetchMapPorts()
     ]);
     window._snaps=ports;window._cps=cps;window._ri=ri;
     window._cpIdx=cpIdx;window._macroLatest=macroLatest;
@@ -2288,8 +2306,8 @@ async function init(){
     renderAlerts(flags);
     renderCriticalStraits(cpIdx);
     renderIntelligence(news);
-    // 지도 — port_snapshots lat/lon 사용
-    initMap(ports);
+    // 지도 — econdb_ports 좌표 우선, 없으면 port_snapshots 폴백
+    initMap(ports,mapPorts);
     // Ports 탭 렌더
     renderAll(ports,cps,ri);
     // ETA 폼

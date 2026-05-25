@@ -17,10 +17,20 @@ create table if not exists public.econdb_ports (
   country_code  text,                              -- 'SG'
   port_code     text,                              -- 'SIN'
   port_name     text        not null,
+  lat           float,                             -- WGS84 위도 (지도 마커용)
+  lon           float,                             -- WGS84 경도 (지도 마커용)
   first_seen_at timestamptz not null default now(),
   last_seen_at  timestamptz not null default now(),
   is_active     boolean     not null default true
 );
+
+-- 기존 테이블에 컬럼이 없을 경우 추가 (멱등)
+alter table public.econdb_ports add column if not exists lat float;
+alter table public.econdb_ports add column if not exists lon float;
+
+create index if not exists idx_econdb_ports_coords
+  on public.econdb_ports (lat, lon)
+  where lat is not null and lon is not null;
 
 -- ── ② 항만-region 매핑 (N:M) ─────────────────────────────────
 create table if not exists public.econdb_port_regions (
