@@ -1,6 +1,6 @@
 name: EconDB Port Congestion Collector
 
-# 매 시간 17분: due job 10개씩 처리
+# 매 시간 17분: due job 50개씩 처리
 # 수동 실행: sync-ports / create-jobs / run-jobs 선택 가능
 
 on:
@@ -20,7 +20,7 @@ on:
       max_jobs:
         description: "Max jobs per run (run-jobs only)"
         required: false
-        default: "10"
+        default: "50"
       hours_to_spread:
         description: "Hours to spread jobs (create-jobs only)"
         required: false
@@ -76,7 +76,7 @@ jobs:
         if: steps.cmd.outputs.command == 'run-jobs'
         run: |
           python scripts/econdb_collector.py run-jobs \
-            --max-jobs ${{ github.event.inputs.max_jobs || '10' }} \
+            --max-jobs ${{ github.event.inputs.max_jobs || '50' }} \
             --sleep-seconds 3
         env:
           SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
