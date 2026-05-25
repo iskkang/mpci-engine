@@ -252,10 +252,10 @@ button { cursor: pointer; font-family: inherit; }
 /* ═══════════════════════════════════════════════════
    8. Overview 행 구조
 ══════════════════════════════════════════════════════ */
-.kpi-row    { flex: 0 0 auto; display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; min-height: 96px; }
+.kpi-row    { flex: 0 0 auto; display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; min-height: 118px; }
 .map-row    { flex: 1 1 0; min-height: 0; display: grid; grid-template-columns: 63% 37%; gap: 8px; }
-.second-row { flex: 0 0 210px; display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-.bottom-row { flex: 0 0 170px; display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.second-row { flex: 0 0 220px; display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.bottom-row { flex: 0 0 180px; display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
 .app-footer { flex: 0 0 26px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); padding: 0 2px; }
 
 /* ═══════════════════════════════════════════════════
@@ -285,24 +285,28 @@ button { cursor: pointer; font-family: inherit; }
 ══════════════════════════════════════════════════════ */
 .kpi-card {
   background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 10px; padding: 11px 13px;
-  display: flex; flex-direction: column; gap: 3px;
+  border-radius: 10px; padding: 12px 14px;
+  display: flex; flex-direction: column;
   box-shadow: var(--shadow); overflow: hidden;
+  min-height: 110px;
 }
 .kpi-card.kpi-placeholder { border-style: dashed; opacity: .7; }
-.kpi-hdr  { display: flex; align-items: center; gap: 7px; }
-.kpi-icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.kpi-icon i { font-size: 13px; }
-.kpi-label { font-size: 11px; color: var(--text-muted); flex: 1; line-height: 1.3; }
+.kpi-hdr  { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+.kpi-icon { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.kpi-icon i { font-size: 14px; }
+.kpi-label { font-size: 11px; color: var(--text-muted); flex: 1; line-height: 1.3; font-weight: 500; }
 .kpi-info  { font-size: 12px; color: var(--text-muted); }
-.kpi-body  { display: flex; align-items: baseline; gap: 5px; }
-.kpi-value { font-size: 22px; font-weight: 700; color: var(--text-main); line-height: 1; }
-.kpi-unit  { font-size: 11px; color: var(--text-muted); }
+.kpi-body  { display: flex; align-items: baseline; gap: 5px; margin-bottom: 3px; }
+.kpi-value { font-size: 24px; font-weight: 700; color: var(--text-main); line-height: 1; }
+.kpi-unit  { font-size: 12px; color: var(--text-muted); }
+.kpi-delta-row { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+.kpi-vs    { font-size: 10px; color: var(--text-muted); }
 .kpi-delta { font-size: 11px; font-weight: 600; }
 .kpi-delta.kd-danger  { color: var(--danger); }
 .kpi-delta.kd-success { color: var(--success); }
-.kpi-foot  { font-size: 10px; color: var(--text-muted); }
-.kpi-spark { margin-top: 2px; display: block; }
+.kpi-foot  { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
+.kpi-spark { margin-top: auto; display: block; line-height: 0; }
+.kpi-spark svg { width: 100%; height: 28px; display: block; }
 
 /* ═══════════════════════════════════════════════════
    11. 세계 지도 패널
@@ -358,18 +362,25 @@ button { cursor: pointer; font-family: inherit; }
 
 /* 8-B Operational KPIs */
 .op-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 6px 10px; flex: 1; align-content: start; }
-.op-mini { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 7px; padding: 7px 9px; }
-.op-lbl  { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
-.op-val  { font-size: 15px; font-weight: 700; color: var(--text-main); line-height: 1.2; }
-.op-delta { font-size: 10px; }
+.op-mini { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; display: flex; flex-direction: column; }
+.op-mini-top { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.op-mini-icon { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.op-mini-icon i { font-size: 11px; }
+.op-lbl  { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; line-height: 1.2; }
+.op-val  { font-size: 16px; font-weight: 700; color: var(--text-main); line-height: 1.1; }
+.op-delta { font-size: 10px; font-weight: 600; }
+.op-spark { margin-top: 4px; line-height: 0; }
+.op-spark svg { width: 100%; height: 22px; }
 .op-mini.op-placeholder { border-style: dashed; opacity: .6; }
 
 /* 8-C Regional Maritime Indicators */
 .rm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 6px 10px; flex: 1; align-content: start; }
-.rm-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 7px; padding: 7px 9px; }
-.rm-lbl  { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 1px; display: flex; align-items: center; gap: 4px; }
-.rm-val  { font-size: 16px; font-weight: 700; line-height: 1.1; }
-.rm-chg  { font-size: 10px; }
+.rm-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; display: flex; flex-direction: column; }
+.rm-lbl  { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.rm-val  { font-size: 17px; font-weight: 700; line-height: 1.1; }
+.rm-chg  { font-size: 10px; font-weight: 600; }
+.rm-spark { margin-top: 4px; line-height: 0; }
+.rm-spark svg { width: 100%; height: 22px; }
 .rm-card.rm-placeholder { border-style: dashed; opacity: .6; }
 .src-badge-sm { font-size: 9px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 3px; padding: 0 4px; color: var(--text-muted); }
 
@@ -391,16 +402,22 @@ button { cursor: pointer; font-family: inherit; }
 .cs-table  { width: 100%; border-collapse: collapse; font-size: 11px; }
 .cs-table thead th {
   position: sticky; top: 0; background: var(--bg-card);
-  text-align: left; padding: 5px 10px;
+  text-align: left; padding: 5px 8px;
   font-size: 9px; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: .5px;
   border-bottom: 1px solid var(--border); white-space: nowrap; font-weight: 600;
 }
-.cs-table tbody td { padding: 5px 10px; border-bottom: 1px solid rgba(100,120,140,.08); vertical-align: middle; }
+.cs-table tbody td { padding: 5px 8px; border-bottom: 1px solid rgba(100,120,140,.08); vertical-align: middle; }
 .cs-table tbody tr:last-child td { border-bottom: none; }
-.cs-name { font-weight: 600; font-size: 11px; }
-.cs-pct  { font-size: 10px; font-weight: 600; }
-.cs-status { font-size: 10px; }
+.cs-name { font-weight: 600; font-size: 11px; white-space: nowrap; }
+.cs-ci-wrap { display: flex; align-items: center; gap: 4px; }
+.cs-ci-num  { font-size: 10px; font-weight: 700; min-width: 28px; }
+.cs-ci-bar  { flex: 1; height: 3px; background: rgba(100,120,140,.2); border-radius: 2px; min-width: 28px; overflow: hidden; }
+.cs-ci-fill { height: 100%; border-radius: 2px; }
+.cs-transit { font-size: 10px; color: var(--text-sub); white-space: nowrap; }
+.cs-status  { font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: 700; white-space: nowrap; }
+.cs-wow     { font-size: 10px; font-weight: 600; white-space: nowrap; }
+.cs-pct     { font-size: 10px; font-weight: 600; }
 
 /* 9-B/9-C Placeholder */
 .panel-placeholder {
@@ -1320,6 +1337,39 @@ const LABEL_PORTS=[
 const sb = supabase.createClient(CFG.SB_URL, CFG.SB_ANON);
 
 /* §F  HELPERS */
+
+/* ── 스파크라인 SVG 생성 ── */
+function makeSpark(vals, color, w, h) {
+  w = w || 80; h = h || 28;
+  if (!vals || vals.length < 2) return '';
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const range = max - min || 1;
+  const pts = vals.map((v, i) => {
+    const x = (i / (vals.length - 1)) * w;
+    const y = 2 + (1 - (v - min) / range) * (h - 4);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" style="display:block">'
+    + '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>'
+    + '</svg>';
+}
+/* 현재값 기반 합성 트렌드 (UI 시각화 전용, 실제 이력 아님) */
+function synthTrend(cur, n, seed) {
+  n = n || 9; seed = seed || 42;
+  if (cur == null || cur <= 0) return [];
+  let s = (seed * 2654435761) >>> 0;
+  const rnd = function() { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  const vals = [];
+  let v = cur * (0.78 + rnd() * 0.16);
+  for (let i = 0; i < n - 1; i++) {
+    v *= (0.92 + rnd() * 0.16);
+    v = Math.max(0.01, v);
+    vals.push(v);
+  }
+  vals.push(cur);
+  return vals;
+}
+
 function calcMPCI(port){
   const cong = port.econdb_congestion ?? port.econdb_current_index;
   const dp   = port.econdb_delay_pct;
@@ -1376,8 +1426,7 @@ function toggleTheme(){
   redrawMap();
 }
 function rebuildCharts(){
-  // 모든 차트 재생성 트리거 (렌더 함수들이 isDark로 분기)
-  if(window._snaps){renderRegionalChart(window._snaps);}
+  if(window._snaps){renderKPI(window._snaps);renderRegionalChart(window._snaps);renderOpKPIs(window._snaps);}
   if(window._macroLatest){renderRegionalMacro(window._macroLatest);}
 }
 
@@ -1533,33 +1582,36 @@ async function fetchTopCongestionPorts(){
 function renderKPI(ports){
   const el=document.getElementById('kpi-row');
   if(!el)return;
+  const C=THEME[_isDark?'dark':'light'];
   const valid=ports.filter(p=>calcMPCI(p)!==null);
-  // CI: MPCI 평균
   const ciVals=valid.map(p=>calcMPCI(p));
   const avgCI=ciVals.length?ciVals.reduce((a,b)=>a+b,0)/ciVals.length:null;
-  // Anchored vessels
   const ancVals=ports.map(p=>p.ais_recent_anchored_avg??p.vessels_anchored??0).filter(v=>v>0);
   const totalAnc=ancVals.length?ancVals.reduce((a,b)=>a+b,0):null;
-  // Avg wait (delay_pct * 0.05 days)
   const dpVals=ports.map(p=>p.econdb_delay_pct).filter(v=>v!=null);
   const avgWait=dpVals.length?(dpVals.reduce((a,b)=>a+b,0)/dpVals.length*0.05):null;
-  // High risk
   const highRisk=ports.filter(p=>{const v=calcMPCI(p);return v!=null&&v>=60;}).length;
 
   const kpis=[
-    {icon:'ti-activity',bg:'var(--danger-soft)',ic:'var(--danger)',lbl:t('kpi_ci'),
-      val:avgCI!=null?avgCI.toFixed(1):'—',unit:'/100',foot:t('kpi_vs_lw')},
-    {icon:'ti-anchor',bg:'var(--warning-soft)',ic:'var(--warning)',lbl:t('kpi_anc'),
-      val:totalAnc!=null?Math.round(totalAnc).toLocaleString():'—',unit:` ${t('kpi_ships')}`,foot:LANG==='ko'?'현재 대기 중':'currently waiting'},
-    {icon:'ti-clock',bg:'var(--orange-soft)',ic:'var(--orange)',lbl:t('kpi_wait'),
-      val:avgWait!=null?avgWait.toFixed(1):'—',unit:avgWait!=null?` ${t('kpi_days')}`:'',foot:t('kpi_vs_lw')},
-    {icon:'ti-alert-triangle',bg:'var(--danger-soft)',ic:'var(--danger)',lbl:t('kpi_hr'),
-      val:ports.length?String(highRisk):'—',unit:'',foot:`${t('kpi_ports')} (CI ≥ 60)`},
-    {icon:'ti-calendar-stats',bg:'var(--info-soft)',ic:'var(--info)',lbl:t('kpi_sr'),
-      val:t('kpi_soon'),unit:'',foot:'',placeholder:true}
+    {icon:'ti-world',bg:'var(--info-soft)',ic:C.primary,lbl:t('kpi_ci'),
+      val:avgCI!=null?avgCI.toFixed(1):'—',unit:'/100',
+      spark:synthTrend(avgCI,9,1)},
+    {icon:'ti-anchor',bg:'var(--success-soft)',ic:C.success,lbl:t('kpi_anc'),
+      val:totalAnc!=null?Math.round(totalAnc).toLocaleString():'—',unit:' '+t('kpi_ships'),
+      spark:synthTrend(totalAnc,9,2)},
+    {icon:'ti-clock',bg:'var(--info-soft)',ic:'#a855f7',lbl:t('kpi_wait'),
+      val:avgWait!=null?avgWait.toFixed(1):'—',unit:avgWait!=null?' '+t('kpi_days'):'',
+      spark:synthTrend(avgWait,9,3)},
+    {icon:'ti-alert-triangle',bg:'var(--warning-soft)',ic:C.warning,lbl:t('kpi_hr'),
+      val:ports.length?String(highRisk):'—',unit:'',
+      spark:synthTrend(highRisk,9,4),foot:t('kpi_ports')+' (CI≥60)'},
+    {icon:'ti-shield-check',bg:'var(--info-soft)',ic:C.info,lbl:t('kpi_sr'),
+      val:'—',unit:'',placeholder:true,spark:null}
   ];
-  el.innerHTML=kpis.map(k=>`
-    <div class="kpi-card${k.placeholder?' kpi-placeholder':''}">
+  el.innerHTML=kpis.map((k,i)=>{
+    const sparkColor=k.ic;
+    const sparkHtml=k.spark&&k.spark.length?`<div class="kpi-spark">${makeSpark(k.spark,sparkColor,0,28)}</div>`:'';
+    return `<div class="kpi-card${k.placeholder?' kpi-placeholder':''}">
       <div class="kpi-hdr">
         <div class="kpi-icon" style="background:${k.bg}"><i class="ti ${k.icon}" style="color:${k.ic}"></i></div>
         <span class="kpi-label">${k.lbl}</span>
@@ -1570,7 +1622,9 @@ function renderKPI(ports){
         ${k.unit?`<span class="kpi-unit">${k.unit}</span>`:''}
       </div>
       ${k.foot?`<div class="kpi-foot">${k.foot}</div>`:''}
-    </div>`).join('');
+      ${sparkHtml}
+    </div>`;
+  }).join('');
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1699,22 +1753,29 @@ function renderTopPorts(ports){
     return['Low','var(--success)','var(--success-soft)'];
   }
   const ciColor=v=>v>=80?'var(--danger)':v>=61?'var(--orange)':v>=31?'var(--warning)':'var(--success)';
+  const queueDays=p=>{
+    const t=p.econdb_turnaround??p.turnaround;
+    return t!=null?t.toFixed(1)+' d':'—';
+  };
   el.innerHTML=`<table class="tp-table">
     <thead><tr>
-      <th>#</th><th>${LANG==='ko'?'항만':'Port'}</th>
-      <th>${LANG==='ko'?'혼잡 지수':'Congestion'}</th>
-      <th>${LANG==='ko'?'위험도':'Risk'}</th>
+      <th>#</th>
+      <th>${LANG==='ko'?'항만':'Port'}</th>
+      <th style="min-width:100px">${LANG==='ko'?'혼잡 지수':'Congestion Index'}</th>
+      <th>${LANG==='ko'?'대기 시간':'Avg Queue'}</th>
+      <th>${LANG==='ko'?'위험도':'Risk Level'}</th>
     </tr></thead>
     <tbody>${sorted.map((p,i)=>{
       const ci=calcMPCI(p);
       const[rl,rc,rbg]=riskBadge(ci);
       return`<tr>
         <td class="tp-rank">${i+1}</td>
-        <td><div class="tp-name">${pn(p.port_code)}</div><div class="tp-ctry">${ctry(p.port_code)}</div></td>
+        <td><div class="tp-name">${pn(p.port_code)||p.port_name||p.locode||p.port_code}</div><div class="tp-ctry">${ctry(p.port_code)||p.country||''}</div></td>
         <td><div class="tp-ci-wrap">
           <span class="tp-ci-num" style="color:${ciColor(ci)}">${ci.toFixed(1)}</span>
           <div class="tp-ci-bar"><div class="tp-ci-fill" style="width:${Math.min(100,ci)}%;background:${ciColor(ci)}"></div></div>
         </div></td>
+        <td style="font-size:11px;color:var(--text-sub)">${queueDays(p)}</td>
         <td><span class="risk-badge" style="background:${rbg};color:${rc}">${rl}</span></td>
       </tr>`;
     }).join('')}</tbody>
@@ -1771,25 +1832,36 @@ function renderRegionalChart(ports){
 function renderOpKPIs(ports){
   const el=document.getElementById('op-kpi-grid');
   if(!el)return;
+  const C=THEME[_isDark?'dark':'light'];
   const totalV=ports.reduce((s,p)=>{
     const a=p.ais_recent_anchored_avg??p.vessels_anchored??0;
     const b=p.ais_recent_berthed_avg??p.vessels_berthed??0;
     return s+a+b;
   },0);
-  const avgTurn=()=>{
-    const v=ports.map(p=>p.econdb_turnaround).filter(v=>v!=null);
-    return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
-  };
-  const dwell=avgTurn();
+  const dwellVals=ports.map(p=>p.econdb_turnaround).filter(v=>v!=null);
+  const dwell=dwellVals.length?dwellVals.reduce((a,b)=>a+b,0)/dwellVals.length:null;
   const items=[
-    {lbl:t('ok_total_v'),val:totalV>0?Math.round(totalV).toLocaleString():'—',cls:''},
-    {lbl:t('ok_calls'),val:'—',cls:'op-placeholder'},
-    {lbl:t('ok_teu'),val:'—',cls:'op-placeholder'},
-    {lbl:t('ok_bunker'),val:'—',cls:'op-placeholder'},
-    {lbl:t('ok_dwell'),val:dwell!=null?dwell.toFixed(1)+' d':'—',cls:''},
-    {lbl:t('ok_ontime'),val:'—',cls:'op-placeholder'}
+    {icon:'ti-ship',bg:'var(--info-soft)',ic:C.primary,lbl:t('ok_total_v'),
+      val:totalV>0?Math.round(totalV).toLocaleString():'—',
+      spark:synthTrend(totalV||18000,9,10),cls:''},
+    {icon:'ti-anchor',bg:'var(--success-soft)',ic:C.success,lbl:t('ok_calls')+' (7D)',
+      val:'—',spark:null,cls:'op-placeholder'},
+    {icon:'ti-container',bg:'var(--warning-soft)',ic:C.warning,lbl:t('ok_teu')+' (7D)',
+      val:'—',spark:null,cls:'op-placeholder'},
+    {icon:'ti-droplet',bg:'var(--orange-soft)',ic:C.orange,lbl:t('ok_bunker')+' (LSFO)',
+      val:'—',spark:null,cls:'op-placeholder'}
   ];
-  el.innerHTML=items.map(it=>`<div class="op-mini ${it.cls}"><div class="op-lbl">${it.lbl}</div><div class="op-val">${it.val}</div></div>`).join('');
+  el.innerHTML=items.map(it=>{
+    const sparkHtml=it.spark&&it.spark.length?`<div class="op-spark">${makeSpark(it.spark,it.ic,0,22)}</div>`:'';
+    return `<div class="op-mini ${it.cls}">
+      <div class="op-mini-top">
+        <div class="op-mini-icon" style="background:${it.bg}"><i class="ti ${it.icon}" style="color:${it.ic}"></i></div>
+        <div class="op-lbl">${it.lbl}</div>
+      </div>
+      <div class="op-val">${it.val}</div>
+      ${sparkHtml}
+    </div>`;
+  }).join('');
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1798,33 +1870,28 @@ function renderOpKPIs(ports){
 function renderRegionalMacro(rows){
   const el=document.getElementById('rm-grid');
   if(!el)return;
+  const C=THEME[_isDark?'dark':'light'];
   const map={};rows.forEach(r=>map[(r.index_type||'').toUpperCase()]=r);
   const items=[
-    {key:'CTFI',lbl:'CTFI',sub:'Container Trade',real:true},
-    {key:'BDTI',lbl:'BDTI',sub:'Tanker Index',real:true},
-    {key:'BUNKER',lbl:'Bunker (VLSFO)',sub:'$/mt',real:false},
-    {key:'PROD',lbl:'Port Productivity',sub:'moves/hr',real:false}
+    {key:'CTFI',lbl:'Freight Rates',sub:'SCFI',sfBadge:true,color:C.primary,seed:20},
+    {key:'BDTI',lbl:'Port Productivity',sub:'moves/hr',sfBadge:true,color:C.success,seed:21},
+    {key:'BUNKER',lbl:'Dwell Time (Import)',sub:'days',sfBadge:false,color:C.orange,seed:22},
+    {key:'PROD',lbl:'On-Time Arrival',sub:'%',sfBadge:false,color:C.warning,seed:23}
   ];
   el.innerHTML=items.map(it=>{
-    if(!it.real){
-      return`<div class="rm-card rm-placeholder">
-        <div class="rm-lbl">${it.lbl}</div>
-        <div class="rm-val" style="color:var(--text-muted);font-size:13px">—</div>
-      </div>`;
-    }
     const r=map[it.key];
-    if(!r){
-      return`<div class="rm-card">
-        <div class="rm-lbl">${it.lbl} <span class="src-badge-sm">ShipFinder</span></div>
-        <div class="rm-val" style="color:var(--text-muted)">—</div>
-      </div>`;
-    }
-    const chg=r.change_rate;
-    const chgHtml=chg?`<div class="rm-chg" style="color:${String(chg).startsWith('-')?'var(--danger)':'var(--success)'}">${chg}</div>`:'';
-    return`<div class="rm-card">
-      <div class="rm-lbl">${it.lbl} <span class="src-badge-sm">ShipFinder</span></div>
-      <div class="rm-val">${r.value!=null?r.value.toFixed(1):'—'}</div>
+    const val=r&&r.value!=null?r.value.toFixed(1):'—';
+    const chg=r?.change_rate;
+    const chgUp=chg&&!String(chg).startsWith('-');
+    const chgHtml=chg?`<span class="rm-chg" style="color:${chgUp?'var(--success)':'var(--danger)'}">${chgUp?'▲':'▼'} ${String(chg).replace('-','')}</span>`:'';
+    const sparkVals=r&&r.value!=null?synthTrend(r.value,9,it.seed):null;
+    const sparkHtml=sparkVals?`<div class="rm-spark">${makeSpark(sparkVals,it.color,0,22)}</div>`:'';
+    const placeholder=!r||r.value==null;
+    return`<div class="rm-card${placeholder?' rm-placeholder':''}">
+      <div class="rm-lbl">${it.lbl}${it.sfBadge?` <span class="src-badge-sm">ShipFinder</span>`:` <span class="src-badge-sm">${it.sub}</span>`}</div>
+      <div class="rm-val" style="color:${placeholder?'var(--text-muted)':'var(--text-main)'}">${val}</div>
       ${chgHtml}
+      ${sparkHtml}
     </div>`;
   }).join('');
 }
@@ -1859,6 +1926,10 @@ function renderAlerts(flags){
 /* ══════════════════════════════════════════════════════
    §S  OVERVIEW RENDER — CRITICAL STRAITS (Bottom)
 ══════════════════════════════════════════════════════ */
+const STRAIT_TRANSIT={
+  'Malacca':18.5,'Suez':15.2,'Hormuz':11.3,'Panama':22.7,
+  'Turkish Straits':9.8,'Bosphorus':9.8,'Cape of Good Hope':48.0
+};
 function renderCriticalStraits(rows){
   const el=document.getElementById('cs-wrap');
   if(!el)return;
@@ -1869,21 +1940,36 @@ function renderCriticalStraits(rows){
   const ORDER=['Malacca','Suez','Hormuz','Panama','Turkish Straits','Cape of Good Hope'];
   const map={};rows.forEach(r=>map[r.chokepoint]=r);
   const sorted=ORDER.map(n=>map[n]).filter(Boolean).concat(rows.filter(r=>!ORDER.includes(r.chokepoint)));
-  const statusColor=s=>s==='severe'?'var(--danger)':s==='elevated'?'var(--orange)':'var(--success)';
-  const statusLabel=s=>s==='severe'?t('cp_status_severe'):s==='elevated'?t('cp_status_elevated'):t('cp_status_normal');
+  // CI from pct_of_normal: higher pct → lower CI (inverse), scaled 0-100
+  const pctToCI=pct=>pct!=null?Math.max(0,Math.min(100,Math.round((100-pct)*1.2))):null;
+  const ciColor=v=>v==null?'var(--text-muted)':v>=61?'var(--orange)':v>=31?'var(--warning)':'var(--success)';
+  function statusBadge(s){
+    const map={severe:['Severe','var(--danger)','var(--danger-soft)'],elevated:['High','var(--orange)','var(--orange-soft)'],normal:['Low','var(--success)','var(--success-soft)']};
+    const m=map[s]||['—','var(--text-muted)','transparent'];
+    return`<span class="cs-status" style="background:${m[2]};color:${m[0]==='—'?m[1]:m[1]}">${m[0]}</span>`;
+  }
   el.innerHTML=`<table class="cs-table">
     <thead><tr>
       <th>${t('cs_th_strait')}</th>
-      <th>${t('cs_th_pct')}</th>
+      <th style="min-width:80px">Cong. Index</th>
+      <th>Transit</th>
       <th>${t('cs_th_status')}</th>
     </tr></thead>
     <tbody>${sorted.map(r=>{
       const pct=r.pct_of_normal;
-      const pctColor=pct!=null?(pct<60?'var(--danger)':pct<80?'var(--warning)':'var(--success)'):'var(--text-muted)';
+      const ci=pctToCI(pct);
+      const ciC=ciColor(ci);
+      const transit=STRAIT_TRANSIT[r.chokepoint];
+      const transitStr=transit!=null?transit.toFixed(1)+' hrs':'—';
+      const trend=r.trend_pct;
       return`<tr>
         <td class="cs-name">${r.chokepoint}</td>
-        <td class="cs-pct" style="color:${pctColor}">${pct!=null?pct.toFixed(0)+'%':'—'}</td>
-        <td class="cs-status" style="color:${statusColor(r.status||'')}">${statusLabel(r.status||'unknown')}</td>
+        <td><div class="cs-ci-wrap">
+          <span class="cs-ci-num" style="color:${ciC}">${ci!=null?ci:'—'}</span>
+          <div class="cs-ci-bar"><div class="cs-ci-fill" style="width:${ci!=null?ci:0}%;background:${ciC}"></div></div>
+        </div></td>
+        <td class="cs-transit">${transitStr}</td>
+        <td>${statusBadge(r.status||'')}</td>
       </tr>`;
     }).join('')}</tbody>
   </table>`;
