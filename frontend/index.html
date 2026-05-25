@@ -196,6 +196,83 @@ section{margin-bottom:72px}
 @media(max-width:1100px){.sum-grid{grid-template-columns:1fr 1fr}.cp-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:960px){.region-grid{grid-template-columns:1fr 1fr}.eta-wrap{grid-template-columns:1fr}}
 @media(max-width:640px){main{padding:28px 16px 72px}.hdr-top{padding:11px 16px}.sum-grid,.region-grid,.cp-grid{grid-template-columns:1fr}.brand-tag{display:none}}
+
+/* ── VIEW TOGGLE ── */
+.view-toggle{display:flex;gap:8px;padding:8px 20px;border-top:1px solid var(--border);background:rgba(7,17,31,.97)}
+.vt-btn{background:none;border:1px solid var(--border);color:var(--muted2);cursor:pointer;padding:7px 18px;border-radius:8px;font-size:13px;font-family:var(--ff-mono);font-weight:600;transition:all .2s;letter-spacing:.3px}
+.vt-btn.active{background:var(--mint);border-color:var(--mint);color:#000}
+.vt-btn:hover:not(.active){border-color:var(--mint);color:var(--text)}
+
+/* ── SOURCE BADGE ── */
+.src-badge{display:inline-block;font-size:10px;font-family:var(--ff-mono);color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1px 7px;letter-spacing:.3px;vertical-align:middle}
+
+/* ── CPI CARDS (EconDB 해협 개요) ── */
+.cpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cpi-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;transition:background .2s;animation:fadeUp .4s ease forwards;opacity:0}
+.cpi-card:hover{background:var(--card2)}
+.cpi-card:nth-child(1){animation-delay:.04s}.cpi-card:nth-child(2){animation-delay:.08s}.cpi-card:nth-child(3){animation-delay:.12s}
+.cpi-card:nth-child(4){animation-delay:.16s}.cpi-card:nth-child(5){animation-delay:.20s}.cpi-card:nth-child(6){animation-delay:.24s}
+.cpi-name{font-size:16px;font-weight:700;margin-bottom:2px}
+.cpi-week{font-size:10px;color:var(--muted);font-family:var(--ff-mono);margin-bottom:12px}
+.cpi-teu{font-family:var(--ff-disp);font-size:40px;line-height:1;margin-bottom:3px}
+.cpi-dirs{font-size:11px;color:var(--muted);font-family:var(--ff-mono);margin-bottom:12px}
+.cpi-pct-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:var(--ff-mono)}
+.cpi-pct-bar-wrap{height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.cpi-pct-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.cpi-pct-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cpi-pct-num{font-family:var(--ff-mono);font-size:14px;font-weight:700}
+.cpi-trend{font-family:var(--ff-mono);font-size:11px}
+.cpi-narrative{font-size:11px;color:var(--muted2);margin-top:10px;line-height:1.65;border-top:1px solid var(--border2);padding-top:10px}
+.cpi-water{background:rgba(20,184,166,.05);border:1px solid var(--mint-b);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:var(--muted2)}
+.cpi-water strong{color:var(--mint)}
+.cpi-nodata{text-align:center;padding:24px 0 8px;color:var(--muted2)}
+
+/* ── MACRO CARDS ── */
+.macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.macro-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.mc-type{font-size:10px;font-family:var(--ff-mono);color:var(--muted2);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+.mc-val{font-family:var(--ff-disp);font-size:34px;line-height:1;margin-bottom:3px}
+.mc-chg{font-size:12px;font-family:var(--ff-mono)}
+.mc-date{font-size:10px;color:var(--muted);font-family:var(--ff-mono);margin-top:3px}
+
+/* ── GULF / TRANSIT STATS ── */
+.stats-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.stat-lbl{font-size:11px;font-family:var(--ff-mono);color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.stat-val{font-family:var(--ff-disp);font-size:48px;line-height:1;color:var(--mint)}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--ff-mono)}
+.transit-dir{display:flex;gap:16px;margin-top:10px}
+.transit-dir-item{font-size:13px;font-family:var(--ff-mono)}
+
+/* ── TRANSIT LOG TABLE ── */
+.tlog-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.tlog-scroll{max-height:340px;overflow-y:auto}
+.tlog{width:100%;border-collapse:collapse;font-size:12px}
+.tlog thead{background:var(--surface);position:sticky;top:0;z-index:1}
+.tlog th{text-align:left;padding:9px 12px;font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);font-family:var(--ff-mono);white-space:nowrap}
+.tlog td{padding:9px 12px;border-bottom:1px solid rgba(26,58,92,.25);vertical-align:middle}
+.tlog tbody tr:last-child td{border-bottom:none}
+.dir-in{color:var(--mint);font-weight:700;font-family:var(--ff-mono)}
+.dir-out{color:var(--orange);font-weight:700;font-family:var(--ff-mono)}
+
+/* ── NEWS ── */
+.news-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.news-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 16px;transition:background .2s}
+.news-item:hover{background:var(--card2)}
+.news-title a{color:var(--text);text-decoration:none;font-size:14px;font-weight:600;line-height:1.4}
+.news-title a:hover{color:var(--mint)}
+.news-meta{font-size:11px;color:var(--muted);font-family:var(--ff-mono);margin-top:4px}
+
+/* ── AI BRIEF ── */
+.ai-brief-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.ai-caveat{background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.3);border-radius:8px;padding:9px 14px;font-size:12px;color:var(--orange);margin-bottom:14px;line-height:1.6}
+.ai-body{font-size:13px;color:var(--muted2);line-height:1.8;white-space:pre-wrap;max-height:240px;overflow-y:auto}
+.ai-linkout{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--mint);text-decoration:none;font-family:var(--ff-mono);margin-top:10px}
+.ai-linkout:hover{text-decoration:underline}
+
+/* ── RESPONSIVE for new sections ── */
+@media(max-width:1100px){.cpi-grid{grid-template-columns:1fr 1fr}.macro-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.cpi-grid,.macro-grid,.stats-2col{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -215,17 +292,26 @@ section{margin-bottom:72px}
       </div>
     </div>
   </div>
-  <nav class="hdr-nav">
+  <nav class="hdr-nav" id="nav-port">
     <a href="#sec1" data-i18n="nav1">항만 현황</a>
     <a href="#sec2" data-i18n="nav2">권역별 혼잡도</a>
     <a href="#sec-ra" data-i18n="nav_ra">권역 지표</a>
     <a href="#sec3" data-i18n="nav3">주의 항만 TOP 5</a>
     <a href="#sec4" data-i18n="nav4">조기 경보</a>
-    <a href="#sec5" data-i18n="nav5">해협 현황</a>
+    <a href="#sec5" data-i18n="nav5">해협(레거시)</a>
     <a href="#sec6" data-i18n="nav6">도착일 예측</a>
   </nav>
+  <nav class="hdr-nav" id="nav-cp" style="display:none">
+    <a href="#cp-overview" data-i18n="nav_cp1">6해협 개요</a>
+    <a href="#cp-hormuz" data-i18n="nav_cp2">호르무즈 딥다이브</a>
+  </nav>
+  <div class="view-toggle">
+    <button id="btn-view-port" class="vt-btn active" onclick="setView('port')" data-i18n="vt_port">🚢 항만 대시보드</button>
+    <button id="btn-view-cp" class="vt-btn" onclick="setView('chokepoint')" data-i18n="vt_cp">🌊 주요 해협</button>
+  </div>
 </header>
 
+<div id="view-port">
 <main>
 
 <!-- SECTION 1: 글로벌 요약 -->
@@ -333,6 +419,93 @@ section{margin-bottom:72px}
 </section>
 
 </main>
+</div><!-- /view-port -->
+
+<!-- ═══════════════════════════════════════════════════
+     주요 해협 뷰 (EconDB 6해협 + ShipFinder Hormuz)
+══════════════════════════════════════════════════════ -->
+<div id="view-chokepoint" style="display:none">
+<main>
+
+<!-- CP-OVERVIEW: EconDB 6해협 개요 -->
+<section id="cp-overview">
+  <div class="sec-eyebrow" data-i18n="cp_lbl">해협 모니터링</div>
+  <div class="sec-title" data-i18n="cp_ttl">🌊 주요 해협 통과량 개요</div>
+  <div class="sec-desc">
+    <span data-i18n="cp_dsc">주간 TEU 통과량 기반. 정상 대비 % 는 2022-03 ~ 2023-11 고정 기준기간 중앙값 대비 (초기 휴리스틱 — 보정 필요).</span>
+    <span class="src-badge">출처: EconDB</span>
+  </div>
+  <div class="cpi-grid" id="cpi-grid">
+    <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
+  </div>
+</section>
+
+<!-- CP-HORMUZ: ShipFinder 딥다이브 -->
+<section id="cp-hormuz">
+  <div class="sec-eyebrow" data-i18n="hz_lbl">Hormuz 딥다이브</div>
+  <div class="sec-title" data-i18n="hz_ttl">⚓ 호르무즈 해협 · 페르시아만 상세</div>
+  <div class="sec-desc">
+    <span data-i18n="hz_dsc">걸프 선박수, 호르무즈 in/out, 거시지표, 통과 로그, 뉴스를 제공합니다.</span>
+    <span class="src-badge">출처: ShipFinder</span>
+  </div>
+
+  <!-- 유가/운임 거시지표 -->
+  <div class="sec-eyebrow" style="margin-top:0;margin-bottom:10px" data-i18n="hz_macro_lbl">유가 · 운임 지표 <span class="src-badge">ShipFinder</span></div>
+  <div class="macro-grid" id="hz-macro-grid">
+    <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
+  </div>
+
+  <!-- 걸프 선박수 + 호르무즈 IN/OUT -->
+  <div class="stats-2col" id="hz-stats-2col">
+    <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
+  </div>
+
+  <!-- 통과 선박 로그 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:14px;font-weight:700" data-i18n="hz_log_ttl">📋 통과 선박 로그 (어제자)</div>
+    <span class="src-badge">ShipFinder</span>
+  </div>
+  <div class="tlog-wrap">
+    <div class="tlog-scroll">
+      <table class="tlog">
+        <thead><tr>
+          <th data-i18n="tl_dir">방향</th>
+          <th data-i18n="tl_time">통과 시각</th>
+          <th data-i18n="tl_name">선명</th>
+          <th data-i18n="tl_type">선종</th>
+          <th data-i18n="tl_dwt">DWT</th>
+          <th data-i18n="tl_flag">선적국</th>
+          <th data-i18n="tl_oper">운항사</th>
+        </tr></thead>
+        <tbody id="hz-log-body">
+          <tr><td colspan="7"><div class="loading"><div class="spin"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 뉴스 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:14px;font-weight:700" data-i18n="hz_news_ttl">📰 관련 뉴스 (link-out)</div>
+    <span class="src-badge">ShipFinder</span>
+  </div>
+  <div class="news-list" id="hz-news-list">
+    <div class="loading"><div class="spin"></div></div>
+  </div>
+
+  <!-- AI 브리핑 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:14px;font-weight:700" data-i18n="hz_ai_ttl">🤖 AI 브리핑</div>
+    <span class="src-badge">ShipFinder · Elane AI</span>
+  </div>
+  <div class="ai-brief-box" id="hz-ai-brief">
+    <div class="loading"><div class="spin"></div></div>
+  </div>
+
+</section>
+
+</main>
+</div><!-- /view-chokepoint -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -379,7 +552,23 @@ ko:{
   stale_warn:"⚠️ 오래됨",
   fp_building:"운임 상승 압력",fp_neutral:"운임 중립",fp_easing:"운임 완화",
   dr_elevated:"지연 위험 ↑",dr_moderate:"지연 위험 중",dr_low:"지연 위험 낮음",
-  lbl_blank:"블랭크세일링",lbl_fwd:"향후 전망",lbl_yoy:"선석 YoY",lbl_ci:"야드 적체"
+  lbl_blank:"블랭크세일링",lbl_fwd:"향후 전망",lbl_yoy:"선석 YoY",lbl_ci:"야드 적체",
+  vt_port:"🚢 항만 대시보드",vt_cp:"🌊 주요 해협",
+  nav_cp1:"6해협 개요",nav_cp2:"호르무즈 딥다이브",
+  cp_lbl:"해협 모니터링",cp_ttl:"🌊 주요 해협 통과량 개요",
+  cp_dsc:"주간 TEU 통과량 기반. 정상 대비 % 는 2022-03 ~ 2023-11 고정 기준기간 중앙값 대비 (초기 휴리스틱 — 보정 필요).",
+  cp_status_normal:"🟢 정상",cp_status_elevated:"🟠 주의",cp_status_severe:"🔴 감소 경보",cp_status_unknown:"— 수집 중",
+  cp_pct_of_normal:"정상 대비",cp_trend:"전주 대비",
+  cp_water_lbl:"파나마 수위",cp_draft_low:"⚠️ 흘수 제한 위험",cp_draft_normal:"정상",
+  hz_lbl:"Hormuz 딥다이브",hz_ttl:"⚓ 호르무즈 해협 · 페르시아만 상세",hz_dsc:"걸프 선박수, 호르무즈 in/out, 거시지표, 통과 로그, 뉴스를 제공합니다.",
+  hz_macro_lbl:"유가 · 운임 지표",
+  hz_gulf_lbl:"페르시아만 선박수",hz_transit_lbl:"호르무즈 통과량 (어제)",
+  hz_in:"🟢 IN",hz_out:"🟠 OUT",hz_total:"합계",
+  hz_log_ttl:"📋 통과 선박 로그 (어제자)",hz_news_ttl:"📰 관련 뉴스 (link-out)",hz_ai_ttl:"🤖 AI 브리핑",
+  tl_dir:"방향",tl_time:"통과 시각",tl_name:"선명",tl_type:"선종",tl_dwt:"DWT",tl_flag:"선적국",tl_oper:"운항사",
+  cp_collecting:"수집 중",cp_no_data:"데이터 없음",
+  hz_ai_caveat:"출처: ShipFinder · Elane AI 생성 · 검증 필요. UI 표시 목적이며 투자/물류 결정의 근거로 사용하지 마십시오.",
+  hz_ai_linkout:"원문 보기 →",hz_news_src:"출처",hz_no_news:"뉴스 없음"
 },
 en:{
   brand_tag:"BETA",
@@ -414,7 +603,23 @@ en:{
   stale_warn:"⚠️ Outdated",
   fp_building:"Freight Pressure Building",fp_neutral:"Freight Neutral",fp_easing:"Freight Easing",
   dr_elevated:"Delay Risk Elevated",dr_moderate:"Delay Risk Moderate",dr_low:"Delay Risk Low",
-  lbl_blank:"Blank Sailings",lbl_fwd:"Forward",lbl_yoy:"Berth YoY",lbl_ci:"Yard Congestion"
+  lbl_blank:"Blank Sailings",lbl_fwd:"Forward",lbl_yoy:"Berth YoY",lbl_ci:"Yard Congestion",
+  vt_port:"🚢 Port Dashboard",vt_cp:"🌊 Key Straits",
+  nav_cp1:"6 Straits Overview",nav_cp2:"Hormuz Deep-Dive",
+  cp_lbl:"Strait Monitor",cp_ttl:"🌊 Key Straits Transit Overview",
+  cp_dsc:"Weekly TEU transit volume. % of Normal vs fixed reference median (2022-03 – 2023-11, initial heuristic — calibration needed).",
+  cp_status_normal:"🟢 Normal",cp_status_elevated:"🟠 Elevated",cp_status_severe:"🔴 Drop Alert",cp_status_unknown:"— Collecting",
+  cp_pct_of_normal:"% of Normal",cp_trend:"vs prev week",
+  cp_water_lbl:"Panama Water Level",cp_draft_low:"⚠️ Draft Restriction Risk",cp_draft_normal:"Normal",
+  hz_lbl:"Hormuz Deep-Dive",hz_ttl:"⚓ Strait of Hormuz · Persian Gulf Detail",hz_dsc:"Gulf ship count, Hormuz in/out, macro indices, transit log, and news.",
+  hz_macro_lbl:"Oil & Freight Indices",
+  hz_gulf_lbl:"Persian Gulf Ship Count",hz_transit_lbl:"Hormuz Transits (yesterday)",
+  hz_in:"🟢 IN",hz_out:"🟠 OUT",hz_total:"Total",
+  hz_log_ttl:"📋 Transit Log (yesterday)",hz_news_ttl:"📰 News (link-out)",hz_ai_ttl:"🤖 AI Briefing",
+  tl_dir:"Dir",tl_time:"Transit Time",tl_name:"Ship Name",tl_type:"Type",tl_dwt:"DWT",tl_flag:"Flag",tl_oper:"Operator",
+  cp_collecting:"Collecting",cp_no_data:"No data",
+  hz_ai_caveat:"Source: ShipFinder · Generated by Elane AI · For informational display only. Do not use as basis for investment or logistics decisions.",
+  hz_ai_linkout:"View original →",hz_news_src:"Source",hz_no_news:"No news available"
 }
 };
 const t=k=>(T[LANG]||T.ko)[k]||k;
@@ -427,6 +632,7 @@ function setLang(l){
     if(T[l]&&T[l][k]!==undefined)el.innerHTML=T[l][k];
   });
   if(window._snaps)renderAll(window._snaps,window._cps,window._ri);
+  if(window._cpLoaded)renderChokepoints(window._cpData||{});
 }
 
 /* ── Port / Region Maps ── */
@@ -976,6 +1182,281 @@ function showFallback(code,etd,nm){
   const etdD=new Date(etd),p50=new Date(etdD.getTime()+tot*36e5);
   const p10=new Date(p50.getTime()-1.28*sig*36e5),p90=new Date(p50.getTime()+1.28*sig*36e5);
   showResult({p10:p10.toISOString(),p50:p50.toISOString(),p90:p90.toISOString(),breakdown:{mpci_score:mpci}},code,true);
+}
+
+/* ══════════════════════════════════════
+   VIEW TOGGLE
+══════════════════════════════════════ */
+function setView(v){
+  const isPort=v==='port';
+  document.getElementById('view-port').style.display=isPort?'':'none';
+  document.getElementById('view-chokepoint').style.display=isPort?'none':'';
+  document.getElementById('nav-port').style.display=isPort?'':'none';
+  document.getElementById('nav-cp').style.display=isPort?'none':'';
+  document.getElementById('btn-view-port').className='vt-btn'+(isPort?' active':'');
+  document.getElementById('btn-view-cp').className='vt-btn'+(isPort?'':' active');
+  if(!isPort&&!window._cpLoaded){
+    window._cpLoaded=true;
+    loadChokepoints();
+  }
+}
+
+/* ══════════════════════════════════════
+   CHOKEPOINT — Supabase 조회
+══════════════════════════════════════ */
+async function fetchCPIndex(){
+  const{data,error}=await sb.from('chokepoint_index').select('*').order('chokepoint');
+  if(error){console.error('chokepoint_index',error);return[]}
+  return data||[];
+}
+async function fetchHzMacroLatest(){
+  const{data,error}=await sb.from('hormuz_macro_latest').select('*');
+  if(error){console.error('hormuz_macro_latest',error);return[]}
+  return data||[];
+}
+async function fetchHzTransitLatest(){
+  const{data,error}=await sb.from('hormuz_transit_daily')
+    .select('obs_date,inbound_cnt,outbound_cnt,total_cnt')
+    .order('obs_date',{ascending:false}).limit(1);
+  if(error){console.error('hormuz_transit_daily',error);return null}
+  return (data||[])[0]||null;
+}
+async function fetchHzGulfLatest(){
+  const{data,error}=await sb.from('hormuz_gulf_count_daily')
+    .select('obs_date,ship_cnt')
+    .order('obs_date',{ascending:false}).limit(1);
+  if(error){console.error('hormuz_gulf_count_daily',error);return null}
+  return (data||[])[0]||null;
+}
+async function fetchHzLog(){
+  // 어제 날짜
+  const yesterday=new Date(Date.now()-864e5).toISOString().split('T')[0];
+  const{data,error}=await sb.from('hormuz_transit_log')
+    .select('direction,time_exit,time_enter,shipname,shiptype,dwt,country_name,operator_company')
+    .eq('obs_date',yesterday)
+    .order('time_exit',{ascending:false})
+    .limit(100);
+  if(error){console.error('hormuz_transit_log',error);return[]}
+  return data||[];
+}
+async function fetchHzNews(){
+  const{data,error}=await sb.from('hormuz_news')
+    .select('id,title,source,url,news_time')
+    .order('news_time',{ascending:false})
+    .limit(10);
+  if(error){console.error('hormuz_news',error);return[]}
+  return data||[];
+}
+async function fetchHzAiBrief(){
+  const{data,error}=await sb.from('hormuz_ai_brief')
+    .select('brief_date,body,source,caveat,source_url')
+    .order('brief_date',{ascending:false}).limit(1);
+  if(error){console.error('hormuz_ai_brief',error);return null}
+  return (data||[])[0]||null;
+}
+
+async function loadChokepoints(){
+  try{
+    const[cpIdx,macro,transit,gulf,log,news,ai]=await Promise.all([
+      fetchCPIndex(),fetchHzMacroLatest(),fetchHzTransitLatest(),
+      fetchHzGulfLatest(),fetchHzLog(),fetchHzNews(),fetchHzAiBrief()
+    ]);
+    const d={cpIdx,macro,transit,gulf,log,news,ai};
+    window._cpData=d;
+    renderChokepoints(d);
+  }catch(e){
+    console.error('loadChokepoints error',e);
+  }
+}
+
+/* ══════════════════════════════════════
+   CHOKEPOINT — 렌더 함수들
+══════════════════════════════════════ */
+function cpStatusBadge(status){
+  const map={
+    normal:{cls:'bL',key:'cp_status_normal'},
+    elevated:{cls:'bB',key:'cp_status_elevated'},
+    severe:{cls:'bC',key:'cp_status_severe'},
+    unknown:{cls:'bN',key:'cp_status_unknown'}
+  };
+  const m=map[status]||map.unknown;
+  return`<span class="badge ${m.cls}">${t(m.key)}</span>`;
+}
+function cpPctColor(pct){
+  if(pct==null)return'var(--muted)';
+  if(pct<60)return'var(--red)';
+  if(pct<80)return'var(--orange)';
+  return'var(--green)';
+}
+
+function renderCPIndex(rows){
+  const el=document.getElementById('cpi-grid');
+  if(!el)return;
+  if(!rows||!rows.length){
+    el.innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div>${LANG==='ko'?'수집 중...':'Collecting...'}</div>`;
+    return;
+  }
+  el.innerHTML=rows.map(r=>{
+    const pct=r.pct_of_normal;
+    const col=cpPctColor(pct);
+    const pctFill=pct!=null?Math.min(100,Math.max(0,pct)):0;
+    const trend=r.trend_pct;
+    const trendStr=trend!=null
+      ?`<span class="cpi-trend" style="color:${trend>=0?'var(--orange)':'var(--green)'}">${trend>=0?'▲':'▼'}${Math.abs(trend).toFixed(1)}%</span>`
+      :'';
+    const narrative=LANG==='ko'?(r.narrative_ko||''):(r.narrative_en||'');
+    const teu=r.teu_total!=null?Math.round(r.teu_total).toLocaleString():'--';
+    const n=r.teu_north!=null?Math.round(r.teu_north).toLocaleString():'--';
+    const s=r.teu_south!=null?Math.round(r.teu_south).toLocaleString():'--';
+
+    let waterBlock='';
+    if(r.water_level!=null){
+      const draft=r.draft_status==='low'?`<span style="color:var(--orange)">${t('cp_draft_low')}</span>`:`<span style="color:var(--green)">${t('cp_draft_normal')}</span>`;
+      waterBlock=`<div class="cpi-water">
+        <strong>${t('cp_water_lbl')}</strong>: ${r.water_level.toFixed(2)} m
+        (${LANG==='ko'?'평균':'avg'} ${r.water_level_avg!=null?r.water_level_avg.toFixed(2):'--'} m) — ${draft}
+      </div>`;
+    }
+
+    return`<div class="cpi-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px;gap:8px">
+        <div class="cpi-name">${r.chokepoint}</div>
+        ${cpStatusBadge(r.status||'unknown')}
+      </div>
+      <div class="cpi-week">${r.data_week?`${LANG==='ko'?'기준주':'Week'}: ${r.data_week}`:collectingBadge()}</div>
+      <div class="cpi-teu" style="color:${col}">${teu}</div>
+      <div class="cpi-dirs">N ${n} TEU &nbsp;/&nbsp; S ${s} TEU</div>
+      <div class="cpi-pct-lbl">${t('cp_pct_of_normal')}</div>
+      <div class="cpi-pct-bar-wrap"><div class="cpi-pct-fill" style="width:${pctFill}%;background:${col}"></div></div>
+      <div class="cpi-pct-row">
+        <span class="cpi-pct-num" style="color:${col}">${pct!=null?pct.toFixed(1)+'%':t('cp_collecting')}</span>
+        ${trendStr}
+      </div>
+      ${narrative?`<div class="cpi-narrative">${narrative}</div>`:''}
+      ${waterBlock}
+    </div>`;
+  }).join('');
+}
+
+function renderHzMacro(rows){
+  const el=document.getElementById('hz-macro-grid');
+  if(!el)return;
+  if(!rows||!rows.length){
+    el.innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>`;
+    return;
+  }
+  const ORDER=['WTI','BRENT','BDTI','CTFI'];
+  const map={};rows.forEach(r=>map[(r.index_type||'').toUpperCase()]=r);
+  el.innerHTML=ORDER.map(k=>{
+    const r=map[k];
+    if(!r)return`<div class="macro-card"><div class="mc-type">${k}</div><div class="mc-val" style="color:var(--muted)">--</div></div>`;
+    const chg=r.change_rate;
+    const chgStr=chg?`<span class="mc-chg" style="color:${String(chg).startsWith('-')?'var(--red)':'var(--green)'}">${chg}</span>`:'';
+    const unit=k==='BDTI'||k==='CTFI'?'pts':'$/bbl';
+    return`<div class="macro-card">
+      <div class="mc-type">${k} <span style="color:var(--muted);font-size:9px">${unit}</span></div>
+      <div class="mc-val">${r.value!=null?r.value.toFixed(1):'--'}</div>
+      ${chgStr}
+      <div class="mc-date">${r.data_date||''}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHzStats(gulf,transit){
+  const el=document.getElementById('hz-stats-2col');
+  if(!el)return;
+  const gulfCnt=gulf?.ship_cnt!=null?gulf.ship_cnt.toLocaleString():'--';
+  const gulfDate=gulf?.obs_date||'';
+  const inCnt=transit?.inbound_cnt!=null?transit.inbound_cnt.toLocaleString():'--';
+  const outCnt=transit?.outbound_cnt!=null?transit.outbound_cnt.toLocaleString():'--';
+  const totCnt=transit?.total_cnt!=null?transit.total_cnt.toLocaleString():'--';
+  const trDate=transit?.obs_date||'';
+
+  el.innerHTML=
+    `<div class="stat-box">
+      <div class="stat-lbl">${t('hz_gulf_lbl')} <span class="src-badge">ShipFinder</span></div>
+      <div class="stat-val">${gulfCnt}</div>
+      <div class="stat-sub">${LANG==='ko'?'척':'ships'} · ${gulfDate}</div>
+    </div>`+
+    `<div class="stat-box">
+      <div class="stat-lbl">${t('hz_transit_lbl')} <span class="src-badge">ShipFinder</span></div>
+      <div class="stat-val">${totCnt}</div>
+      <div class="stat-sub">${trDate}</div>
+      <div class="transit-dir">
+        <span class="transit-dir-item dir-in">${t('hz_in')} ${inCnt}</span>
+        <span class="transit-dir-item dir-out">${t('hz_out')} ${outCnt}</span>
+      </div>
+    </div>`;
+}
+
+function renderHzLog(rows){
+  const el=document.getElementById('hz-log-body');
+  if(!el)return;
+  if(!rows||!rows.length){
+    el.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">${t('cp_collecting')}</td></tr>`;
+    return;
+  }
+  el.innerHTML=rows.map(r=>{
+    const dir=r.direction==='in'
+      ?`<span class="dir-in">IN ▶</span>`
+      :`<span class="dir-out">◀ OUT</span>`;
+    const ts=r.time_exit?new Date(r.time_exit).toLocaleTimeString(LANG==='ko'?'ko-KR':'en-US',{hour:'2-digit',minute:'2-digit'}):'--';
+    const dwt=r.dwt!=null?Math.round(r.dwt).toLocaleString():'--';
+    return`<tr>
+      <td>${dir}</td>
+      <td style="font-family:var(--ff-mono);font-size:11px;color:var(--muted2)">${ts}</td>
+      <td style="font-weight:600">${r.shipname||'--'}</td>
+      <td style="color:var(--muted2)">${r.shiptype||'--'}</td>
+      <td style="font-family:var(--ff-mono);font-size:11px;color:var(--muted2)">${dwt}</td>
+      <td style="color:var(--muted2)">${r.country_name||'--'}</td>
+      <td style="color:var(--muted2);font-size:11px">${r.operator_company||'--'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderHzNews(rows){
+  const el=document.getElementById('hz-news-list');
+  if(!el)return;
+  if(!rows||!rows.length){
+    el.innerHTML=`<div class="no-data-block">${t('hz_no_news')}</div>`;
+    return;
+  }
+  // 제목+출처+URL만 (본문 복제 금지). link-out 기본.
+  el.innerHTML=rows.map(r=>{
+    const ts=r.news_time?new Date(r.news_time).toLocaleDateString(LANG==='ko'?'ko-KR':'en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    return`<div class="news-item">
+      <div class="news-title"><a href="${r.url||'#'}" target="_blank" rel="noopener noreferrer">${r.title||'--'}</a></div>
+      <div class="news-meta">${t('hz_news_src')}: ${r.source||'ShipFinder'} &nbsp;·&nbsp; ${ts}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHzAiBrief(row){
+  const el=document.getElementById('hz-ai-brief');
+  if(!el)return;
+  if(!row||!row.body){
+    el.innerHTML=`<div class="no-data-block">${t('cp_collecting')}</div>`;
+    return;
+  }
+  // AI 브리핑: 원문+출처 박스. link-out 우선.
+  const linkBtn=row.source_url
+    ?`<a class="ai-linkout" href="${row.source_url}" target="_blank" rel="noopener noreferrer">↗ ${t('hz_ai_linkout')}</a>`
+    :'';
+  el.innerHTML=
+    `<div class="ai-caveat">⚠️ ${t('hz_ai_caveat')}</div>`+
+    (row.source_url
+      ?`<div>${linkBtn}</div>`
+      :`<div class="ai-body">${row.body}</div>`
+    );
+}
+
+function renderChokepoints(d){
+  renderCPIndex(d.cpIdx||[]);
+  renderHzMacro(d.macro||[]);
+  renderHzStats(d.gulf,d.transit);
+  renderHzLog(d.log||[]);
+  renderHzNews(d.news||[]);
+  renderHzAiBrief(d.ai);
 }
 
 /* ══════════════════════════════════════
