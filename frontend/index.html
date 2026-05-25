@@ -1,705 +1,1305 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MTL Port Intelligence</title>
+<title>MTL Maritime Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.29.0/dist/tabler-icons.min.css">
 <style>
-:root{
-  --bg:#07111f;--surface:#0d1f33;--card:#0f2030;--card2:#122539;
-  --border:#1a3a5c;--border2:#0e2540;
-  --mint:#14b8a6;--mint-d:rgba(20,184,166,.1);--mint-b:rgba(20,184,166,.22);
-  --red:#ef4444;--red-d:rgba(239,68,68,.1);
-  --orange:#f97316;--orange-d:rgba(249,115,22,.1);
-  --yellow:#eab308;--yellow-d:rgba(234,179,8,.1);
-  --green:#22c55e;--green-d:rgba(34,197,94,.1);
-  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
-  --ff-disp:'Bebas Neue',sans-serif;
-  --ff-mono:'Space Grotesk',sans-serif;
-  --ff-body:'Noto Sans KR',sans-serif;
+/* ═══════════════════════════════════════════════════
+   1. CSS 변수 — 다크 (기본)
+══════════════════════════════════════════════════════ */
+[data-theme="dark"], :root {
+  --bg-main:    #07111f;
+  --bg-panel:   #0e2033;
+  --bg-card:    #10263a;
+  --border:     #1f3a52;
+
+  --text-main:  #f8fafc;
+  --text-sub:   #cbd5e1;
+  --text-muted: #94a3b8;
+
+  --mint:       #14b8a6;
+  --mint-soft:  rgba(20,184,166,.15);
+  --mint-dim:   #0d9488;
+  --mint-b:     rgba(20,184,166,.22);
+
+  --primary:    #22d3ee;
+  --success:    #22c55e;
+  --warning:    #f59e0b;
+  --danger:     #ef4444;
+  --info:       #3b82f6;
+  --orange:     #f97316;
+
+  --success-soft: rgba(34,197,94,.14);
+  --warning-soft: rgba(245,158,11,.14);
+  --danger-soft:  rgba(239,68,68,.14);
+  --orange-soft:  rgba(249,115,22,.14);
+  --info-soft:    rgba(59,130,246,.14);
+
+  --shadow: none;
+  --map-sea:    #0a1929;
+  --map-land:   #1a3333;
+  --map-border: #2a4a4a;
+
+  /* 구형 변수 별칭 (기존 렌더함수 호환) */
+  --bg:       #07111f;
+  --surface:  #0e2033;
+  --card:     #10263a;
+  --card2:    #10263a;
+  --border2:  #1f3a52;
+  --red:      #ef4444;  --red-d:    rgba(239,68,68,.10);
+  --orange-d: rgba(249,115,22,.10);
+  --yellow:   #f59e0b;  --yellow-d: rgba(245,158,11,.10);
+  --green:    #22c55e;  --green-d:  rgba(34,197,94,.10);
+  --mint-d:   rgba(20,184,166,.10);
+  --text:     #f8fafc;
+  --muted:    #94a3b8;
+  --muted2:   #cbd5e1;
+  --ff-disp:  Inter, 'Noto Sans KR', sans-serif;
+  --ff-mono:  Inter, 'Noto Sans KR', sans-serif;
+  --ff-body:  Inter, 'Noto Sans KR', sans-serif;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--ff-body);font-size:15px;line-height:1.65;min-height:100vh}
 
-/* ── HEADER ── */
-#hdr{position:sticky;top:0;z-index:1000;background:rgba(7,17,31,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.hdr-top{display:flex;align-items:center;justify-content:space-between;padding:12px 32px}
-.hdr-brand{display:flex;align-items:center;gap:12px}
-.brand-icon{font-size:20px;line-height:1}
-.brand-name{font-family:var(--ff-mono);font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--text)}
-.brand-name span{color:var(--mint)}
-.brand-tag{font-family:var(--ff-mono);font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 8px;margin-left:6px}
-.hdr-right{display:flex;align-items:center;gap:16px}
-#utc{font-family:var(--ff-mono);font-size:12px;color:var(--muted2);letter-spacing:.5px}
-#utc .dot{color:var(--mint);animation:blink 1s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-.lang-btn{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px}
-.lang-btn button{background:none;border:none;color:var(--muted2);cursor:pointer;padding:3px 10px;border-radius:4px;font-size:12px;font-family:var(--ff-mono);font-weight:600;transition:all .2s}
-.lang-btn button.active{background:var(--mint);color:#000}
-.hdr-nav{display:flex;padding:0 20px;overflow-x:auto;gap:2px}
-.hdr-nav::-webkit-scrollbar{height:0}
-.hdr-nav a{color:var(--muted);text-decoration:none;font-size:12px;font-family:var(--ff-mono);font-weight:500;padding:9px 13px;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;letter-spacing:.3px}
-.hdr-nav a:hover{color:var(--text);border-bottom-color:var(--mint)}
+/* ═══════════════════════════════════════════════════
+   2. CSS 변수 — 라이트
+══════════════════════════════════════════════════════ */
+[data-theme="light"] {
+  --bg-main:    #f6f8fb;
+  --bg-panel:   #ffffff;
+  --bg-card:    #ffffff;
+  --border:     #e2e8f0;
 
-/* ── LAYOUT ── */
-main{max-width:1360px;margin:0 auto;padding:48px 32px 100px}
-section{margin-bottom:72px}
-.sec-eyebrow{font-family:var(--ff-mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mint);margin-bottom:8px}
-.sec-title{font-size:24px;font-weight:700;margin-bottom:5px;letter-spacing:-.3px}
-.sec-desc{font-size:13px;color:var(--muted2);margin-bottom:28px;max-width:640px;line-height:1.7}
-.sec-meta{font-size:11px;color:var(--muted);margin-top:10px;font-family:var(--ff-mono)}
+  --text-main:  #0f172a;
+  --text-sub:   #334155;
+  --text-muted: #64748b;
 
-/* ── SUMMARY GRID ── */
-.sum-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1.8fr;gap:14px}
-.sum-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 22px;position:relative;overflow:hidden}
-.sum-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(20,184,166,.04),transparent 60%);pointer-events:none}
-.sum-card .sc-lbl{font-size:11px;font-family:var(--ff-mono);color:var(--muted2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
-.sum-card .sc-val{font-family:var(--ff-disp);font-size:58px;line-height:1;color:var(--text);margin-bottom:4px}
-.sum-card .sc-sub{font-size:12px;color:var(--muted)}
-.sum-card.sc-red .sc-val{color:var(--red)}
-.sum-card.sc-data .sc-val{font-size:44px}
-.sum-card.sc-data sup{font-family:var(--ff-mono);font-size:16px;color:var(--muted);font-weight:400;vertical-align:super}
-.today-card{background:var(--card);border:1px solid var(--mint-b);border-radius:14px;padding:24px 22px;background:linear-gradient(135deg,var(--card),rgba(20,184,166,.06))}
-.today-card .tc-lbl{font-size:10px;font-family:var(--ff-mono);color:var(--mint);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
-.today-card .tc-txt{font-size:16px;font-weight:500;line-height:1.65;color:var(--text)}
+  --mint:       #0d9488;
+  --mint-soft:  #cffafe;
+  --mint-dim:   #0891b2;
+  --mint-b:     rgba(13,148,136,.22);
 
-/* ── REGION CARDS ── */
-.region-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.rc{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:14px;padding:22px;transition:transform .2s,background .2s;animation:fadeUp .45s ease forwards;opacity:0}
-.rc:hover{transform:translateY(-2px);background:var(--card2)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.rc:nth-child(1){animation-delay:.04s}.rc:nth-child(2){animation-delay:.08s}.rc:nth-child(3){animation-delay:.12s}
-.rc:nth-child(4){animation-delay:.16s}.rc:nth-child(5){animation-delay:.20s}.rc:nth-child(6){animation-delay:.24s}
-.rc:nth-child(7){animation-delay:.28s}.rc:nth-child(8){animation-delay:.32s}.rc:nth-child(9){animation-delay:.36s}
-.rc.lC{border-left-color:var(--red)}.rc.lB{border-left-color:var(--orange)}.rc.lS{border-left-color:var(--yellow)}.rc.lL{border-left-color:var(--green)}.rc.lN{border-left-color:var(--muted)}
-.rc-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:8px}
-.rc-name{font-size:15px;font-weight:700;line-height:1.3}
-.badge{display:inline-block;font-size:11px;font-family:var(--ff-mono);font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
-.bC{background:var(--red-d);color:var(--red)}.bB{background:var(--orange-d);color:var(--orange)}.bS{background:var(--yellow-d);color:var(--yellow)}.bL{background:var(--green-d);color:var(--green)}.bN{background:rgba(100,116,139,.12);color:var(--muted2)}
-.rc-score{font-family:var(--ff-disp);font-size:54px;line-height:1;margin-bottom:2px}
-.sC{color:var(--red)}.sB{color:var(--orange)}.sS{color:var(--yellow)}.sL{color:var(--green)}.sN{color:var(--muted)}
-.rc-score-lbl{font-size:11px;color:var(--muted);margin-bottom:12px;font-family:var(--ff-mono)}
-.prog-wrap{height:5px;background:rgba(255,255,255,.05);border-radius:3px;margin-bottom:14px;overflow:hidden}
-.prog-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
-.fC{background:var(--red)}.fB{background:var(--orange)}.fS{background:var(--yellow)}.fL{background:var(--green)}
-.rc-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px}
-.rc-stat .rs-lbl{color:var(--muted);margin-bottom:2px}
-.rc-stat .rs-val{font-family:var(--ff-mono);font-weight:600;font-size:13px}
-.rc-nodata{text-align:center;padding:20px 0 8px}
-.rc-nodata .nd-ico{font-size:28px;margin-bottom:8px;opacity:.4}
-.rc-nodata .nd-msg{font-size:13px;color:var(--muted2)}
-.rc-nodata .nd-sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--ff-mono)}
+  --primary:    #0ea5e9;
+  --success:    #16a34a;
+  --warning:    #d97706;
+  --danger:     #dc2626;
+  --info:       #2563eb;
+  --orange:     #ea580c;
 
-/* ── REGION ANALYTICS ── */
-.ra-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;animation:fadeUp .45s ease forwards;opacity:0;transition:background .2s}
-.ra-card:hover{background:var(--card2)}
-.ra-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:8px}
-.ra-name{font-size:14px;font-weight:700}
-.ra-badges{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
-.ci-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.ci-bar-track{flex:1;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
-.ci-bar-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
-.ci-num{font-family:var(--ff-disp);font-size:32px;line-height:1;min-width:44px;text-align:right}
-.ra-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.ra-metric .rm-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;font-family:var(--ff-mono)}
-.ra-metric .rm-val{font-size:15px;font-weight:600}
-.ra-narrative{font-size:11px;color:var(--muted2);border-top:1px solid var(--border2);padding-top:10px;line-height:1.7}
-.ra-week{font-size:10px;color:var(--muted);margin-top:6px;font-family:var(--ff-mono)}
-.ra-collecting{text-align:center;padding:30px 0;color:var(--muted)}
+  --success-soft: #dcfce7;
+  --warning-soft: #fef3c7;
+  --danger-soft:  #fee2e2;
+  --orange-soft:  #ffedd5;
+  --info-soft:    #dbeafe;
 
-/* ── TABLE ── */
-.t5-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
-.t5{width:100%;border-collapse:collapse}
-.t5 thead{background:var(--surface)}
-.t5 th{text-align:left;padding:11px 16px;font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:1.5px;border-bottom:1px solid var(--border);font-family:var(--ff-mono);font-weight:600;white-space:nowrap}
-.t5 td{padding:14px 16px;border-bottom:1px solid rgba(26,58,92,.3);font-size:14px;vertical-align:middle}
-.t5 tbody tr{cursor:pointer;transition:background .15s}
-.t5 tbody tr:hover{background:rgba(20,184,166,.04)}
-.t5 tbody tr:last-child td{border-bottom:none}
-.port-cell{display:flex;flex-direction:column;gap:2px}
-.port-name{font-weight:700;font-size:14px}
-.port-code{font-size:11px;color:var(--muted);font-family:var(--ff-mono)}
-.score-num{font-family:var(--ff-disp);font-size:28px;line-height:1}
-.stale-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--orange);background:var(--orange-d);border-radius:4px;padding:1px 6px;margin-left:4px;font-family:var(--ff-mono);vertical-align:middle}
+  --shadow: 0 1px 3px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.07);
+  --map-sea:    #dbeafe;
+  --map-land:   #f1f5f9;
+  --map-border: #cbd5e1;
 
-/* ── STRAIT CARDS ── */
-.cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.cp-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;transition:background .2s}
-.cp-card:hover{background:var(--card2)}
-.cp-name{font-size:19px;font-weight:700;margin-bottom:5px}
-.cp-desc{font-size:12px;color:var(--muted2);margin-bottom:20px;line-height:1.6}
-.cp-vals{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
-.cp-val-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;font-family:var(--ff-mono)}
-.cp-val-num{font-family:var(--ff-disp);font-size:40px;line-height:1}
-.cp-divider{height:1px;background:var(--border2);margin-bottom:14px}
-.cp-status{font-size:13px;font-weight:600;margin-bottom:8px}
-.cp-note{font-size:11px;color:var(--muted);line-height:1.6}
+  /* 구형 변수 별칭 */
+  --bg:       #f6f8fb;
+  --surface:  #ffffff;
+  --card:     #ffffff;
+  --card2:    #ffffff;
+  --border2:  #e2e8f0;
+  --red:      #dc2626;  --red-d:    #fee2e2;
+  --orange-d: #ffedd5;
+  --yellow:   #d97706;  --yellow-d: #fef3c7;
+  --green:    #16a34a;  --green-d:  #dcfce7;
+  --mint-d:   #cffafe;
+  --text:     #0f172a;
+  --muted:    #64748b;
+  --muted2:   #334155;
+  --ff-disp:  Inter, 'Noto Sans KR', sans-serif;
+  --ff-mono:  Inter, 'Noto Sans KR', sans-serif;
+  --ff-body:  Inter, 'Noto Sans KR', sans-serif;
+}
 
-/* ── ETA SECTION ── */
-.eta-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
-.eta-form{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px}
-.eta-form-title{font-size:18px;font-weight:700;margin-bottom:4px}
-.eta-form-desc{font-size:13px;color:var(--muted2);margin-bottom:24px}
-.fg{margin-bottom:16px}
-.fg label{display:block;font-size:12px;color:var(--muted2);margin-bottom:7px;font-family:var(--ff-mono);text-transform:uppercase;letter-spacing:.8px}
-.fg select,.fg input[type=date],.fg input[type=number]{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:11px 14px;font-size:14px;font-family:var(--ff-body);outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
-.fg select:focus,.fg input:focus{border-color:var(--mint)}
-.fg select option{background:var(--surface)}
-.port-hint{font-size:12px;margin-top:6px;min-height:18px;font-family:var(--ff-mono)}
-.nm-auto{font-size:13px;min-height:20px;display:none;padding-bottom:6px}
-.nm-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:11px 14px;font-size:14px;font-family:var(--ff-body);outline:none;margin-top:6px;display:none;transition:border-color .2s}
-.nm-input:focus{border-color:var(--mint)}
-.eta-btn{width:100%;padding:14px;background:var(--mint);color:#000;border:none;border-radius:8px;font-size:15px;font-weight:700;font-family:var(--ff-body);cursor:pointer;transition:all .2s;margin-top:4px;letter-spacing:.3px}
-.eta-btn:hover{background:#0fb8a4;transform:translateY(-1px)}
-.eta-btn:active{transform:scale(.99)}
-.eta-btn:disabled{background:var(--muted);cursor:not-allowed;transform:none}
-.eta-result{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;min-height:360px;display:flex;flex-direction:column;justify-content:center}
-.eta-ph{text-align:center;color:var(--muted)}
-.eta-ph-ico{font-size:44px;margin-bottom:14px;opacity:.25}
-.eta-ph-txt{font-size:14px;color:var(--muted2);line-height:1.7}
-.eta-rtitle{font-size:16px;font-weight:700;margin-bottom:20px}
-.eta-rows{display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
-.eta-row-hdr{display:flex;justify-content:space-between;align-items:center}
-.eta-rtype{font-size:12px;color:var(--muted2);font-family:var(--ff-mono)}
-.eta-rdate{font-family:var(--ff-disp);font-size:28px}
-.eta-row.p50 .eta-rdate{font-size:38px;color:var(--mint)}
-.eta-bar-wrap{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;margin:5px 0}
-.eta-bar{height:100%;border-radius:2px;background:var(--muted)}
-.eta-row.p50 .eta-bar{background:var(--mint)}.eta-row.p90 .eta-bar{background:var(--orange)}
-.eta-rnote{font-size:11px;color:var(--muted)}
-.eta-alert{background:var(--red-d);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:10px}
-.eta-info{background:var(--mint-d);border:1px solid var(--mint-b);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--muted2)}
-.eta-info strong{color:var(--mint)}
+/* ═══════════════════════════════════════════════════
+   3. 리셋 + 베이스
+══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: Inter, 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; font-family: inherit; }
 
-/* ── COMING SOON ── */
-.coming-soon{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:48px;text-align:center;color:var(--muted2)}
-.coming-soon .cs-ico{font-size:36px;margin-bottom:14px;opacity:.5}
-.coming-soon .cs-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px}
-.coming-soon .cs-msg{font-size:13px;line-height:1.75}
+/* 스크롤바 */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* ── LOADING/EMPTY ── */
-.loading{display:flex;align-items:center;justify-content:center;padding:44px;color:var(--muted);gap:12px;font-size:13px}
-.spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-.no-data-block{text-align:center;color:var(--muted2);padding:36px;font-size:13px}
+/* ═══════════════════════════════════════════════════
+   4. 레이아웃 골격
+══════════════════════════════════════════════════════ */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 48px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 16px;
+}
+#shell {
+  display: flex;
+  height: calc(100vh - 48px);
+  margin-top: 48px;
+}
+#sidebar {
+  width: 200px; flex-shrink: 0;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+#main {
+  flex: 1; overflow-y: auto;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
 
-/* ── MISC ── */
-.collecting-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted2);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-family:var(--ff-mono)}
-.collecting-dot{width:6px;height:6px;border-radius:50%;background:var(--mint);animation:pulse 1.4s ease infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+/* ═══════════════════════════════════════════════════
+   5. Topbar 컴포넌트
+══════════════════════════════════════════════════════ */
+.tb-date { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.tb-sep  { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+.tb-selects { display: flex; gap: 8px; }
+.tb-select {
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-main); border-radius: 6px;
+  padding: 4px 8px; font-size: 12px; font-family: inherit;
+}
+.tb-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.utc-clock { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.utc-dot { color: var(--mint); }
+.live-badge {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--success-soft); color: var(--success);
+  border-radius: 4px; padding: 2px 7px;
+  font-size: 11px; font-weight: 600;
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--success);
+  animation: livePulse 1.4s ease infinite;
+}
+@keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+.icon-btn {
+  width: 30px; height: 30px; border: none; background: none;
+  color: var(--text-muted); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; transition: all .15s;
+}
+.icon-btn:hover { background: var(--bg-card); color: var(--text-main); }
+.lang-tog { display: flex; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.lang-btn { border: none; background: none; padding: 4px 10px; font-size: 11px; font-weight: 600; color: var(--text-muted); transition: all .15s; }
+.lang-btn.active { background: var(--mint); color: #fff; }
+.avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--mint-soft); border: 1px solid var(--mint);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--mint);
+}
 
-/* ── RESPONSIVE ── */
-@media(max-width:1100px){.sum-grid{grid-template-columns:1fr 1fr}.cp-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:960px){.region-grid{grid-template-columns:1fr 1fr}.eta-wrap{grid-template-columns:1fr}}
-@media(max-width:640px){main{padding:28px 16px 72px}.hdr-top{padding:11px 16px}.sum-grid,.region-grid,.cp-grid{grid-template-columns:1fr}.brand-tag{display:none}}
+/* ═══════════════════════════════════════════════════
+   6. Sidebar 컴포넌트
+══════════════════════════════════════════════════════ */
+.logo { display: flex; align-items: center; gap: 10px; padding: 16px 14px 12px; }
+.logo-brand { font-size: 17px; font-weight: 700; letter-spacing: -.02em; color: var(--text-main); display: block; }
+.logo-sub { font-size: 9px; color: var(--text-muted); display: block; letter-spacing: .04em; text-transform: uppercase; }
+.sidebar-nav { flex: 1; padding: 4px 0; }
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 14px; cursor: pointer;
+  border-left: 3px solid transparent;
+  color: var(--text-muted); font-size: 13px;
+  transition: all .15s; position: relative;
+  user-select: none;
+}
+.nav-item:hover { background: var(--mint-soft); color: var(--text-main); }
+.nav-item.active { border-left-color: var(--mint); background: var(--mint-soft); color: var(--mint); }
+.nav-item i { font-size: 16px; flex-shrink: 0; }
+.nav-badge {
+  position: absolute; right: 10px;
+  background: var(--danger); color: #fff;
+  font-size: 10px; font-weight: 700;
+  min-width: 16px; height: 16px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; padding: 0 4px;
+}
+.nav-sep { height: 1px; background: var(--border); margin: 6px 12px; }
+.sidebar-foot { padding: 12px 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
 
-/* ── VIEW TOGGLE ── */
-.view-toggle{display:flex;gap:8px;padding:8px 20px;border-top:1px solid var(--border);background:rgba(7,17,31,.97)}
-.vt-btn{background:none;border:1px solid var(--border);color:var(--muted2);cursor:pointer;padding:7px 18px;border-radius:8px;font-size:13px;font-family:var(--ff-mono);font-weight:600;transition:all .2s;letter-spacing:.3px}
-.vt-btn.active{background:var(--mint);border-color:var(--mint);color:#000}
-.vt-btn:hover:not(.active){border-color:var(--mint);color:var(--text)}
+/* ═══════════════════════════════════════════════════
+   7. 탭 뷰
+══════════════════════════════════════════════════════ */
+.tab-view { display: none; }
+/* Overview 탭: flex column (fixed rows) */
+.tab-view.active          { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+/* 스크롤 필요한 탭들 */
+.tab-view.active.tab-scroll { display: block; padding-bottom: 40px; }
 
-/* ── SOURCE BADGE ── */
-.src-badge{display:inline-block;font-size:10px;font-family:var(--ff-mono);color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1px 7px;letter-spacing:.3px;vertical-align:middle}
+/* ═══════════════════════════════════════════════════
+   8. Overview 행 구조
+══════════════════════════════════════════════════════ */
+.kpi-row    { flex: 0 0 auto; display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; min-height: 96px; }
+.map-row    { flex: 1 1 0; min-height: 0; display: grid; grid-template-columns: 63% 37%; gap: 8px; }
+.second-row { flex: 0 0 210px; display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.bottom-row { flex: 0 0 170px; display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.app-footer { flex: 0 0 26px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); padding: 0 2px; }
 
-/* ── CPI CARDS (EconDB 해협 개요) ── */
-.cpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.cpi-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;transition:background .2s;animation:fadeUp .4s ease forwards;opacity:0}
-.cpi-card:hover{background:var(--card2)}
-.cpi-card:nth-child(1){animation-delay:.04s}.cpi-card:nth-child(2){animation-delay:.08s}.cpi-card:nth-child(3){animation-delay:.12s}
-.cpi-card:nth-child(4){animation-delay:.16s}.cpi-card:nth-child(5){animation-delay:.20s}.cpi-card:nth-child(6){animation-delay:.24s}
-.cpi-name{font-size:16px;font-weight:700;margin-bottom:2px}
-.cpi-week{font-size:10px;color:var(--muted);font-family:var(--ff-mono);margin-bottom:12px}
-.cpi-teu{font-family:var(--ff-disp);font-size:40px;line-height:1;margin-bottom:3px}
-.cpi-dirs{font-size:11px;color:var(--muted);font-family:var(--ff-mono);margin-bottom:12px}
-.cpi-pct-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:var(--ff-mono)}
-.cpi-pct-bar-wrap{height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;margin-bottom:6px}
-.cpi-pct-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
-.cpi-pct-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.cpi-pct-num{font-family:var(--ff-mono);font-size:14px;font-weight:700}
-.cpi-trend{font-family:var(--ff-mono);font-size:11px}
-.cpi-narrative{font-size:11px;color:var(--muted2);margin-top:10px;line-height:1.65;border-top:1px solid var(--border2);padding-top:10px}
-.cpi-water{background:rgba(20,184,166,.05);border:1px solid var(--mint-b);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:var(--muted2)}
-.cpi-water strong{color:var(--mint)}
-.cpi-nodata{text-align:center;padding:24px 0 8px;color:var(--muted2)}
+/* ═══════════════════════════════════════════════════
+   9. 패널 (공통)
+══════════════════════════════════════════════════════ */
+.panel {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow);
+}
+.panel.dashed { border-style: dashed; }
+.panel-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 13px 7px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.panel-title { font-size: 12px; font-weight: 600; color: var(--text-main); }
+.panel-link  { font-size: 11px; color: var(--mint); cursor: pointer; }
+.panel-link:hover { text-decoration: underline; }
+.panel-src   { font-size: 10px; color: var(--text-muted); }
+.panel-body  { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.panel-foot  { padding: 4px 13px 6px; font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
 
-/* ── MACRO CARDS ── */
-.macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.macro-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-.mc-type{font-size:10px;font-family:var(--ff-mono);color:var(--muted2);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
-.mc-val{font-family:var(--ff-disp);font-size:34px;line-height:1;margin-bottom:3px}
-.mc-chg{font-size:12px;font-family:var(--ff-mono)}
-.mc-date{font-size:10px;color:var(--muted);font-family:var(--ff-mono);margin-top:3px}
+/* ═══════════════════════════════════════════════════
+   10. KPI 카드
+══════════════════════════════════════════════════════ */
+.kpi-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 11px 13px;
+  display: flex; flex-direction: column; gap: 3px;
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.kpi-card.kpi-placeholder { border-style: dashed; opacity: .7; }
+.kpi-hdr  { display: flex; align-items: center; gap: 7px; }
+.kpi-icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.kpi-icon i { font-size: 13px; }
+.kpi-label { font-size: 11px; color: var(--text-muted); flex: 1; line-height: 1.3; }
+.kpi-info  { font-size: 12px; color: var(--text-muted); }
+.kpi-body  { display: flex; align-items: baseline; gap: 5px; }
+.kpi-value { font-size: 22px; font-weight: 700; color: var(--text-main); line-height: 1; }
+.kpi-unit  { font-size: 11px; color: var(--text-muted); }
+.kpi-delta { font-size: 11px; font-weight: 600; }
+.kpi-delta.kd-danger  { color: var(--danger); }
+.kpi-delta.kd-success { color: var(--success); }
+.kpi-foot  { font-size: 10px; color: var(--text-muted); }
+.kpi-spark { margin-top: 2px; display: block; }
 
-/* ── GULF / TRANSIT STATS ── */
-.stats-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
-.stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
-.stat-lbl{font-size:11px;font-family:var(--ff-mono);color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-.stat-val{font-family:var(--ff-disp);font-size:48px;line-height:1;color:var(--mint)}
-.stat-sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--ff-mono)}
-.transit-dir{display:flex;gap:16px;margin-top:10px}
-.transit-dir-item{font-size:13px;font-family:var(--ff-mono)}
+/* ═══════════════════════════════════════════════════
+   11. 세계 지도 패널
+══════════════════════════════════════════════════════ */
+.map-panel { display: flex; flex-direction: column; }
+#map-container { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+#map-svg { position: absolute; inset: 0; }
+.map-controls {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; flex-direction: column; gap: 3px; z-index: 10;
+}
+.map-zoom-btn {
+  width: 24px; height: 24px; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text-main);
+  border-radius: 4px; font-size: 14px; display: flex;
+  align-items: center; justify-content: center; line-height: 1;
+}
+.map-zoom-btn:hover { background: var(--mint-soft); }
+.map-legend { display: flex; gap: 10px; padding: 5px 13px; flex-shrink: 0; }
+.leg-item   { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-muted); }
+.leg-dot    { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.map-src    { font-size: 10px; color: var(--text-muted); padding: 0 13px 5px; flex-shrink: 0; }
 
-/* ── TRANSIT LOG TABLE ── */
-.tlog-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}
-.tlog-scroll{max-height:340px;overflow-y:auto}
-.tlog{width:100%;border-collapse:collapse;font-size:12px}
-.tlog thead{background:var(--surface);position:sticky;top:0;z-index:1}
-.tlog th{text-align:left;padding:9px 12px;font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);font-family:var(--ff-mono);white-space:nowrap}
-.tlog td{padding:9px 12px;border-bottom:1px solid rgba(26,58,92,.25);vertical-align:middle}
-.tlog tbody tr:last-child td{border-bottom:none}
-.dir-in{color:var(--mint);font-weight:700;font-family:var(--ff-mono)}
-.dir-out{color:var(--orange);font-weight:700;font-family:var(--ff-mono)}
+/* ═══════════════════════════════════════════════════
+   12. Top Ports 테이블
+══════════════════════════════════════════════════════ */
+.top-ports-scroll { flex: 1; overflow-y: auto; }
+.tp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tp-table thead th {
+  position: sticky; top: 0; background: var(--bg-card);
+  text-align: left; padding: 6px 10px;
+  font-size: 10px; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .8px;
+  border-bottom: 1px solid var(--border); white-space: nowrap; font-weight: 600;
+}
+.tp-table tbody td { padding: 6px 10px; border-bottom: 1px solid rgba(100,120,140,.1); vertical-align: middle; }
+.tp-table tbody tr:last-child td { border-bottom: none; }
+.tp-rank   { font-size: 11px; color: var(--text-muted); font-weight: 600; width: 24px; }
+.tp-name   { font-weight: 600; font-size: 12px; }
+.tp-ctry   { font-size: 10px; color: var(--text-muted); }
+.tp-ci-wrap { display: flex; align-items: center; gap: 5px; }
+.tp-ci-num  { font-weight: 700; font-size: 12px; min-width: 30px; }
+.tp-ci-bar  { flex: 1; height: 3px; background: rgba(100,120,140,.2); border-radius: 2px; overflow: hidden; min-width: 30px; }
+.tp-ci-fill { height: 100%; border-radius: 2px; }
+.risk-badge { font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: 700; white-space: nowrap; }
 
-/* ── NEWS ── */
-.news-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
-.news-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 16px;transition:background .2s}
-.news-item:hover{background:var(--card2)}
-.news-title a{color:var(--text);text-decoration:none;font-size:14px;font-weight:600;line-height:1.4}
-.news-title a:hover{color:var(--mint)}
-.news-meta{font-size:11px;color:var(--muted);font-family:var(--ff-mono);margin-top:4px}
+/* ═══════════════════════════════════════════════════
+   13. 2nd Row 패널들
+══════════════════════════════════════════════════════ */
+/* 8-A Regional Congestion Chart */
+#regional-chart-wrap { flex: 1; min-height: 0; padding: 4px 10px 8px; }
+#regional-chart-canvas { width: 100% !important; }
 
-/* ── AI BRIEF ── */
-.ai-brief-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
-.ai-caveat{background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.3);border-radius:8px;padding:9px 14px;font-size:12px;color:var(--orange);margin-bottom:14px;line-height:1.6}
-.ai-body{font-size:13px;color:var(--muted2);line-height:1.8;white-space:pre-wrap;max-height:240px;overflow-y:auto}
-.ai-linkout{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--mint);text-decoration:none;font-family:var(--ff-mono);margin-top:10px}
-.ai-linkout:hover{text-decoration:underline}
+/* 8-B Operational KPIs */
+.op-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 6px 10px; flex: 1; align-content: start; }
+.op-mini { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 7px; padding: 7px 9px; }
+.op-lbl  { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+.op-val  { font-size: 15px; font-weight: 700; color: var(--text-main); line-height: 1.2; }
+.op-delta { font-size: 10px; }
+.op-mini.op-placeholder { border-style: dashed; opacity: .6; }
 
-/* ── RESPONSIVE for new sections ── */
-@media(max-width:1100px){.cpi-grid{grid-template-columns:1fr 1fr}.macro-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.cpi-grid,.macro-grid,.stats-2col{grid-template-columns:1fr}}
+/* 8-C Regional Maritime Indicators */
+.rm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 6px 10px; flex: 1; align-content: start; }
+.rm-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 7px; padding: 7px 9px; }
+.rm-lbl  { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 1px; display: flex; align-items: center; gap: 4px; }
+.rm-val  { font-size: 16px; font-weight: 700; line-height: 1.1; }
+.rm-chg  { font-size: 10px; }
+.rm-card.rm-placeholder { border-style: dashed; opacity: .6; }
+.src-badge-sm { font-size: 9px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 3px; padding: 0 4px; color: var(--text-muted); }
+
+/* 8-D Alerts */
+.alert-scroll { flex: 1; overflow-y: auto; padding: 4px 10px 6px; display: flex; flex-direction: column; gap: 3px; }
+.alert-item  { display: flex; align-items: flex-start; gap: 6px; padding: 5px 7px; border-radius: 6px; background: var(--bg-panel); }
+.alert-sev   { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.alert-body  { flex: 1; min-width: 0; }
+.alert-tgt   { font-size: 11px; font-weight: 600; }
+.alert-detail { font-size: 10px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alert-time  { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+.alert-empty { text-align: center; color: var(--success); padding: 18px 10px; font-size: 12px; font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════
+   14. Bottom Row 패널들
+══════════════════════════════════════════════════════ */
+/* 9-A Critical Straits */
+.cs-scroll { flex: 1; overflow-y: auto; }
+.cs-table  { width: 100%; border-collapse: collapse; font-size: 11px; }
+.cs-table thead th {
+  position: sticky; top: 0; background: var(--bg-card);
+  text-align: left; padding: 5px 10px;
+  font-size: 9px; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .5px;
+  border-bottom: 1px solid var(--border); white-space: nowrap; font-weight: 600;
+}
+.cs-table tbody td { padding: 5px 10px; border-bottom: 1px solid rgba(100,120,140,.08); vertical-align: middle; }
+.cs-table tbody tr:last-child td { border-bottom: none; }
+.cs-name { font-weight: 600; font-size: 11px; }
+.cs-pct  { font-size: 10px; font-weight: 600; }
+.cs-status { font-size: 10px; }
+
+/* 9-B/9-C Placeholder */
+.panel-placeholder {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; gap: 5px; padding: 12px;
+  color: var(--text-muted);
+}
+.panel-placeholder i  { font-size: 22px; color: var(--border); }
+.panel-placeholder p  { font-size: 11px; font-weight: 500; }
+.panel-placeholder .ph-sub { font-size: 10px; line-height: 1.5; }
+
+/* 9-D Intelligence */
+.intel-scroll { flex: 1; overflow-y: auto; padding: 4px 10px 6px; display: flex; flex-direction: column; gap: 3px; }
+.intel-item  { display: flex; gap: 7px; align-items: flex-start; padding-bottom: 4px; border-bottom: 1px solid rgba(100,120,140,.1); }
+.intel-item:last-child { border-bottom: none; }
+.intel-dot   { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.intel-body  { flex: 1; min-width: 0; }
+.intel-title { font-size: 11px; font-weight: 500; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.intel-title a { color: var(--text-main); }
+.intel-title a:hover { color: var(--mint); }
+.intel-time  { font-size: 10px; color: var(--text-muted); }
+
+/* ═══════════════════════════════════════════════════
+   15. 공통 유틸
+══════════════════════════════════════════════════════ */
+.loading { display: flex; align-items: center; justify-content: center; padding: 32px; color: var(--text-muted); gap: 10px; font-size: 13px; }
+.spin { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--mint); border-radius: 50%; animation: spin .8s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.no-data { text-align: center; color: var(--text-muted); padding: 28px; font-size: 12px; }
+.badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+/* 혼잡 레벨 배지 */
+.bC { background: var(--red-d); color: var(--red); }
+.bB { background: var(--orange-d); color: var(--orange); }
+.bS { background: var(--yellow-d); color: var(--yellow); }
+.bL { background: var(--green-d); color: var(--green); }
+.bN { background: rgba(100,116,139,.12); color: var(--muted2); }
+/* 색상 클래스 */
+.sC { color: var(--red); } .sB { color: var(--orange); }
+.sS { color: var(--yellow); } .sL { color: var(--green); } .sN { color: var(--muted); }
+.lC { border-left-color: var(--red) !important; }
+.lB { border-left-color: var(--orange) !important; }
+.lS { border-left-color: var(--yellow) !important; }
+.lL { border-left-color: var(--green) !important; }
+.lN { border-left-color: var(--muted) !important; }
+/* 펄스 (지도 마커) */
+@keyframes mapPulse { 0%{r:6px;opacity:.8} 70%{r:12px;opacity:0} 100%{r:6px;opacity:0} }
+.marker-pulse { animation: mapPulse 2s ease infinite; }
+/* 공통 소스 배지 */
+.src-badge { display: inline-block; font-size: 10px; font-family: inherit; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; letter-spacing: .2px; vertical-align: middle; }
+
+/* ═══════════════════════════════════════════════════
+   16. Ports 탭 — 기존 스타일 이식
+══════════════════════════════════════════════════════ */
+.ports-main { max-width: 1360px; margin: 0 auto; padding: 8px 4px 60px; }
+.ports-main section { margin-bottom: 56px; }
+.sec-eyebrow { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--mint); margin-bottom: 6px; }
+.sec-title   { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.sec-desc    { font-size: 13px; color: var(--muted2); margin-bottom: 22px; max-width: 640px; line-height: 1.65; }
+.sec-meta    { font-size: 11px; color: var(--muted); margin-top: 8px; }
+/* Summary grid */
+.sum-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1.8fr; gap: 14px; }
+.sum-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px 20px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+.sum-card::before { content:''; position: absolute; inset: 0; background: linear-gradient(135deg,rgba(20,184,166,.04),transparent 60%); pointer-events: none; }
+.sum-card .sc-lbl { font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+.sum-card .sc-val { font-size: 52px; line-height: 1; color: var(--text); margin-bottom: 4px; font-weight: 700; }
+.sum-card .sc-sub { font-size: 12px; color: var(--muted); }
+.sum-card.sc-red .sc-val { color: var(--red); }
+.sum-card.sc-data .sc-val { font-size: 40px; }
+.sum-card.sc-data sup { font-size: 15px; color: var(--muted); font-weight: 400; vertical-align: super; }
+.today-card { background: var(--card); border: 1px solid var(--mint-b); border-radius: 14px; padding: 22px 20px; background-image: linear-gradient(135deg,var(--card),rgba(20,184,166,.06)); box-shadow: var(--shadow); }
+.today-card .tc-lbl { font-size: 10px; color: var(--mint); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+.today-card .tc-txt { font-size: 15px; font-weight: 500; line-height: 1.65; color: var(--text); }
+/* Region cards */
+.region-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.rc { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: 14px; padding: 20px; transition: background .2s; box-shadow: var(--shadow); }
+.rc:hover { background: var(--card2); }
+.rc-hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; gap: 8px; }
+.rc-name { font-size: 14px; font-weight: 700; line-height: 1.3; }
+.rc-score { font-size: 48px; font-weight: 700; line-height: 1; margin-bottom: 2px; }
+.rc-score-lbl { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+.prog-wrap { height: 5px; background: rgba(255,255,255,.05); border-radius: 3px; margin-bottom: 12px; overflow: hidden; }
+[data-theme="light"] .prog-wrap { background: rgba(0,0,0,.08); }
+.prog-fill { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+.fC { background: var(--red); } .fB { background: var(--orange); } .fS { background: var(--yellow); } .fL { background: var(--green); }
+.rc-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; }
+.rc-stat .rs-lbl { color: var(--muted); margin-bottom: 2px; }
+.rc-stat .rs-val { font-weight: 600; font-size: 12px; }
+.rc-nodata { text-align: center; padding: 18px 0 6px; }
+.rc-nodata .nd-ico { font-size: 26px; margin-bottom: 6px; opacity: .4; }
+.rc-nodata .nd-msg { font-size: 12px; color: var(--muted2); }
+.rc-nodata .nd-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+/* RA cards */
+.ra-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; transition: background .2s; box-shadow: var(--shadow); }
+.ra-card:hover { background: var(--card2); }
+.ra-hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
+.ra-name { font-size: 13px; font-weight: 700; }
+.ra-badges { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-end; }
+.ci-bar-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.ci-bar-track { flex: 1; height: 5px; background: rgba(255,255,255,.05); border-radius: 3px; overflow: hidden; }
+[data-theme="light"] .ci-bar-track { background: rgba(0,0,0,.08); }
+.ci-bar-fill { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+.ci-num { font-size: 28px; font-weight: 700; line-height: 1; min-width: 40px; text-align: right; }
+.ra-metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 10px; }
+.ra-metric .rm-lbl-p { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+.ra-metric .rm-val-p { font-size: 14px; font-weight: 600; }
+.ra-narrative { font-size: 11px; color: var(--muted2); border-top: 1px solid var(--border2); padding-top: 8px; line-height: 1.65; }
+.ra-week { font-size: 10px; color: var(--muted); margin-top: 5px; }
+/* Top-5 table */
+.t5-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); }
+.t5 { width: 100%; border-collapse: collapse; }
+.t5 thead { background: var(--surface); }
+.t5 th { text-align: left; padding: 10px 15px; font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid var(--border); font-weight: 600; white-space: nowrap; }
+.t5 td { padding: 13px 15px; border-bottom: 1px solid rgba(26,58,92,.25); font-size: 13px; vertical-align: middle; }
+[data-theme="light"] .t5 td { border-bottom-color: rgba(0,0,0,.06); }
+.t5 tbody tr:last-child td { border-bottom: none; }
+.t5 tbody tr:hover { background: rgba(20,184,166,.03); }
+.port-cell { display: flex; flex-direction: column; gap: 1px; }
+.port-name { font-weight: 700; font-size: 13px; }
+.port-code { font-size: 10px; color: var(--muted); }
+.score-num { font-size: 26px; font-weight: 700; line-height: 1; }
+.stale-tag { display: inline-flex; align-items: center; gap: 2px; font-size: 9px; color: var(--orange); background: var(--orange-d); border-radius: 3px; padding: 1px 5px; margin-left: 3px; }
+
+/* ═══════════════════════════════════════════════════
+   17. Straits 탭 (기존 chokepoint 스타일 이식)
+══════════════════════════════════════════════════════ */
+.straits-main { padding: 8px 4px 60px; }
+.straits-main section { margin-bottom: 48px; }
+.cpi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.cpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; transition: background .2s; box-shadow: var(--shadow); }
+.cpi-card:hover { background: var(--card2); }
+.cpi-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.cpi-week { font-size: 10px; color: var(--muted); margin-bottom: 10px; }
+.cpi-teu  { font-size: 36px; font-weight: 700; line-height: 1; margin-bottom: 2px; }
+.cpi-dirs { font-size: 10px; color: var(--muted); margin-bottom: 10px; }
+.cpi-pct-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+.cpi-pct-bar-wrap { height: 5px; background: rgba(255,255,255,.05); border-radius: 3px; overflow: hidden; margin-bottom: 5px; }
+[data-theme="light"] .cpi-pct-bar-wrap { background: rgba(0,0,0,.08); }
+.cpi-pct-fill { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+.cpi-pct-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cpi-pct-num { font-size: 13px; font-weight: 700; }
+.cpi-trend { font-size: 11px; }
+.cpi-narrative { font-size: 11px; color: var(--muted2); margin-top: 8px; line-height: 1.6; border-top: 1px solid var(--border2); padding-top: 8px; }
+.cpi-water { background: var(--mint-d); border: 1px solid var(--mint-b); border-radius: 8px; padding: 8px 11px; margin-top: 8px; font-size: 11px; color: var(--muted2); }
+.cpi-water strong { color: var(--mint); }
+.macro-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 18px; }
+.macro-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); }
+.mc-type { font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 5px; }
+.mc-val  { font-size: 30px; font-weight: 700; line-height: 1; margin-bottom: 2px; }
+.mc-chg  { font-size: 11px; }
+.mc-date { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.stats-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); }
+.stat-lbl { font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+.stat-val { font-size: 42px; font-weight: 700; line-height: 1; color: var(--mint); }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.transit-dir { display: flex; gap: 14px; margin-top: 8px; }
+.transit-dir-item { font-size: 12px; }
+.tlog-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 18px; box-shadow: var(--shadow); }
+.tlog-scroll { max-height: 320px; overflow-y: auto; }
+.tlog { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tlog thead { background: var(--surface); position: sticky; top: 0; z-index: 1; }
+.tlog th { text-align: left; padding: 8px 11px; font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: .8px; border-bottom: 1px solid var(--border); font-weight: 600; white-space: nowrap; }
+.tlog td { padding: 8px 11px; border-bottom: 1px solid rgba(26,58,92,.2); vertical-align: middle; }
+[data-theme="light"] .tlog td { border-bottom-color: rgba(0,0,0,.06); }
+.tlog tbody tr:last-child td { border-bottom: none; }
+.dir-in  { color: var(--mint); font-weight: 700; }
+.dir-out { color: var(--orange); font-weight: 700; }
+.news-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+.news-item { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; transition: background .2s; box-shadow: var(--shadow); }
+.news-item:hover { background: var(--card2); }
+.news-title a { color: var(--text); text-decoration: none; font-size: 13px; font-weight: 600; line-height: 1.4; }
+.news-title a:hover { color: var(--mint); }
+.news-meta { font-size: 10px; color: var(--muted); margin-top: 3px; }
+.ai-brief-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 18px; box-shadow: var(--shadow); }
+.ai-caveat { background: rgba(249,115,22,.08); border: 1px solid rgba(249,115,22,.3); border-radius: 8px; padding: 8px 12px; font-size: 11px; color: var(--orange); margin-bottom: 12px; line-height: 1.6; }
+.ai-body { font-size: 12px; color: var(--muted2); line-height: 1.8; white-space: pre-wrap; max-height: 220px; overflow-y: auto; }
+.ai-linkout { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--mint); text-decoration: none; margin-top: 8px; }
+.ai-linkout:hover { text-decoration: underline; }
+.collecting-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted2); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2px 9px; }
+.collecting-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mint); animation: livePulse 1.4s ease infinite; }
+
+/* ═══════════════════════════════════════════════════
+   18. ETA Forecast 탭
+══════════════════════════════════════════════════════ */
+.eta-main { padding: 8px 4px 60px; max-width: 1000px; }
+.eta-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
+.eta-form { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 26px; box-shadow: var(--shadow); }
+.eta-form-title { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+.eta-form-desc { font-size: 12px; color: var(--muted2); margin-bottom: 20px; }
+.fg { margin-bottom: 14px; }
+.fg label { display: block; font-size: 11px; color: var(--muted2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .7px; }
+.fg select,.fg input[type=date],.fg input[type=number] { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 13px; font-size: 13px; font-family: inherit; outline: none; transition: border-color .2s; appearance: none; }
+.fg select:focus,.fg input:focus { border-color: var(--mint); }
+.fg select option { background: var(--surface); }
+.port-hint { font-size: 12px; margin-top: 5px; min-height: 16px; }
+.nm-auto { font-size: 12px; min-height: 18px; display: none; padding-bottom: 4px; }
+.nm-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 13px; font-size: 13px; font-family: inherit; outline: none; margin-top: 4px; display: none; transition: border-color .2s; }
+.nm-input:focus { border-color: var(--mint); }
+.eta-btn { width: 100%; padding: 13px; background: var(--mint); color: #000; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .2s; margin-top: 3px; }
+.eta-btn:hover { background: var(--mint-dim); transform: translateY(-1px); }
+.eta-btn:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+.eta-result { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 26px; min-height: 340px; display: flex; flex-direction: column; justify-content: center; box-shadow: var(--shadow); }
+.eta-ph { text-align: center; color: var(--muted); }
+.eta-ph-ico { font-size: 40px; margin-bottom: 12px; opacity: .25; }
+.eta-ph-txt { font-size: 13px; color: var(--muted2); line-height: 1.7; }
+.eta-rtitle { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
+.eta-rows { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+.eta-row-hdr { display: flex; justify-content: space-between; align-items: center; }
+.eta-rtype { font-size: 11px; color: var(--muted2); }
+.eta-rdate { font-size: 26px; font-weight: 700; }
+.eta-row.p50 .eta-rdate { font-size: 34px; color: var(--mint); }
+.eta-bar-wrap { height: 3px; background: rgba(255,255,255,.05); border-radius: 2px; overflow: hidden; margin: 4px 0; }
+[data-theme="light"] .eta-bar-wrap { background: rgba(0,0,0,.08); }
+.eta-bar { height: 100%; border-radius: 2px; background: var(--muted); }
+.eta-row.p50 .eta-bar { background: var(--mint); } .eta-row.p90 .eta-bar { background: var(--orange); }
+.eta-rnote { font-size: 10px; color: var(--muted); }
+.eta-alert { background: var(--red-d); border: 1px solid rgba(239,68,68,.2); border-radius: 8px; padding: 10px 13px; font-size: 12px; margin-bottom: 8px; }
+.eta-info { background: var(--mint-d); border: 1px solid var(--mint-b); border-radius: 8px; padding: 10px 13px; font-size: 12px; color: var(--muted2); }
+.eta-info strong { color: var(--mint); }
+
+/* ═══════════════════════════════════════════════════
+   19. Coming Soon 탭
+══════════════════════════════════════════════════════ */
+.coming-soon { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; text-align: center; color: var(--text-muted); gap: 10px; }
+.coming-soon i { font-size: 42px; color: var(--border); }
+.coming-soon h2 { font-size: 17px; font-weight: 600; color: var(--text-main); }
+.coming-soon p  { font-size: 13px; max-width: 360px; line-height: 1.7; }
+
+/* ═══════════════════════════════════════════════════
+   20. 반응형
+══════════════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .kpi-row    { grid-template-columns: repeat(3,1fr); }
+  .second-row { grid-template-columns: repeat(2,1fr); }
+  .bottom-row { grid-template-columns: repeat(2,1fr); }
+  .map-row    { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  #sidebar { display: none; }
+  .sum-grid, .cpi-grid { grid-template-columns: 1fr 1fr; }
+  .region-grid { grid-template-columns: 1fr 1fr; }
+  .macro-grid  { grid-template-columns: 1fr 1fr; }
+  .eta-wrap    { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .kpi-row    { grid-template-columns: 1fr 1fr; }
+  .sum-grid, .region-grid, .cpi-grid, .macro-grid, .stats-2col { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
 
-<header id="hdr">
-  <div class="hdr-top">
-    <div class="hdr-brand">
-      <div class="brand-icon">🚢</div>
-      <div class="brand-name">MTL <span>Port</span> Intelligence</div>
-      <div class="brand-tag" data-i18n="brand_tag">BETA</div>
+<!-- ══════════════════════════════════════
+     TOPBAR
+══════════════════════════════════════ -->
+<div id="topbar">
+  <span class="tb-date" id="tb-date"></span>
+  <div class="tb-sep"></div>
+  <div class="tb-selects">
+    <select class="tb-select" id="tb-region">
+      <option>All Regions</option>
+    </select>
+    <select class="tb-select" id="tb-vessel">
+      <option>All Vessel Types</option>
+    </select>
+  </div>
+  <div class="tb-right">
+    <div class="utc-clock" id="utc-clock"><span class="utc-dot">●</span> UTC --:--</div>
+    <div class="live-badge" id="live-badge"><div class="live-dot"></div>LIVE</div>
+    <button class="icon-btn" id="themeToggle" title="Toggle theme">
+      <i class="ti ti-sun" id="theme-icon"></i>
+    </button>
+    <div class="lang-tog">
+      <button class="lang-btn active" id="btn-ko" onclick="setLang('ko')">KO</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
     </div>
-    <div class="hdr-right">
-      <div id="utc"></div>
-      <div class="lang-btn">
-        <button id="btn-ko" class="active" onclick="setLang('ko')">KO</button>
-        <button id="btn-en" onclick="setLang('en')">EN</button>
-      </div>
-    </div>
+    <div class="avatar">M</div>
   </div>
-  <nav class="hdr-nav" id="nav-port">
-    <a href="#sec1" data-i18n="nav1">항만 현황</a>
-    <a href="#sec2" data-i18n="nav2">권역별 혼잡도</a>
-    <a href="#sec-ra" data-i18n="nav_ra">권역 지표</a>
-    <a href="#sec3" data-i18n="nav3">주의 항만 TOP 5</a>
-    <a href="#sec4" data-i18n="nav4">조기 경보</a>
-    <a href="#sec5" data-i18n="nav5">해협(레거시)</a>
-    <a href="#sec6" data-i18n="nav6">도착일 예측</a>
-  </nav>
-  <nav class="hdr-nav" id="nav-cp" style="display:none">
-    <a href="#cp-overview" data-i18n="nav_cp1">6해협 개요</a>
-    <a href="#cp-hormuz" data-i18n="nav_cp2">호르무즈 딥다이브</a>
-  </nav>
-  <div class="view-toggle">
-    <button id="btn-view-port" class="vt-btn active" onclick="setView('port')" data-i18n="vt_port">🚢 항만 대시보드</button>
-    <button id="btn-view-cp" class="vt-btn" onclick="setView('chokepoint')" data-i18n="vt_cp">🌊 주요 해협</button>
-  </div>
-</header>
+</div>
 
-<div id="view-port">
-<main>
+<!-- ══════════════════════════════════════
+     SHELL
+══════════════════════════════════════ -->
+<div id="shell">
 
-<!-- SECTION 1: 글로벌 요약 -->
-<section id="sec1">
-  <div class="sec-eyebrow" data-i18n="s1lbl">실시간 현황</div>
-  <div class="sec-title" data-i18n="s1ttl">🌏 글로벌 항만 혼잡도 현황</div>
-  <div class="sec-desc" data-i18n="s1dsc">실시간 글로벌 항만 데이터 기반 · 데이터가 없는 항만은 수집 중으로 표시됩니다</div>
-  <div class="sum-grid" id="sum-grid">
-    <div class="loading" style="grid-column:1/-1"><div class="spin"></div>데이터 불러오는 중...</div>
-  </div>
-  <div class="sec-meta" id="last-upd"></div>
-</section>
-
-<!-- SECTION 2: 권역별 혼잡도 -->
-<section id="sec2">
-  <div class="sec-eyebrow" data-i18n="s2lbl">권역별 분석</div>
-  <div class="sec-title" data-i18n="s2ttl">🗺️ 권역별 혼잡도 지수</div>
-  <div class="sec-desc" data-i18n="s2dsc">전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다. 수집 중인 항만은 데이터 확보 후 반영됩니다.</div>
-  <div class="region-grid" id="region-grid"><div class="loading"><div class="spin"></div></div></div>
-</section>
-
-<!-- SECTION RA: 권역 해운 지표 -->
-<section id="sec-ra">
-  <div class="sec-eyebrow" data-i18n="s_ra_lbl">권역 지표</div>
-  <div class="sec-title" data-i18n="s_ra_ttl">📊 권역별 해운 지표</div>
-  <div class="sec-desc" data-i18n="s_ra_dsc">야드 적체·블랭크세일링·선석 점유를 권역별로 집계한 <strong>지표</strong>입니다. 예측 모델이 아닌 실측 기반 지표이며, 데이터 축적에 따라 임계값은 보정됩니다.</div>
-  <div class="region-grid" id="ra-grid"><div class="loading"><div class="spin"></div></div></div>
-</section>
-
-<!-- SECTION 3: TOP 5 -->
-<section id="sec3">
-  <div class="sec-eyebrow" data-i18n="s3lbl">주요 혼잡 항만</div>
-  <div class="sec-title" data-i18n="s3ttl">⚠️ 지금 주의해야 할 항만 TOP 5</div>
-  <div class="sec-desc" data-i18n="s3dsc">혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다.</div>
-  <div class="t5-wrap">
-    <table class="t5">
-      <thead><tr>
-        <th data-i18n="th1">항만</th>
-        <th data-i18n="th2">국가</th>
-        <th data-i18n="th3">혼잡도 지수</th>
-        <th data-i18n="th_turn">재항 일수</th>
-        <th data-i18n="th_delay">지연율</th>
-        <th data-i18n="th_anc">대기 선박</th>
-        <th data-i18n="th5">상태</th>
-      </tr></thead>
-      <tbody id="t5-body">
-        <tr><td colspan="7"><div class="loading"><div class="spin"></div></div></td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<!-- SECTION 4: 조기 경보 -->
-<section id="sec4">
-  <div class="sec-eyebrow" data-i18n="s4lbl">선제 모니터링</div>
-  <div class="sec-title" data-i18n="s4ttl">📡 조기 혼잡 경보</div>
-  <div class="sec-desc" data-i18n="s4dsc">지연율 추세가 급증 중인 항만을 조기에 감지합니다</div>
-  <div id="ew-box"></div>
-</section>
-
-<!-- SECTION 5: 해협 -->
-<section id="sec5">
-  <div class="sec-eyebrow" data-i18n="s5lbl">주요 해협</div>
-  <div class="sec-title" data-i18n="s5ttl">🗺️ 주요 해협 통과 현황</div>
-  <div class="sec-desc" data-i18n="s5dsc">글로벌 해운 화물의 대부분이 이 해협을 통과합니다. 통과 선박이 급감하면 항로 우회로 ETA가 크게 늘어납니다.</div>
-  <div class="cp-grid" id="cp-grid"><div class="loading" style="grid-column:1/-1"><div class="spin"></div></div></div>
-</section>
-
-<!-- SECTION 6: ETA -->
-<section id="sec6">
-  <div class="sec-eyebrow" data-i18n="s6lbl">도착일 예측</div>
-  <div class="sec-title" data-i18n="s6ttl">📦 화물 도착일 예측</div>
-  <div class="sec-desc" data-i18n="s6dsc">도착 항만과 출발일을 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다.</div>
-  <div class="eta-wrap">
-    <div class="eta-form">
-      <div class="eta-form-title" data-i18n="ef_ttl">도착 정보 입력</div>
-      <div class="eta-form-desc" data-i18n="ef_dsc">아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다.</div>
-      <div class="fg">
-        <label data-i18n="ef_l0">🛳️ 출발 항만</label>
-        <select id="e-origin"><option value="">-- 항만 선택 --</option></select>
-      </div>
-      <div class="fg">
-        <label data-i18n="ef_l1">📍 도착 항만</label>
-        <select id="e-port"><option value="">-- 항만 선택 --</option></select>
-        <div class="port-hint" id="port-hint"></div>
-      </div>
-      <div class="fg">
-        <label data-i18n="ef_l3">📅 출발 예정일</label>
-        <input type="date" id="e-etd">
-      </div>
-      <div class="fg" id="nm-fg">
-        <div class="nm-auto" id="nm-auto"></div>
-        <input type="number" class="nm-input" id="e-nm" placeholder="직접 입력 (해리, nm)" min="100" max="25000">
-      </div>
-      <button class="eta-btn" id="e-btn" data-i18n="ef_btn">도착일 예측하기</button>
-    </div>
-    <div class="eta-result" id="eta-result">
-      <div class="eta-ph" id="eta-ph">
-        <div class="eta-ph-ico">📦</div>
-        <div class="eta-ph-txt" data-i18n="ef_ph">왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요</div>
-      </div>
-      <div id="eta-rc" style="display:none"></div>
-    </div>
-  </div>
-</section>
-
-</main>
-</div><!-- /view-port -->
-
-<!-- ═══════════════════════════════════════════════════
-     주요 해협 뷰 (EconDB 6해협 + ShipFinder Hormuz)
-══════════════════════════════════════════════════════ -->
-<div id="view-chokepoint" style="display:none">
-<main>
-
-<!-- CP-OVERVIEW: EconDB 6해협 개요 -->
-<section id="cp-overview">
-  <div class="sec-eyebrow" data-i18n="cp_lbl">해협 모니터링</div>
-  <div class="sec-title" data-i18n="cp_ttl">🌊 주요 해협 통과량 개요</div>
-  <div class="sec-desc">
-    <span data-i18n="cp_dsc">주간 TEU 통과량 기반. 정상 대비 % 는 2022-03 ~ 2023-11 고정 기준기간 중앙값 대비 (초기 휴리스틱 — 보정 필요).</span>
-    <span class="src-badge">출처: EconDB</span>
-  </div>
-  <div class="cpi-grid" id="cpi-grid">
-    <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
-  </div>
-</section>
-
-<!-- CP-HORMUZ: ShipFinder 딥다이브 -->
-<section id="cp-hormuz">
-  <div class="sec-eyebrow" data-i18n="hz_lbl">Hormuz 딥다이브</div>
-  <div class="sec-title" data-i18n="hz_ttl">⚓ 호르무즈 해협 · 페르시아만 상세</div>
-  <div class="sec-desc">
-    <span data-i18n="hz_dsc">걸프 선박수, 호르무즈 in/out, 거시지표, 통과 로그, 뉴스를 제공합니다.</span>
-    <span class="src-badge">출처: ShipFinder</span>
-  </div>
-
-  <!-- 유가/운임 거시지표 -->
-  <div class="sec-eyebrow" style="margin-top:0;margin-bottom:10px" data-i18n="hz_macro_lbl">유가 · 운임 지표 <span class="src-badge">ShipFinder</span></div>
-  <div class="macro-grid" id="hz-macro-grid">
-    <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
-  </div>
-
-  <!-- 걸프 선박수 + 호르무즈 IN/OUT -->
-  <div class="stats-2col" id="hz-stats-2col">
-    <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
-  </div>
-
-  <!-- 통과 선박 로그 -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <div style="font-size:14px;font-weight:700" data-i18n="hz_log_ttl">📋 통과 선박 로그 (어제자)</div>
-    <span class="src-badge">ShipFinder</span>
-  </div>
-  <div class="tlog-wrap">
-    <div class="tlog-scroll">
-      <table class="tlog">
-        <thead><tr>
-          <th data-i18n="tl_dir">방향</th>
-          <th data-i18n="tl_time">통과 시각</th>
-          <th data-i18n="tl_name">선명</th>
-          <th data-i18n="tl_type">선종</th>
-          <th data-i18n="tl_dwt">DWT</th>
-          <th data-i18n="tl_flag">선적국</th>
-          <th data-i18n="tl_oper">운항사</th>
-        </tr></thead>
-        <tbody id="hz-log-body">
-          <tr><td colspan="7"><div class="loading"><div class="spin"></div></div></td></tr>
-        </tbody>
-      </table>
+<!-- ── SIDEBAR ── -->
+<nav id="sidebar">
+  <div class="logo">
+    <svg width="34" height="28" viewBox="0 0 34 28" fill="none">
+      <path d="M3,26 Q3,18 13,12" stroke="#22d3ee" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M3,26 Q3,12 21,6"  stroke="#14b8a6" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M3,26 Q3,6 29,1"   stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" fill="none"/>
+    </svg>
+    <div class="logo-text">
+      <span class="logo-brand">MTL</span>
+      <span class="logo-sub">Maritime Intelligence</span>
     </div>
   </div>
 
-  <!-- 뉴스 -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <div style="font-size:14px;font-weight:700" data-i18n="hz_news_ttl">📰 관련 뉴스 (link-out)</div>
-    <span class="src-badge">ShipFinder</span>
-  </div>
-  <div class="news-list" id="hz-news-list">
-    <div class="loading"><div class="spin"></div></div>
+  <div class="sidebar-nav">
+    <div class="nav-item active" data-tab="overview">
+      <i class="ti ti-layout-dashboard"></i><span>Overview</span>
+    </div>
+    <div class="nav-item" data-tab="ports">
+      <i class="ti ti-anchor"></i><span data-i18n="tab_ports">Ports</span>
+    </div>
+    <div class="nav-item" data-tab="straits">
+      <i class="ti ti-wave-sine"></i><span data-i18n="tab_straits">Straits &amp; Canals</span>
+    </div>
+    <div class="nav-item" data-tab="regions">
+      <i class="ti ti-world"></i><span>Regions</span>
+    </div>
+    <div class="nav-item" data-tab="lanes">
+      <i class="ti ti-route"></i><span>Lanes</span>
+    </div>
+    <div class="nav-item" data-tab="vessels">
+      <i class="ti ti-ship"></i><span>Vessels</span>
+    </div>
+    <div class="nav-item" data-tab="alerts">
+      <i class="ti ti-bell"></i><span>Alerts</span>
+      <span class="nav-badge" id="alert-badge" style="display:none">0</span>
+    </div>
+    <div class="nav-item" data-tab="intelligence">
+      <i class="ti ti-news"></i><span>Intelligence</span>
+    </div>
+    <div class="nav-item" data-tab="reports">
+      <i class="ti ti-file-analytics"></i><span>Reports</span>
+    </div>
+    <div class="nav-item" data-tab="forecast">
+      <i class="ti ti-chart-line"></i><span data-i18n="tab_forecast">Forecast</span>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-item" data-tab="settings">
+      <i class="ti ti-settings"></i><span>Settings</span>
+    </div>
   </div>
 
-  <!-- AI 브리핑 -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <div style="font-size:14px;font-weight:700" data-i18n="hz_ai_ttl">🤖 AI 브리핑</div>
-    <span class="src-badge">ShipFinder · Elane AI</span>
+  <div class="sidebar-foot">
+    <div style="margin-bottom:4px;font-size:10px">Customize Dashboard</div>
+    <div style="font-size:10px;opacity:.6">© 2025 MTL</div>
   </div>
-  <div class="ai-brief-box" id="hz-ai-brief">
-    <div class="loading"><div class="spin"></div></div>
+</nav>
+
+<!-- ── MAIN ── -->
+<div id="main">
+
+  <!-- ╔══════════════════════════════════╗
+       ║  TAB: OVERVIEW (기본)           ║
+       ╚══════════════════════════════════╝ -->
+  <div class="tab-view active" id="tab-overview">
+
+    <!-- KPI Row -->
+    <div class="kpi-row" id="kpi-row">
+      <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
+    </div>
+
+    <!-- Map + Top Ports -->
+    <div class="map-row">
+      <!-- 7-A. 세계 지도 -->
+      <div class="panel map-panel" id="map-panel">
+        <div class="panel-hdr">
+          <span class="panel-title" data-i18n="map_title">Global Port Congestion Status</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select class="tb-select" style="font-size:11px;padding:3px 7px">
+              <option>Congestion Index</option>
+            </select>
+          </div>
+        </div>
+        <div id="map-container">
+          <div class="loading"><div class="spin"></div></div>
+        </div>
+        <div class="map-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div><span>Low 0–30</span></div>
+          <div class="leg-item"><div class="leg-dot" style="background:#eab308"></div><span>Moderate 31–60</span></div>
+          <div class="leg-item"><div class="leg-dot" style="background:#f97316"></div><span>High 61–80</span></div>
+          <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div><span>Severe 81–100</span></div>
+        </div>
+        <div class="map-src">Source: MTL Data Network</div>
+      </div>
+
+      <!-- 7-B. Top Ports -->
+      <div class="panel" id="top-ports-panel">
+        <div class="panel-hdr">
+          <span class="panel-title" data-i18n="tp_title">Top Ports by Congestion</span>
+          <a class="panel-link" onclick="setTab('ports')" data-i18n="tp_link">View All Ports →</a>
+        </div>
+        <div class="top-ports-scroll panel-body">
+          <div class="loading"><div class="spin"></div></div>
+        </div>
+        <div class="panel-foot" id="tp-foot"></div>
+      </div>
+    </div>
+
+    <!-- Second Row -->
+    <div class="second-row">
+      <!-- 8-A. Regional Congestion Chart -->
+      <div class="panel" id="reg-chart-panel">
+        <div class="panel-hdr">
+          <span class="panel-title" data-i18n="rc_title">Regional Congestion Index</span>
+          <span class="panel-src">MTL Analytics</span>
+        </div>
+        <div class="panel-body" id="regional-chart-wrap">
+          <canvas id="regional-chart-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- 8-B. Operational KPIs -->
+      <div class="panel" id="op-kpi-panel">
+        <div class="panel-hdr">
+          <span class="panel-title" data-i18n="ok_title">Operational KPIs</span>
+          <a class="panel-link" onclick="setTab('ports')" data-i18n="ok_link">View All</a>
+        </div>
+        <div class="op-grid panel-body" id="op-kpi-grid">
+          <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
+        </div>
+      </div>
+
+      <!-- 8-C. Regional Maritime Indicators -->
+      <div class="panel" id="rm-panel">
+        <div class="panel-hdr">
+          <span class="panel-title" data-i18n="rm_title">Maritime Indices</span>
+          <span class="src-badge">ShipFinder</span>
+        </div>
+        <div class="rm-grid panel-body" id="rm-grid">
+          <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
+        </div>
+      </div>
+
+      <!-- 8-D. Alerts -->
+      <div class="panel" id="alerts-panel">
+        <div class="panel-hdr">
+          <span class="panel-title" data-i18n="al_title">Critical Alerts</span>
+          <a class="panel-link" onclick="setTab('alerts')" data-i18n="al_link">View All</a>
+        </div>
+        <div class="alert-scroll panel-body" id="alert-list">
+          <div class="loading"><div class="spin"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="bottom-row">
+      <!-- 9-A. Critical Straits -->
+      <div class="panel" id="cs-panel">
+        <div class="panel-hdr">
+          <span class="panel-title" data-i18n="cs_title">Critical Straits</span>
+          <a class="panel-link" onclick="setTab('straits')" data-i18n="cs_link">View All →</a>
+        </div>
+        <div class="cs-scroll panel-body" id="cs-wrap">
+          <div class="loading"><div class="spin"></div></div>
+        </div>
+      </div>
+
+      <!-- 9-B. Lane Performance — placeholder -->
+      <div class="panel dashed" id="lane-panel">
+        <div class="panel-hdr">
+          <span class="panel-title" data-i18n="lp_title">Lane Performance</span>
+        </div>
+        <div class="panel-placeholder panel-body">
+          <i class="ti ti-chart-bar"></i>
+          <p data-i18n="lp_pending">Data pending</p>
+          <p class="ph-sub" data-i18n="lp_sub">Lane performance data is being aggregated. Check back soon.</p>
+        </div>
+      </div>
+
+      <!-- 9-C. Schedule Reliability — placeholder -->
+      <div class="panel dashed" id="sched-panel">
+        <div class="panel-hdr">
+          <span class="panel-title" data-i18n="sr_title">Schedule Reliability</span>
+        </div>
+        <div class="panel-placeholder panel-body">
+          <i class="ti ti-calendar-stats"></i>
+          <p data-i18n="sr_soon">Coming soon</p>
+          <p class="ph-sub" data-i18n="sr_sub">Detailed schedule reliability metrics will be available soon.</p>
+        </div>
+      </div>
+
+      <!-- 9-D. Intelligence Highlights -->
+      <div class="panel" id="intel-panel">
+        <div class="panel-hdr">
+          <span class="panel-title" data-i18n="ih_title">Intelligence Highlights</span>
+          <a class="panel-link" onclick="setTab('intelligence')" data-i18n="ih_link">View All</a>
+        </div>
+        <div class="intel-scroll panel-body" id="intel-list">
+          <div class="loading"><div class="spin"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="app-footer">
+      <i class="ti ti-info-circle"></i>
+      <span data-i18n="footer_txt">All times in UTC. Data is aggregated from multiple sources and updated continuously.</span>
+    </div>
+  </div><!-- /tab-overview -->
+
+  <!-- ╔══════════════════════════════════╗
+       ║  TAB: PORTS                     ║
+       ╚══════════════════════════════════╝ -->
+  <div class="tab-view tab-scroll" id="tab-ports">
+    <div class="ports-main">
+      <section id="sec1">
+        <div class="sec-eyebrow" data-i18n="s1lbl">실시간 현황</div>
+        <div class="sec-title" data-i18n="s1ttl">🌏 글로벌 항만 혼잡도 현황</div>
+        <div class="sec-desc" data-i18n="s1dsc">실시간 글로벌 항만 데이터 기반 · 데이터가 없는 항만은 수집 중으로 표시됩니다</div>
+        <div class="sum-grid" id="sum-grid">
+          <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
+        </div>
+        <div class="sec-meta" id="last-upd"></div>
+      </section>
+      <section id="sec2">
+        <div class="sec-eyebrow" data-i18n="s2lbl">권역별 분석</div>
+        <div class="sec-title" data-i18n="s2ttl">🗺️ 권역별 혼잡도 지수</div>
+        <div class="sec-desc" data-i18n="s2dsc">전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다.</div>
+        <div class="region-grid" id="region-grid"><div class="loading"><div class="spin"></div></div></div>
+      </section>
+      <section id="sec-ra">
+        <div class="sec-eyebrow" data-i18n="s_ra_lbl">권역 지표</div>
+        <div class="sec-title" data-i18n="s_ra_ttl">📊 권역별 해운 지표</div>
+        <div class="sec-desc" data-i18n="s_ra_dsc">야드 적체·블랭크세일링·선석 점유를 권역별로 집계한 <strong>지표</strong>입니다.</div>
+        <div class="region-grid" id="ra-grid"><div class="loading"><div class="spin"></div></div></div>
+      </section>
+      <section id="sec3">
+        <div class="sec-eyebrow" data-i18n="s3lbl">주요 혼잡 항만</div>
+        <div class="sec-title" data-i18n="s3ttl">⚠️ 지금 주의해야 할 항만 TOP 5</div>
+        <div class="sec-desc" data-i18n="s3dsc">혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다.</div>
+        <div class="t5-wrap">
+          <table class="t5">
+            <thead><tr>
+              <th data-i18n="th1">항만</th><th data-i18n="th2">국가</th>
+              <th data-i18n="th3">혼잡도 지수</th><th data-i18n="th_turn">재항 일수</th>
+              <th data-i18n="th_delay">지연율</th><th data-i18n="th_anc">대기 선박</th>
+              <th data-i18n="th5">상태</th>
+            </tr></thead>
+            <tbody id="t5-body">
+              <tr><td colspan="7"><div class="loading"><div class="spin"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section id="sec4">
+        <div class="sec-eyebrow" data-i18n="s4lbl">선제 모니터링</div>
+        <div class="sec-title" data-i18n="s4ttl">📡 조기 혼잡 경보</div>
+        <div class="sec-desc" data-i18n="s4dsc">지연율 추세가 급증 중인 항만을 조기에 감지합니다</div>
+        <div id="ew-box"></div>
+      </section>
+    </div>
+  </div><!-- /tab-ports -->
+
+  <!-- ╔══════════════════════════════════╗
+       ║  TAB: STRAITS & CANALS          ║
+       ╚══════════════════════════════════╝ -->
+  <div class="tab-view tab-scroll" id="tab-straits">
+    <div class="straits-main">
+      <section id="cp-overview">
+        <div class="sec-eyebrow" data-i18n="cp_lbl">해협 모니터링</div>
+        <div class="sec-title" data-i18n="cp_ttl">🌊 주요 해협 통과량 개요</div>
+        <div class="sec-desc">
+          <span data-i18n="cp_dsc">주간 TEU 통과량 기반. 정상 대비 % 는 2022-03 ~ 2023-11 고정 기준기간 중앙값 대비.</span>
+          <span class="src-badge">출처: EconDB</span>
+        </div>
+        <div class="cpi-grid" id="cpi-grid">
+          <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
+        </div>
+      </section>
+      <section id="cp-hormuz">
+        <div class="sec-eyebrow" data-i18n="hz_lbl">Hormuz 딥다이브</div>
+        <div class="sec-title" data-i18n="hz_ttl">⚓ 호르무즈 해협 · 페르시아만 상세</div>
+        <div class="sec-desc">
+          <span data-i18n="hz_dsc">걸프 선박수, 호르무즈 in/out, 거시지표, 통과 로그, 뉴스를 제공합니다.</span>
+          <span class="src-badge">출처: ShipFinder</span>
+        </div>
+        <div class="sec-eyebrow" style="margin-bottom:10px" data-i18n="hz_macro_lbl">유가 · 운임 지표 <span class="src-badge">ShipFinder</span></div>
+        <div class="macro-grid" id="hz-macro-grid">
+          <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
+        </div>
+        <div class="stats-2col" id="hz-stats-2col">
+          <div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700" data-i18n="hz_log_ttl">📋 통과 선박 로그 (어제자)</div>
+          <span class="src-badge">ShipFinder</span>
+        </div>
+        <div class="tlog-wrap">
+          <div class="tlog-scroll">
+            <table class="tlog">
+              <thead><tr>
+                <th data-i18n="tl_dir">방향</th><th data-i18n="tl_time">통과 시각</th>
+                <th data-i18n="tl_name">선명</th><th data-i18n="tl_type">선종</th>
+                <th data-i18n="tl_dwt">DWT</th><th data-i18n="tl_flag">선적국</th>
+                <th data-i18n="tl_oper">운항사</th>
+              </tr></thead>
+              <tbody id="hz-log-body">
+                <tr><td colspan="7"><div class="loading"><div class="spin"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700" data-i18n="hz_news_ttl">📰 관련 뉴스 (link-out)</div>
+          <span class="src-badge">ShipFinder</span>
+        </div>
+        <div class="news-list" id="hz-news-list">
+          <div class="loading"><div class="spin"></div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700" data-i18n="hz_ai_ttl">🤖 AI 브리핑</div>
+          <span class="src-badge">ShipFinder · Elane AI</span>
+        </div>
+        <div class="ai-brief-box" id="hz-ai-brief">
+          <div class="loading"><div class="spin"></div></div>
+        </div>
+      </section>
+    </div>
+  </div><!-- /tab-straits -->
+
+  <!-- ╔══════════════════════════════════╗
+       ║  TAB: FORECAST (ETA)            ║
+       ╚══════════════════════════════════╝ -->
+  <div class="tab-view tab-scroll" id="tab-forecast">
+    <div class="eta-main">
+      <div class="sec-eyebrow" data-i18n="s6lbl">도착일 예측</div>
+      <div class="sec-title" data-i18n="s6ttl">📦 화물 도착일 예측</div>
+      <div class="sec-desc" data-i18n="s6dsc">도착 항만과 출발일을 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다.</div>
+      <div class="eta-wrap">
+        <div class="eta-form">
+          <div class="eta-form-title" data-i18n="ef_ttl">도착 정보 입력</div>
+          <div class="eta-form-desc" data-i18n="ef_dsc">아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다.</div>
+          <div class="fg"><label data-i18n="ef_l0">🛳️ 출발 항만</label><select id="e-origin"><option value="">-- 항만 선택 --</option></select></div>
+          <div class="fg"><label data-i18n="ef_l1">📍 도착 항만</label><select id="e-port"><option value="">-- 항만 선택 --</option></select><div class="port-hint" id="port-hint"></div></div>
+          <div class="fg"><label data-i18n="ef_l3">📅 출발 예정일</label><input type="date" id="e-etd"></div>
+          <div class="fg" id="nm-fg">
+            <div class="nm-auto" id="nm-auto"></div>
+            <input type="number" class="nm-input" id="e-nm" placeholder="직접 입력 (해리, nm)" min="100" max="25000">
+          </div>
+          <button class="eta-btn" id="e-btn" data-i18n="ef_btn">도착일 예측하기</button>
+        </div>
+        <div class="eta-result" id="eta-result">
+          <div class="eta-ph" id="eta-ph">
+            <div class="eta-ph-ico">📦</div>
+            <div class="eta-ph-txt" data-i18n="ef_ph">왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요</div>
+          </div>
+          <div id="eta-rc" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-forecast -->
+
+  <!-- ╔══════════════════════════════════╗
+       ║  TAB: Coming Soon (공통 템플릿)  ║
+       ╚══════════════════════════════════╝ -->
+  <div class="tab-view tab-scroll" id="tab-regions">
+    <div class="coming-soon"><i class="ti ti-world"></i><h2>Regions</h2><p>Regional drill-down analytics coming soon. Track congestion, vessel flow, and trade patterns by shipping region.</p></div>
+  </div>
+  <div class="tab-view tab-scroll" id="tab-lanes">
+    <div class="coming-soon"><i class="ti ti-route"></i><h2>Lanes</h2><p>Lane performance data is being aggregated. Expected transit times and reliability scores by route.</p></div>
+  </div>
+  <div class="tab-view tab-scroll" id="tab-vessels">
+    <div class="coming-soon"><i class="ti ti-ship"></i><h2>Vessels</h2><p>Vessel tracking and fleet analytics will be available in an upcoming release.</p></div>
+  </div>
+  <div class="tab-view tab-scroll" id="tab-alerts">
+    <div class="coming-soon"><i class="ti ti-bell"></i><h2>Alerts</h2><p>Full alert management, acknowledgement, and history will be available soon.</p></div>
+  </div>
+  <div class="tab-view tab-scroll" id="tab-intelligence">
+    <div class="coming-soon"><i class="ti ti-news"></i><h2>Intelligence</h2><p>Curated maritime intelligence feed — news, shipping advisories, and geopolitical risk summaries.</p></div>
+  </div>
+  <div class="tab-view tab-scroll" id="tab-reports">
+    <div class="coming-soon"><i class="ti ti-file-analytics"></i><h2>Reports</h2><p>Downloadable weekly and monthly congestion reports coming soon.</p></div>
+  </div>
+  <div class="tab-view tab-scroll" id="tab-settings">
+    <div class="coming-soon"><i class="ti ti-settings"></i><h2>Settings</h2><p>Dashboard customization, notification preferences, and API key management.</p></div>
   </div>
 
-</section>
+</div><!-- /main -->
+</div><!-- /shell -->
 
-</main>
-</div><!-- /view-chokepoint -->
-
+<!-- ══════════════════════════════════════
+     LIBRARIES
+══════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-const CFG={
-  SB_URL:"https://tsxerizaaldykqksxxid.supabase.co",
-  SB_ANON:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzeGVyaXphYWxkeWtxa3N4eGlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NzA3MzEsImV4cCI6MjA5NTE0NjczMX0.cxHXPlLsa5cT4dpjnQtsEpCLLHolnPX4RIAC3jgT0Rs",
-  API_URL:"https://mpci-engine-production.up.railway.app",
-  REFRESH:5*60*1000
-};
-let LANG='ko';
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-/* ── i18n ── */
-const T={
+<script>
+/* ══════════════════════════════════════════════════════
+   §A  CONFIG + THEME CONSTANTS
+══════════════════════════════════════════════════════ */
+const CFG = {
+  SB_URL:  'https://tsxerizaaldykqksxxid.supabase.co',
+  SB_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzeGVyaXphYWxkeWtxa3N4eGlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NzA3MzEsImV4cCI6MjA5NTE0NjczMX0.cxHXPlLsa5cT4dpjnQtsEpCLLHolnPX4RIAC3jgT0Rs',
+  API_URL: 'https://mpci-engine-production.up.railway.app',
+  REFRESH: 5 * 60 * 1000
+};
+
+const THEME = {
+  dark: {
+    mint:'#14b8a6', primary:'#22d3ee', success:'#22c55e',
+    warning:'#f59e0b', danger:'#ef4444', orange:'#f97316',
+    muted:'rgba(255,255,255,.35)', gridLine:'rgba(255,255,255,.06)',
+    barCurrent:'#14b8a6', barPrev:'rgba(255,255,255,.14)',
+  },
+  light: {
+    mint:'#0d9488', primary:'#0ea5e9', success:'#16a34a',
+    warning:'#d97706', danger:'#dc2626', orange:'#ea580c',
+    muted:'rgba(0,0,0,.38)', gridLine:'rgba(0,0,0,.07)',
+    barCurrent:'#0d9488', barPrev:'rgba(0,0,0,.11)',
+  }
+};
+
+/* §B  STATE */
+let LANG = 'ko';
+let _isDark = true;
+const _charts = {};            // Chart.js 인스턴스 저장
+let _mapSvg = null, _mapProj = null, _mapZoom = null;
+let _worldData = null;         // TopoJSON 캐시
+
+/* §C  i18n */
+const T = {
 ko:{
-  brand_tag:"BETA",
-  nav1:"항만 현황",nav2:"권역별 혼잡도",nav_ra:"권역 지표",nav3:"주의 항만 TOP 5",nav4:"조기 경보",nav5:"해협 현황",nav6:"도착일 예측",
-  s1lbl:"실시간 현황",s1ttl:"🌏 글로벌 항만 혼잡도 현황",s1dsc:"실시간 글로벌 항만 데이터 기반 · 데이터가 없는 항만은 수집 중으로 표시됩니다",
-  s2lbl:"권역별 분석",s2ttl:"🗺️ 권역별 혼잡도 지수",s2dsc:"전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다. 수집 중인 항만은 데이터 확보 후 반영됩니다.",
-  s_ra_lbl:"권역 지표",s_ra_ttl:"📊 권역별 해운 지표",s_ra_dsc:"야드 적체·블랭크세일링·선석 점유를 권역별로 집계한 <strong>지표</strong>입니다. 예측 모델이 아닌 실측 기반 지표이며, 데이터 축적에 따라 임계값은 보정됩니다.",
-  s3lbl:"주요 혼잡 항만",s3ttl:"⚠️ 지금 주의해야 할 항만 TOP 5",s3dsc:"혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다. 항만을 클릭하면 ETA를 바로 계산할 수 있습니다.",
-  s4lbl:"선제 모니터링",s4ttl:"📡 조기 혼잡 경보",s4dsc:"지연율 추세가 급증 중인 항만을 조기에 감지합니다",
-  s5lbl:"주요 해협",s5ttl:"🗺️ 주요 해협 통과 현황",s5dsc:"글로벌 해운 화물의 대부분이 이 해협을 통과합니다. 통과 선박이 급감하면 항로 우회로 ETA가 크게 늘어납니다.",
-  s6lbl:"도착일 예측",s6ttl:"📦 화물 도착일 예측",s6dsc:"도착 항만과 출발일을 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다.",
-  th1:"항만",th2:"국가",th3:"혼잡도 지수",th_turn:"재항 일수",th_delay:"지연율",th_anc:"대기 선박",th5:"상태",
-  ef_ttl:"도착 정보 입력",ef_dsc:"아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다.",
-  ef_l0:"🛳️ 출발 항만",ef_l1:"📍 도착 항만",ef_l3:"📅 출발 예정일",
-  ef_btn:"도착일 예측하기",ef_ph:"왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요",
-  lv_C:"🔴 혼잡",lv_B:"🟠 주의",lv_S:"🟡 보통",lv_L:"🟢 원활",lv_N:"— 수집 중",
-  w3:"약 3일",w15:"약 1.5일",w1:"약 1일",wh:"약 반나절",
-  cp_ok:"🟢 정상 운항 중",cp_caut:"🟠 주의 필요",cp_alert:"🔴 통과 급감 경보",
-  cp_suez:"유럽↔아시아 최단 항로 (홍해 경유).\n통과량이 평균 40% 이하면 우회 경보 발령",
-  cp_pan:"태평양↔대서양 최단 항로.\n가뭄 시 통항 제한 발생 가능",
-  cp_mal:"동남아↔인도양 핵심 통로.\n전 세계 무역량의 약 40% 통과",
-  today_s:"오늘 컨테이너선",avg7:"7일 평균",
-  sum_mon:"전체 항만",sum_data:"데이터 확보",sum_con:"🔴 혼잡 항만",sum_today:"오늘의 한 줄 요약",
-  idx_lbl:"혼잡도 지수 (0~100)",avg_wait:"평균 재항 일수",
-  arr_early:"🟢 빠른 경우",arr_likely:"🎯 가장 가능성 높음",arr_late:"🔴 늦은 경우",
-  arr_early_d:"순조로운 항해, 항만 혼잡 완화 시",arr_likely_d:"현재 항만 혼잡도 반영",arr_late_d:"혼잡 악화, 기상 불량 시",
-  dnd_ttl:"ℹ️ 지체료 (D&D) 안내",
-  dnd_body:"컨테이너 반납 기한이 <strong>%D%</strong> 이전이면 지체료가 발생할 수 있습니다. 선사에 Free Time 연장 요청을 권장합니다.",
-  arr_dest:"도착 예상일",arr_approx:"도착 예상일 (추정)",
-  s4_coming:"이력 데이터 축적 후 제공됩니다. 데이터 수집 시작일로부터 약 7일 후 활성화됩니다.",
-  eta_nodata:"해당 항만 데이터 수집 중 — 기본값으로 계산됨",
-  stale_warn:"⚠️ 오래됨",
-  fp_building:"운임 상승 압력",fp_neutral:"운임 중립",fp_easing:"운임 완화",
-  dr_elevated:"지연 위험 ↑",dr_moderate:"지연 위험 중",dr_low:"지연 위험 낮음",
-  lbl_blank:"블랭크세일링",lbl_fwd:"향후 전망",lbl_yoy:"선석 YoY",lbl_ci:"야드 적체",
-  vt_port:"🚢 항만 대시보드",vt_cp:"🌊 주요 해협",
-  nav_cp1:"6해협 개요",nav_cp2:"호르무즈 딥다이브",
-  cp_lbl:"해협 모니터링",cp_ttl:"🌊 주요 해협 통과량 개요",
-  cp_dsc:"주간 TEU 통과량 기반. 정상 대비 % 는 2022-03 ~ 2023-11 고정 기준기간 중앙값 대비 (초기 휴리스틱 — 보정 필요).",
-  cp_status_normal:"🟢 정상",cp_status_elevated:"🟠 주의",cp_status_severe:"🔴 감소 경보",cp_status_unknown:"— 수집 중",
-  cp_pct_of_normal:"정상 대비",cp_trend:"전주 대비",
-  cp_water_lbl:"파나마 수위",cp_draft_low:"⚠️ 흘수 제한 위험",cp_draft_normal:"정상",
-  hz_lbl:"Hormuz 딥다이브",hz_ttl:"⚓ 호르무즈 해협 · 페르시아만 상세",hz_dsc:"걸프 선박수, 호르무즈 in/out, 거시지표, 통과 로그, 뉴스를 제공합니다.",
-  hz_macro_lbl:"유가 · 운임 지표",
-  hz_gulf_lbl:"페르시아만 선박수",hz_transit_lbl:"호르무즈 통과량 (어제)",
-  hz_in:"🟢 IN",hz_out:"🟠 OUT",hz_total:"합계",
-  hz_log_ttl:"📋 통과 선박 로그 (어제자)",hz_news_ttl:"📰 관련 뉴스 (link-out)",hz_ai_ttl:"🤖 AI 브리핑",
-  tl_dir:"방향",tl_time:"통과 시각",tl_name:"선명",tl_type:"선종",tl_dwt:"DWT",tl_flag:"선적국",tl_oper:"운항사",
-  cp_collecting:"수집 중",cp_no_data:"데이터 없음",
-  hz_ai_caveat:"출처: ShipFinder · Elane AI 생성 · 검증 필요. UI 표시 목적이며 투자/물류 결정의 근거로 사용하지 마십시오.",
-  hz_ai_linkout:"원문 보기 →",hz_news_src:"출처",hz_no_news:"뉴스 없음"
+  tab_ports:'항만',tab_straits:'해협·운하',tab_forecast:'도착일 예측',
+  map_title:'글로벌 항만 혼잡도 현황',tp_title:'혼잡 항만 TOP',tp_link:'전체 보기 →',
+  rc_title:'권역별 혼잡 지수',ok_title:'운영 KPI',ok_link:'전체 보기',
+  rm_title:'해운 지표',al_title:'주요 경보',al_link:'전체 보기',
+  cs_title:'주요 해협',cs_link:'전체 보기 →',
+  lp_title:'항로 성과',lp_pending:'데이터 준비 중',lp_sub:'항로 성과 데이터 집계 중입니다. 잠시 후 확인하세요.',
+  sr_title:'정시 도착률',sr_soon:'준비 중',sr_sub:'정시 도착률 지표가 곧 제공됩니다.',
+  ih_title:'인텔리전스',ih_link:'전체 보기',
+  footer_txt:'모든 시간은 UTC 기준입니다. 데이터는 여러 출처로부터 수집·갱신됩니다.',
+  kpi_ci:'글로벌 혼잡 지수',kpi_anc:'대기 선박',kpi_wait:'평균 대기 시간',kpi_hr:'고위험 항만',kpi_sr:'정시 도착률',
+  kpi_vs_lw:'전주 대비',kpi_ships:'척',kpi_days:'일',kpi_ports:'개 항만',kpi_soon:'준비 중',
+  ok_total_v:'총 활성 선박',ok_calls:'항만 기항 (7D)',ok_teu:'처리 TEU (7D)',ok_bunker:'벙커 가격',ok_dwell:'체류 시간',ok_ontime:'정시율',
+  al_none:'✓ 활성 경보 없음',
+  cs_th_strait:'해협',cs_th_pct:'정상 대비',cs_th_status:'상태',
+  cs_collecting:'수집 중',
+  s1lbl:'실시간 현황',s1ttl:'🌏 글로벌 항만 혼잡도 현황',s1dsc:'실시간 글로벌 항만 데이터 기반 · 데이터가 없는 항만은 수집 중으로 표시됩니다',
+  s2lbl:'권역별 분석',s2ttl:'🗺️ 권역별 혼잡도 지수',s2dsc:'전 세계 주요 항만을 8개 권역으로 나누어 보여드립니다.',
+  s_ra_lbl:'권역 지표',s_ra_ttl:'📊 권역별 해운 지표',s_ra_dsc:'야드 적체·블랭크세일링·선석 점유를 권역별로 집계한 <strong>지표</strong>입니다.',
+  s3lbl:'주요 혼잡 항만',s3ttl:'⚠️ 지금 주의해야 할 항만 TOP 5',s3dsc:'혼잡도가 높아 화물 도착이 지연될 수 있는 항만입니다.',
+  s4lbl:'선제 모니터링',s4ttl:'📡 조기 혼잡 경보',s4dsc:'지연율 추세가 급증 중인 항만을 조기에 감지합니다',
+  s6lbl:'도착일 예측',s6ttl:'📦 화물 도착일 예측',s6dsc:'도착 항만과 출발일을 입력하면 현재 항만 상황을 반영한 예상 도착일을 알려드립니다.',
+  th1:'항만',th2:'국가',th3:'혼잡도 지수',th_turn:'재항 일수',th_delay:'지연율',th_anc:'대기 선박',th5:'상태',
+  ef_ttl:'도착 정보 입력',ef_dsc:'아는 정보만 입력하세요. 나머지는 자동으로 계산됩니다.',
+  ef_l0:'🛳️ 출발 항만',ef_l1:'📍 도착 항만',ef_l3:'📅 출발 예정일',
+  ef_btn:'도착일 예측하기',ef_ph:'왼쪽에서 정보를 입력하고<br>도착일 예측 버튼을 누르세요',
+  lv_C:'🔴 혼잡',lv_B:'🟠 주의',lv_S:'🟡 보통',lv_L:'🟢 원활',lv_N:'— 수집 중',
+  w3:'약 3일',w15:'약 1.5일',w1:'약 1일',wh:'약 반나절',
+  sum_mon:'전체 항만',sum_data:'데이터 확보',sum_con:'🔴 혼잡 항만',sum_today:'오늘의 한 줄 요약',
+  idx_lbl:'혼잡도 지수 (0~100)',avg_wait:'평균 재항 일수',
+  arr_early:'🟢 빠른 경우',arr_likely:'🎯 가장 가능성 높음',arr_late:'🔴 늦은 경우',
+  arr_early_d:'순조로운 항해, 항만 혼잡 완화 시',arr_likely_d:'현재 항만 혼잡도 반영',arr_late_d:'혼잡 악화, 기상 불량 시',
+  dnd_ttl:'ℹ️ 지체료 (D&D) 안내',dnd_body:'컨테이너 반납 기한이 <strong>%D%</strong> 이전이면 지체료가 발생할 수 있습니다.',
+  arr_dest:'도착 예상일',arr_approx:'도착 예상일 (추정)',
+  s4_coming:'이력 데이터 축적 후 제공됩니다. 데이터 수집 시작일로부터 약 7일 후 활성화됩니다.',
+  eta_nodata:'해당 항만 데이터 수집 중 — 기본값으로 계산됨',
+  stale_warn:'⚠️ 오래됨',
+  fp_building:'운임 상승 압력',fp_neutral:'운임 중립',fp_easing:'운임 완화',
+  dr_elevated:'지연 위험 ↑',dr_moderate:'지연 위험 중',dr_low:'지연 위험 낮음',
+  lbl_blank:'블랭크세일링',lbl_fwd:'향후 전망',lbl_yoy:'선석 YoY',lbl_ci:'야드 적체',
+  cp_lbl:'해협 모니터링',cp_ttl:'🌊 주요 해협 통과량 개요',
+  cp_dsc:'주간 TEU 통과량 기반. 정상 대비 % 는 2022-03 ~ 2023-11 고정 기준기간 중앙값 대비.',
+  cp_status_normal:'🟢 정상',cp_status_elevated:'🟠 주의',cp_status_severe:'🔴 감소 경보',cp_status_unknown:'— 수집 중',
+  cp_pct_of_normal:'정상 대비',cp_trend:'전주 대비',
+  cp_water_lbl:'파나마 수위',cp_draft_low:'⚠️ 흘수 제한 위험',cp_draft_normal:'정상',
+  hz_lbl:'Hormuz 딥다이브',hz_ttl:'⚓ 호르무즈 해협 · 페르시아만 상세',hz_dsc:'걸프 선박수, 호르무즈 in/out, 거시지표, 통과 로그, 뉴스를 제공합니다.',
+  hz_macro_lbl:'유가 · 운임 지표',
+  hz_gulf_lbl:'페르시아만 선박수',hz_transit_lbl:'호르무즈 통과량 (어제)',
+  hz_in:'🟢 IN',hz_out:'🟠 OUT',hz_total:'합계',
+  hz_log_ttl:'📋 통과 선박 로그 (어제자)',hz_news_ttl:'📰 관련 뉴스 (link-out)',hz_ai_ttl:'🤖 AI 브리핑',
+  tl_dir:'방향',tl_time:'통과 시각',tl_name:'선명',tl_type:'선종',tl_dwt:'DWT',tl_flag:'선적국',tl_oper:'운항사',
+  cp_collecting:'수집 중',cp_no_data:'데이터 없음',
+  hz_ai_caveat:'출처: ShipFinder · Elane AI 생성 · 검증 필요. UI 표시 목적이며 투자/물류 결정의 근거로 사용하지 마십시오.',
+  hz_ai_linkout:'원문 보기 →',hz_news_src:'출처',hz_no_news:'뉴스 없음'
 },
 en:{
-  brand_tag:"BETA",
-  nav1:"Port Status",nav2:"By Region",nav_ra:"Regional KPIs",nav3:"Watch Ports TOP 5",nav4:"Early Warning",nav5:"Straits",nav6:"ETA Forecast",
-  s1lbl:"Live Status",s1ttl:"🌏 Global Port Congestion Status",s1dsc:"Real-time global port data · Ports without data are shown as Collecting",
-  s2lbl:"Regional Analysis",s2ttl:"🗺️ Regional Congestion Index",s2dsc:"8 global shipping regions at a glance. Ports being collected will appear once data is confirmed.",
-  s_ra_lbl:"Regional KPIs",s_ra_ttl:"📊 Regional Maritime Indicators",s_ra_dsc:"Yard congestion, blank sailing and berth occupancy <strong>indicators</strong> by region. Measured data, not forecasts. Thresholds calibrated as data accumulates.",
-  s3lbl:"High Alert Ports",s3ttl:"⚠️ Top 5 Ports to Watch Now",s3dsc:"High congestion may delay cargo. Click a port to calculate ETA instantly.",
-  s4lbl:"Early Warning",s4ttl:"📡 Congestion Early Warning",s4dsc:"Detects ports with rapidly rising delay rates",
-  s5lbl:"Key Straits",s5ttl:"🗺️ Strategic Straits Status",s5dsc:"Most global cargo passes through these straits. A sharp drop in transits signals rerouting risk.",
-  s6lbl:"ETA Forecast",s6ttl:"📦 Cargo Arrival Date Forecast",s6dsc:"Enter destination port and departure date for an arrival estimate reflecting current congestion.",
-  th1:"Port",th2:"Country",th3:"Congestion Index",th_turn:"Turnaround",th_delay:"Delay Rate",th_anc:"Waiting",th5:"Status",
-  ef_ttl:"Enter Arrival Info",ef_dsc:"Fill in what you know — the rest is calculated automatically.",
-  ef_l0:"🛳️ Origin Port",ef_l1:"📍 Destination Port",ef_l3:"📅 Departure Date (ETD)",
-  ef_btn:"Forecast Arrival Date",ef_ph:"Enter info on the left<br>and click Forecast",
-  lv_C:"🔴 Congested",lv_B:"🟠 Busy",lv_S:"🟡 Stable",lv_L:"🟢 Clear",lv_N:"— Collecting",
-  w3:"~3 days",w15:"~1.5 days",w1:"~1 day",wh:"~half day",
-  cp_ok:"🟢 Normal",cp_caut:"🟠 Caution",cp_alert:"🔴 Transit Drop Alert",
-  cp_suez:"Shortest Europe↔Asia route (via Red Sea).\nBelow 40% of avg = rerouting alert.",
-  cp_pan:"Shortest Pacific↔Atlantic route.\nDrought can restrict transits.",
-  cp_mal:"SE Asia↔Indian Ocean gateway.\n~40% of global trade passes through.",
-  today_s:"Today containers",avg7:"7-day avg",
-  sum_mon:"Total Ports",sum_data:"With Data",sum_con:"🔴 Congested",sum_today:"Today's Summary",
-  idx_lbl:"Congestion Index (0–100)",avg_wait:"Avg. turnaround",
-  arr_early:"🟢 Best case",arr_likely:"🎯 Most likely",arr_late:"🔴 Worst case",
-  arr_early_d:"Smooth voyage, congestion improves",arr_likely_d:"Reflects current port congestion",arr_late_d:"Congestion worsens, bad weather",
-  dnd_ttl:"ℹ️ Detention & Demurrage Note",
-  dnd_body:"If container return deadline is before <strong>%D%</strong>, D&D charges may apply. Consider requesting a Free Time extension.",
-  arr_dest:"Estimated Arrival",arr_approx:"Estimated Arrival (Approximate)",
-  s4_coming:"Will be available after 7 days of history data collection.",
-  eta_nodata:"No data for this port — using defaults",
-  stale_warn:"⚠️ Outdated",
-  fp_building:"Freight Pressure Building",fp_neutral:"Freight Neutral",fp_easing:"Freight Easing",
-  dr_elevated:"Delay Risk Elevated",dr_moderate:"Delay Risk Moderate",dr_low:"Delay Risk Low",
-  lbl_blank:"Blank Sailings",lbl_fwd:"Forward",lbl_yoy:"Berth YoY",lbl_ci:"Yard Congestion",
-  vt_port:"🚢 Port Dashboard",vt_cp:"🌊 Key Straits",
-  nav_cp1:"6 Straits Overview",nav_cp2:"Hormuz Deep-Dive",
-  cp_lbl:"Strait Monitor",cp_ttl:"🌊 Key Straits Transit Overview",
-  cp_dsc:"Weekly TEU transit volume. % of Normal vs fixed reference median (2022-03 – 2023-11, initial heuristic — calibration needed).",
-  cp_status_normal:"🟢 Normal",cp_status_elevated:"🟠 Elevated",cp_status_severe:"🔴 Drop Alert",cp_status_unknown:"— Collecting",
-  cp_pct_of_normal:"% of Normal",cp_trend:"vs prev week",
-  cp_water_lbl:"Panama Water Level",cp_draft_low:"⚠️ Draft Restriction Risk",cp_draft_normal:"Normal",
-  hz_lbl:"Hormuz Deep-Dive",hz_ttl:"⚓ Strait of Hormuz · Persian Gulf Detail",hz_dsc:"Gulf ship count, Hormuz in/out, macro indices, transit log, and news.",
-  hz_macro_lbl:"Oil & Freight Indices",
-  hz_gulf_lbl:"Persian Gulf Ship Count",hz_transit_lbl:"Hormuz Transits (yesterday)",
-  hz_in:"🟢 IN",hz_out:"🟠 OUT",hz_total:"Total",
-  hz_log_ttl:"📋 Transit Log (yesterday)",hz_news_ttl:"📰 News (link-out)",hz_ai_ttl:"🤖 AI Briefing",
-  tl_dir:"Dir",tl_time:"Transit Time",tl_name:"Ship Name",tl_type:"Type",tl_dwt:"DWT",tl_flag:"Flag",tl_oper:"Operator",
-  cp_collecting:"Collecting",cp_no_data:"No data",
-  hz_ai_caveat:"Source: ShipFinder · Generated by Elane AI · For informational display only. Do not use as basis for investment or logistics decisions.",
-  hz_ai_linkout:"View original →",hz_news_src:"Source",hz_no_news:"No news available"
+  tab_ports:'Ports',tab_straits:'Straits & Canals',tab_forecast:'ETA Forecast',
+  map_title:'Global Port Congestion Status',tp_title:'Top Ports by Congestion',tp_link:'View All Ports →',
+  rc_title:'Regional Congestion Index',ok_title:'Operational KPIs',ok_link:'View All',
+  rm_title:'Maritime Indices',al_title:'Critical Alerts',al_link:'View All',
+  cs_title:'Critical Straits',cs_link:'View All →',
+  lp_title:'Lane Performance',lp_pending:'Data pending',lp_sub:'Lane performance data is being aggregated. Check back soon.',
+  sr_title:'Schedule Reliability',sr_soon:'Coming soon',sr_sub:'Detailed schedule reliability metrics will be available soon.',
+  ih_title:'Intelligence Highlights',ih_link:'View All',
+  footer_txt:'All times in UTC. Data is aggregated from multiple sources and updated continuously.',
+  kpi_ci:'Global Congestion Index',kpi_anc:'Vessels at Anchor',kpi_wait:'Avg Waiting Time',kpi_hr:'High Risk Ports',kpi_sr:'Schedule Reliability',
+  kpi_vs_lw:'vs last week',kpi_ships:'ships',kpi_days:'days',kpi_ports:'ports',kpi_soon:'Coming soon',
+  ok_total_v:'Total Active Vessels',ok_calls:'Port Calls (7D)',ok_teu:'TEU Handled (7D)',ok_bunker:'Bunker Prices',ok_dwell:'Dwell Time',ok_ontime:'On-Time Arrival',
+  al_none:'✓ No active alerts',
+  cs_th_strait:'Strait/Canal',cs_th_pct:'% of Normal',cs_th_status:'Status',
+  cs_collecting:'Collecting',
+  s1lbl:'Live Status',s1ttl:'🌏 Global Port Congestion Status',s1dsc:'Real-time global port data · Ports without data are shown as Collecting',
+  s2lbl:'Regional Analysis',s2ttl:'🗺️ Regional Congestion Index',s2dsc:'8 global shipping regions at a glance.',
+  s_ra_lbl:'Regional KPIs',s_ra_ttl:'📊 Regional Maritime Indicators',s_ra_dsc:'Yard congestion, blank sailing and berth occupancy <strong>indicators</strong> by region.',
+  s3lbl:'High Alert Ports',s3ttl:'⚠️ Top 5 Ports to Watch Now',s3dsc:'High congestion may delay cargo.',
+  s4lbl:'Early Warning',s4ttl:'📡 Congestion Early Warning',s4dsc:'Detects ports with rapidly rising delay rates',
+  s6lbl:'ETA Forecast',s6ttl:'📦 Cargo Arrival Date Forecast',s6dsc:'Enter destination port and departure date for an arrival estimate.',
+  th1:'Port',th2:'Country',th3:'Congestion Index',th_turn:'Turnaround',th_delay:'Delay Rate',th_anc:'Waiting',th5:'Status',
+  ef_ttl:'Enter Arrival Info',ef_dsc:'Fill in what you know — the rest is calculated automatically.',
+  ef_l0:'🛳️ Origin Port',ef_l1:'📍 Destination Port',ef_l3:'📅 Departure Date (ETD)',
+  ef_btn:'Forecast Arrival Date',ef_ph:'Enter info on the left<br>and click Forecast',
+  lv_C:'🔴 Congested',lv_B:'🟠 Busy',lv_S:'🟡 Stable',lv_L:'🟢 Clear',lv_N:'— Collecting',
+  w3:'~3 days',w15:'~1.5 days',w1:'~1 day',wh:'~half day',
+  sum_mon:'Total Ports',sum_data:'With Data',sum_con:'🔴 Congested',sum_today:"Today's Summary",
+  idx_lbl:'Congestion Index (0–100)',avg_wait:'Avg. turnaround',
+  arr_early:'🟢 Best case',arr_likely:'🎯 Most likely',arr_late:'🔴 Worst case',
+  arr_early_d:'Smooth voyage, congestion improves',arr_likely_d:'Reflects current port congestion',arr_late_d:'Congestion worsens, bad weather',
+  dnd_ttl:'ℹ️ D&D Note',dnd_body:'If container return deadline is before <strong>%D%</strong>, D&D charges may apply.',
+  arr_dest:'Estimated Arrival',arr_approx:'Estimated Arrival (Approximate)',
+  s4_coming:'Will be available after 7 days of history data collection.',
+  eta_nodata:'No data for this port — using defaults',
+  stale_warn:'⚠️ Outdated',
+  fp_building:'Freight Pressure Building',fp_neutral:'Freight Neutral',fp_easing:'Freight Easing',
+  dr_elevated:'Delay Risk Elevated',dr_moderate:'Delay Risk Moderate',dr_low:'Delay Risk Low',
+  lbl_blank:'Blank Sailings',lbl_fwd:'Forward',lbl_yoy:'Berth YoY',lbl_ci:'Yard Congestion',
+  cp_lbl:'Strait Monitor',cp_ttl:'🌊 Key Straits Transit Overview',
+  cp_dsc:'Weekly TEU transit volume. % of Normal vs fixed reference median (2022-03 – 2023-11).',
+  cp_status_normal:'🟢 Normal',cp_status_elevated:'🟠 Elevated',cp_status_severe:'🔴 Drop Alert',cp_status_unknown:'— Collecting',
+  cp_pct_of_normal:'% of Normal',cp_trend:'vs prev week',
+  cp_water_lbl:'Panama Water Level',cp_draft_low:'⚠️ Draft Restriction Risk',cp_draft_normal:'Normal',
+  hz_lbl:'Hormuz Deep-Dive',hz_ttl:'⚓ Strait of Hormuz · Persian Gulf',hz_dsc:'Gulf ship count, Hormuz in/out, macro indices, transit log, and news.',
+  hz_macro_lbl:'Oil & Freight Indices',
+  hz_gulf_lbl:'Persian Gulf Ship Count',hz_transit_lbl:'Hormuz Transits (yesterday)',
+  hz_in:'🟢 IN',hz_out:'🟠 OUT',hz_total:'Total',
+  hz_log_ttl:'📋 Transit Log (yesterday)',hz_news_ttl:'📰 News (link-out)',hz_ai_ttl:'🤖 AI Briefing',
+  tl_dir:'Dir',tl_time:'Transit Time',tl_name:'Ship Name',tl_type:'Type',tl_dwt:'DWT',tl_flag:'Flag',tl_oper:'Operator',
+  cp_collecting:'Collecting',cp_no_data:'No data',
+  hz_ai_caveat:'Source: ShipFinder · Generated by Elane AI · For informational display only.',
+  hz_ai_linkout:'View original →',hz_news_src:'Source',hz_no_news:'No news available'
 }
 };
-const t=k=>(T[LANG]||T.ko)[k]||k;
-function setLang(l){
-  LANG=l;
-  document.getElementById('btn-ko').className=l==='ko'?'active':'';
-  document.getElementById('btn-en').className=l==='en'?'active':'';
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const k=el.getAttribute('data-i18n');
-    if(T[l]&&T[l][k]!==undefined)el.innerHTML=T[l][k];
-  });
-  if(window._snaps)renderAll(window._snaps,window._cps,window._ri);
-  if(window._cpLoaded)renderChokepoints(window._cpData||{});
-}
+const t = k => (T[LANG] || T.ko)[k] || k;
 
-/* ── Port / Region Maps ── */
+/* §D  PORT/REGION MAPS (기존 보존) */
 const PM={
-  KRPUS:{n:"Busan",nk:"부산",c:"대한민국",ce:"South Korea",r:"kr-jp"},
-  KRKAN:{n:"Gwangyang",nk:"광양",c:"대한민국",ce:"South Korea",r:"kr-jp"},
-  JPYOK:{n:"Yokohama",nk:"요코하마",c:"일본",ce:"Japan",r:"kr-jp"},
-  JPOSA:{n:"Osaka",nk:"오사카",c:"일본",ce:"Japan",r:"kr-jp"},
-  JPTYO:{n:"Tokyo",nk:"도쿄",c:"일본",ce:"Japan",r:"kr-jp"},
-  CNSHA:{n:"Shanghai",nk:"상하이",c:"중국",ce:"China",r:"china"},
-  CNNBO:{n:"Ningbo",nk:"닝보",c:"중국",ce:"China",r:"china"},
-  CNSZX:{n:"Shenzhen",nk:"선전",c:"중국",ce:"China",r:"china"},
-  CNQIN:{n:"Qingdao",nk:"칭다오",c:"중국",ce:"China",r:"china"},
-  CNGZU:{n:"Guangzhou",nk:"광저우",c:"중국",ce:"China",r:"china"},
-  HKHKG:{n:"Hong Kong",nk:"홍콩",c:"홍콩",ce:"Hong Kong",r:"china"},
-  TWKHH:{n:"Kaohsiung",nk:"가오슝",c:"대만",ce:"Taiwan",r:"china"},
-  SGSIN:{n:"Singapore",nk:"싱가포르",c:"싱가포르",ce:"Singapore",r:"sea"},
-  MYPKG:{n:"Port Klang",nk:"포트클랑",c:"말레이시아",ce:"Malaysia",r:"sea"},
-  MYTPP:{n:"Tg. Pelepas",nk:"탄중펠레파스",c:"말레이시아",ce:"Malaysia",r:"sea"},
-  IDTPP:{n:"Tanjung Priok",nk:"탄중프리옥",c:"인도네시아",ce:"Indonesia",r:"sea"},
-  VHSGN:{n:"Ho Chi Minh",nk:"호치민",c:"베트남",ce:"Vietnam",r:"sea"},
-  THBKK:{n:"Bangkok",nk:"방콕",c:"태국",ce:"Thailand",r:"sea"},
-  PHMNL:{n:"Manila",nk:"마닐라",c:"필리핀",ce:"Philippines",r:"sea"},
-  INNSA:{n:"Nhava Sheva",nk:"나바셰바",c:"인도",ce:"India",r:"sa-me"},
-  INCCU:{n:"Kolkata",nk:"콜카타",c:"인도",ce:"India",r:"sa-me"},
-  PKKAR:{n:"Karachi",nk:"카라치",c:"파키스탄",ce:"Pakistan",r:"sa-me"},
-  AEJEA:{n:"Jebel Ali",nk:"제벨알리",c:"UAE",ce:"UAE",r:"sa-me"},
-  OMMSQ:{n:"Muscat",nk:"무스카트",c:"오만",ce:"Oman",r:"sa-me"},
-  NLRTM:{n:"Rotterdam",nk:"로테르담",c:"네덜란드",ce:"Netherlands",r:"europe"},
-  BEANR:{n:"Antwerp",nk:"앤트워프",c:"벨기에",ce:"Belgium",r:"europe"},
-  DEHAM:{n:"Hamburg",nk:"함부르크",c:"독일",ce:"Germany",r:"europe"},
-  GBFXT:{n:"Felixstowe",nk:"펠릭스토",c:"영국",ce:"UK",r:"europe"},
-  ESBCN:{n:"Barcelona",nk:"바르셀로나",c:"스페인",ce:"Spain",r:"europe"},
-  ITGOA:{n:"Genoa",nk:"제노바",c:"이탈리아",ce:"Italy",r:"europe"},
-  USLAX:{n:"Los Angeles",nk:"로스앤젤레스",c:"미국",ce:"USA",r:"namerica"},
-  USLGB:{n:"Long Beach",nk:"롱비치",c:"미국",ce:"USA",r:"namerica"},
-  USNYC:{n:"New York",nk:"뉴욕",c:"미국",ce:"USA",r:"namerica"},
-  USSAV:{n:"Savannah",nk:"사바나",c:"미국",ce:"USA",r:"namerica"},
-  CAHAL:{n:"Halifax",nk:"핼리팩스",c:"캐나다",ce:"Canada",r:"namerica"},
-  MXZLO:{n:"Manzanillo",nk:"만사니요",c:"멕시코",ce:"Mexico",r:"latam"},
-  BRSAO:{n:"Santos",nk:"산토스",c:"브라질",ce:"Brazil",r:"latam"},
-  ARBUE:{n:"Buenos Aires",nk:"부에노스아이레스",c:"아르헨티나",ce:"Argentina",r:"latam"},
-  CLSAI:{n:"San Antonio",nk:"산안토니오",c:"칠레",ce:"Chile",r:"latam"},
-  ZADUR:{n:"Durban",nk:"더반",c:"남아공",ce:"S. Africa",r:"africa"},
-  EGPSD:{n:"Port Said",nk:"포트사이드",c:"이집트",ce:"Egypt",r:"africa"},
-  NGAPP:{n:"Apapa",nk:"아파파",c:"나이지리아",ce:"Nigeria",r:"africa"},
-  RUMME:{n:"Novorossiysk",nk:"노보로시스크",c:"러시아",ce:"Russia",r:"ru-cis"},
-  RUVVO:{n:"Vladivostok",nk:"블라디보스토크",c:"러시아",ce:"Russia",r:"ru-cis"}
+  KRPUS:{n:'Busan',nk:'부산',c:'대한민국',ce:'South Korea',r:'kr-jp'},
+  KRKAN:{n:'Gwangyang',nk:'광양',c:'대한민국',ce:'South Korea',r:'kr-jp'},
+  JPYOK:{n:'Yokohama',nk:'요코하마',c:'일본',ce:'Japan',r:'kr-jp'},
+  JPOSA:{n:'Osaka',nk:'오사카',c:'일본',ce:'Japan',r:'kr-jp'},
+  JPTYO:{n:'Tokyo',nk:'도쿄',c:'일본',ce:'Japan',r:'kr-jp'},
+  CNSHA:{n:'Shanghai',nk:'상하이',c:'중국',ce:'China',r:'china'},
+  CNNBO:{n:'Ningbo',nk:'닝보',c:'중국',ce:'China',r:'china'},
+  CNSZX:{n:'Shenzhen',nk:'선전',c:'중국',ce:'China',r:'china'},
+  CNQIN:{n:'Qingdao',nk:'칭다오',c:'중국',ce:'China',r:'china'},
+  CNGZU:{n:'Guangzhou',nk:'광저우',c:'중국',ce:'China',r:'china'},
+  HKHKG:{n:'Hong Kong',nk:'홍콩',c:'홍콩',ce:'Hong Kong',r:'china'},
+  TWKHH:{n:'Kaohsiung',nk:'가오슝',c:'대만',ce:'Taiwan',r:'china'},
+  SGSIN:{n:'Singapore',nk:'싱가포르',c:'싱가포르',ce:'Singapore',r:'sea'},
+  MYPKG:{n:'Port Klang',nk:'포트클랑',c:'말레이시아',ce:'Malaysia',r:'sea'},
+  MYTPP:{n:'Tg. Pelepas',nk:'탄중펠레파스',c:'말레이시아',ce:'Malaysia',r:'sea'},
+  IDTPP:{n:'Tanjung Priok',nk:'탄중프리옥',c:'인도네시아',ce:'Indonesia',r:'sea'},
+  VHSGN:{n:'Ho Chi Minh',nk:'호치민',c:'베트남',ce:'Vietnam',r:'sea'},
+  THBKK:{n:'Bangkok',nk:'방콕',c:'태국',ce:'Thailand',r:'sea'},
+  PHMNL:{n:'Manila',nk:'마닐라',c:'필리핀',ce:'Philippines',r:'sea'},
+  INNSA:{n:'Nhava Sheva',nk:'나바셰바',c:'인도',ce:'India',r:'sa-me'},
+  INCCU:{n:'Kolkata',nk:'콜카타',c:'인도',ce:'India',r:'sa-me'},
+  PKKAR:{n:'Karachi',nk:'카라치',c:'파키스탄',ce:'Pakistan',r:'sa-me'},
+  AEJEA:{n:'Jebel Ali',nk:'제벨알리',c:'UAE',ce:'UAE',r:'sa-me'},
+  OMMSQ:{n:'Muscat',nk:'무스카트',c:'오만',ce:'Oman',r:'sa-me'},
+  NLRTM:{n:'Rotterdam',nk:'로테르담',c:'네덜란드',ce:'Netherlands',r:'europe'},
+  BEANR:{n:'Antwerp',nk:'앤트워프',c:'벨기에',ce:'Belgium',r:'europe'},
+  DEHAM:{n:'Hamburg',nk:'함부르크',c:'독일',ce:'Germany',r:'europe'},
+  GBFXT:{n:'Felixstowe',nk:'펠릭스토',c:'영국',ce:'UK',r:'europe'},
+  ESBCN:{n:'Barcelona',nk:'바르셀로나',c:'스페인',ce:'Spain',r:'europe'},
+  ITGOA:{n:'Genoa',nk:'제노바',c:'이탈리아',ce:'Italy',r:'europe'},
+  USLAX:{n:'Los Angeles',nk:'로스앤젤레스',c:'미국',ce:'USA',r:'namerica'},
+  USLGB:{n:'Long Beach',nk:'롱비치',c:'미국',ce:'USA',r:'namerica'},
+  USNYC:{n:'New York',nk:'뉴욕',c:'미국',ce:'USA',r:'namerica'},
+  USSAV:{n:'Savannah',nk:'사바나',c:'미국',ce:'USA',r:'namerica'},
+  CAHAL:{n:'Halifax',nk:'핼리팩스',c:'캐나다',ce:'Canada',r:'namerica'},
+  MXZLO:{n:'Manzanillo',nk:'만사니요',c:'멕시코',ce:'Mexico',r:'latam'},
+  BRSAO:{n:'Santos',nk:'산토스',c:'브라질',ce:'Brazil',r:'latam'},
+  ARBUE:{n:'Buenos Aires',nk:'부에노스아이레스',c:'아르헨티나',ce:'Argentina',r:'latam'},
+  CLSAI:{n:'San Antonio',nk:'산안토니오',c:'칠레',ce:'Chile',r:'latam'},
+  ZADUR:{n:'Durban',nk:'더반',c:'남아공',ce:'S. Africa',r:'africa'},
+  EGPSD:{n:'Port Said',nk:'포트사이드',c:'이집트',ce:'Egypt',r:'africa'},
+  NGAPP:{n:'Apapa',nk:'아파파',c:'나이지리아',ce:'Nigeria',r:'africa'},
+  RUMME:{n:'Novorossiysk',nk:'노보로시스크',c:'러시아',ce:'Russia',r:'ru-cis'},
+  RUVVO:{n:'Vladivostok',nk:'블라디보스토크',c:'러시아',ce:'Russia',r:'ru-cis'}
 };
 const REGS={
-  "kr-jp":{ko:"동북아시아",en:"NE Asia"},
-  "china":{ko:"중국·홍콩·대만",en:"Greater China"},
-  "sea":{ko:"동남아시아",en:"SE Asia"},
-  "sa-me":{ko:"남아시아·중동",en:"S.Asia & ME"},
-  "europe":{ko:"유럽",en:"Europe"},
-  "namerica":{ko:"북미",en:"N. America"},
-  "latam":{ko:"중남미",en:"Latin America"},
-  "africa":{ko:"아프리카",en:"Africa"}
+  'kr-jp':   {ko:'동북아시아',en:'NE Asia'},
+  'china':   {ko:'중국·홍콩·대만',en:'Greater China'},
+  'sea':     {ko:'동남아시아',en:'SE Asia'},
+  'sa-me':   {ko:'남아시아·중동',en:'S.Asia & ME'},
+  'europe':  {ko:'유럽',en:'Europe'},
+  'namerica':{ko:'북미',en:'N. America'},
+  'latam':   {ko:'중남미',en:'Latin America'},
+  'africa':  {ko:'아프리카',en:'Africa'},
+  'ru-cis':  {ko:'러시아·CIS',en:'Russia/CIS'}
 };
 const DISTANCE_TABLE={
-  "CNSHA-NLRTM":11500,"CNSHA-BEANR":11800,"CNSHA-DEHAM":11800,"CNSHA-USLAX":6200,
-  "CNSHA-USNYC":11500,"CNSHA-GBFXT":12000,"CNSHA-FRLEH":11700,"CNSHA-KRPUS":520,
-  "CNSHA-SGSIN":2300,"KRPUS-NLRTM":11000,"KRPUS-BEANR":11300,"KRPUS-DEHAM":11300,
-  "KRPUS-USLAX":5600,"KRPUS-USNYC":11000,"KRPUS-SGSIN":2600,"SGSIN-NLRTM":8400,
-  "SGSIN-BEANR":8700,"SGSIN-DEHAM":8700,"SGSIN-USLAX":8800,"SGSIN-USNYC":10500,
-  "SGSIN-FRLEH":8500,"HKHKG-NLRTM":10500,"HKHKG-USLAX":5900,"HKHKG-USNYC":10800,
-  "CNNGB-NLRTM":11400,"CNNGB-USLAX":6100,"JPTYO-USLAX":4800,"JPTYO-NLRTM":11500
+  'CNSHA-NLRTM':11500,'CNSHA-BEANR':11800,'CNSHA-DEHAM':11800,'CNSHA-USLAX':6200,
+  'CNSHA-USNYC':11500,'CNSHA-GBFXT':12000,'CNSHA-FRLEH':11700,'CNSHA-KRPUS':520,
+  'CNSHA-SGSIN':2300,'KRPUS-NLRTM':11000,'KRPUS-BEANR':11300,'KRPUS-DEHAM':11300,
+  'KRPUS-USLAX':5600,'KRPUS-USNYC':11000,'KRPUS-SGSIN':2600,'SGSIN-NLRTM':8400,
+  'SGSIN-BEANR':8700,'SGSIN-DEHAM':8700,'SGSIN-USLAX':8800,'SGSIN-USNYC':10500,
+  'SGSIN-FRLEH':8500,'HKHKG-NLRTM':10500,'HKHKG-USLAX':5900,'HKHKG-USNYC':10800,
+  'CNNGB-NLRTM':11400,'CNNGB-USLAX':6100,'JPTYO-USLAX':4800,'JPTYO-NLRTM':11500
 };
 const ORIGIN_PORTS=[
   {code:'CNSHA',ko:'상하이',en:'Shanghai'},{code:'KRPUS',ko:'부산',en:'Busan'},
@@ -708,33 +1308,47 @@ const ORIGIN_PORTS=[
   {code:'JPKOB',ko:'고베',en:'Kobe'},{code:'CNGZU',ko:'광저우',en:'Guangzhou'},
   {code:'CNYTN',ko:'옌티안',en:'Yantian'},{code:'custom',ko:'기타 (직접 입력)',en:'Other (manual)'}
 ];
+const LABEL_PORTS=[
+  {name:'Shanghai',lat:31.23,lon:121.47},{name:'Busan',lat:35.18,lon:129.07},
+  {name:'Singapore',lat:1.29,lon:103.85},{name:'Rotterdam',lat:51.91,lon:4.48},
+  {name:'Hamburg',lat:53.55,lon:9.99},{name:'Jeddah',lat:21.49,lon:39.19},
+  {name:'Los Angeles',lat:33.73,lon:-118.26},{name:'New York',lat:40.67,lon:-74.05},
+  {name:'Vancouver',lat:49.28,lon:-123.12}
+];
 
-const sb=supabase.createClient(CFG.SB_URL,CFG.SB_ANON);
+/* §E  SUPABASE */
+const sb = supabase.createClient(CFG.SB_URL, CFG.SB_ANON);
 
-/* ── MPCI 계산 (세 값 모두 없으면 null — 값 날조 금지) ── */
+/* §F  HELPERS */
 function calcMPCI(port){
-  const cong=port.econdb_congestion,dp=port.econdb_delay_pct,turn=port.econdb_turnaround;
-  if(cong==null||dp==null||turn==null)return null;
-  const congScore=(cong/18)*100;
-  const delayScore=Math.min(dp,100);
-  const turnScore=Math.min((turn-0.5)/4.5*100,100);
-  return Math.round(Math.min(congScore*.35+delayScore*.35+turnScore*.30,100)*10)/10;
+  const cong = port.econdb_congestion ?? port.econdb_current_index;
+  const dp   = port.econdb_delay_pct;
+  const turn = port.econdb_turnaround;
+  if(cong==null||dp==null||turn==null) return null;
+  const cS = (cong/18)*100;
+  const dS = Math.min(dp,100);
+  const tS = Math.min((turn-0.5)/4.5*100,100);
+  return Math.round(Math.min(cS*.35+dS*.35+tS*.30,100)*10)/10;
 }
-function getMPCILevel(mpci){
-  if(mpci===null)return null;
-  return mpci>=75?'CONGESTED':mpci>=50?'BUSY':mpci>=25?'STABLE':'LOW';
+function getMPCILevel(v){if(v===null)return null;return v>=75?'CONGESTED':v>=50?'BUSY':v>=25?'STABLE':'LOW';}
+function isOlderThan(ts,ms){return!ts||Date.now()-new Date(ts).getTime()>ms;}
+function lvlCode(v){if(v===null)return'N';return v>=75?'C':v>=50?'B':v>=25?'S':'L';}
+function lvlLabel(v){return{C:t('lv_C'),B:t('lv_B'),S:t('lv_S'),L:t('lv_L'),N:t('lv_N')}[lvlCode(v)]||'--';}
+function waitDays(v){if(!v)return 0;return v>=75?3:v>=50?1.5:v>=25?.75:.25;}
+function waitLbl(v){const d=waitDays(v);return d>=3?t('w3'):d>=1.5?t('w15'):d>=.75?t('w1'):t('wh');}
+function pn(c){const m=PM[c]||{};return LANG==='ko'?(m.nk||m.n||c):(m.n||c);}
+function ctry(c){const m=PM[c]||{};return LANG==='ko'?(m.c||''):(m.ce||'');}
+function reg(c){return(PM[c]||{}).r||null;}
+function fmtD(s){if(!s)return'--';return new Date(s).toLocaleDateString(LANG==='ko'?'ko-KR':'en-US',{month:'short',day:'numeric'});}
+function fmtAgo(ts){
+  if(!ts)return'';
+  const d=Math.floor((Date.now()-new Date(ts))/6e4);
+  if(d<1)return LANG==='ko'?'방금':'just now';
+  if(d<60)return LANG==='ko'?`${d}분 전`:`${d}m ago`;
+  const h=Math.floor(d/60);
+  if(h<24)return LANG==='ko'?`${h}시간 전`:`${h}h ago`;
+  return LANG==='ko'?`${Math.floor(h/24)}일 전`:`${Math.floor(h/24)}d ago`;
 }
-function isOlderThan(ts,ms){return!ts||Date.now()-new Date(ts).getTime()>ms}
-
-/* ── 공통 헬퍼 ── */
-function lvlCode(mpci){if(mpci===null)return'N';return mpci>=75?'C':mpci>=50?'B':mpci>=25?'S':'L'}
-function lvlLabel(mpci){return{C:t('lv_C'),B:t('lv_B'),S:t('lv_S'),L:t('lv_L'),N:t('lv_N')}[lvlCode(mpci)]||'--'}
-function waitDays(mpci){if(!mpci)return 0;return mpci>=75?3:mpci>=50?1.5:mpci>=25?.75:.25}
-function waitLbl(mpci){const d=waitDays(mpci);return d>=3?t('w3'):d>=1.5?t('w15'):d>=.75?t('w1'):t('wh')}
-function pn(c){const m=PM[c]||{};return LANG==='ko'?(m.nk||m.n||c):(m.n||c)}
-function ctry(c){const m=PM[c]||{};return LANG==='ko'?(m.c||''):(m.ce||'')}
-function reg(c){return(PM[c]||{}).r||null}
-function fmtD(s){if(!s)return'--';return new Date(s).toLocaleDateString(LANG==='ko'?'ko-KR':'en-US',{month:'short',day:'numeric'})}
 function staleTag(ts){
   if(!isOlderThan(ts,6*36e5))return'';
   return`<span class="stale-tag">⚠ ${t('stale_warn')}</span>`;
@@ -742,517 +1356,710 @@ function staleTag(ts){
 function collectingBadge(){
   return`<span class="collecting-badge"><span class="collecting-dot"></span>${LANG==='ko'?'수집 중':'Collecting'}</span>`;
 }
+function destroyChart(id){if(_charts[id]){_charts[id].destroy();delete _charts[id];}}
 
-/* ── UTC 시계 ── */
+/* §G  THEME TOGGLE */
+function initTheme(){
+  const saved=localStorage.getItem('mtl-theme')||'dark';
+  applyTheme(saved);
+}
+function applyTheme(theme){
+  _isDark=(theme==='dark');
+  document.documentElement.setAttribute('data-theme',theme);
+  localStorage.setItem('mtl-theme',theme);
+  const icon=document.getElementById('theme-icon');
+  if(icon){icon.className=_isDark?'ti ti-sun':'ti ti-moon';}
+}
+function toggleTheme(){
+  applyTheme(_isDark?'light':'dark');
+  rebuildCharts();
+  redrawMap();
+}
+function rebuildCharts(){
+  // 모든 차트 재생성 트리거 (렌더 함수들이 isDark로 분기)
+  if(window._snaps){renderRegionalChart(window._snaps);}
+  if(window._macroLatest){renderRegionalMacro(window._macroLatest);}
+}
+
+/* §H  TAB SWITCHING */
+function setTab(name){
+  document.querySelectorAll('.tab-view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const tv=document.getElementById('tab-'+name);
+  if(tv)tv.classList.add('active');
+  const ni=document.querySelector(`.nav-item[data-tab="${name}"]`);
+  if(ni)ni.classList.add('active');
+  // Straits 탭 lazy load
+  if(name==='straits'&&!window._cpLoaded){window._cpLoaded=true;loadChokepoints();}
+  // 지도 resize
+  if(name==='overview')setTimeout(()=>{if(_mapSvg)redrawMap();},50);
+}
+document.querySelectorAll('.nav-item[data-tab]').forEach(el=>{
+  el.addEventListener('click',()=>setTab(el.getAttribute('data-tab')));
+});
+
+/* §I  UTC 시계 + 날짜 */
 function tick(){
   const n=new Date();
   const h=String(n.getUTCHours()).padStart(2,'0');
   const m=String(n.getUTCMinutes()).padStart(2,'0');
   const s=String(n.getUTCSeconds()).padStart(2,'0');
-  document.getElementById('utc').innerHTML=`<span class="dot">●</span> UTC ${h}:${m}:${s}`;
+  const el=document.getElementById('utc-clock');
+  if(el)el.innerHTML=`<span class="utc-dot">●</span> UTC ${h}:${m}:${s}`;
+  const dt=document.getElementById('tb-date');
+  if(dt)dt.textContent=n.toLocaleDateString(LANG==='ko'?'ko-KR':'en-US',{year:'numeric',month:'short',day:'numeric'});
 }
 setInterval(tick,1000);tick();
 
-/* ── Supabase 쿼리 ── */
+/* §J  LANGUAGE */
+function setLang(l){
+  LANG=l;
+  document.getElementById('btn-ko').className='lang-btn'+(l==='ko'?' active':'');
+  document.getElementById('btn-en').className='lang-btn'+(l==='en'?' active':'');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(T[l]&&T[l][k]!==undefined)el.innerHTML=T[l][k];
+  });
+  if(window._snaps)renderAll(window._snaps,window._cps,window._ri);
+  if(window._cpLoaded)renderChokepoints(window._cpData||{});
+  if(window._snaps){renderKPI(window._snaps);renderTopPorts(window._snaps);renderRegionalChart(window._snaps);renderOpKPIs(window._snaps);}
+  if(window._cpIdx)renderCriticalStraits(window._cpIdx);
+  if(window._newsData)renderIntelligence(window._newsData);
+  if(window._alertData)renderAlerts(window._alertData);
+  if(window._macroLatest)renderRegionalMacro(window._macroLatest);
+}
+
+/* ══════════════════════════════════════════════════════
+   §K  DATA FETCHERS
+══════════════════════════════════════════════════════ */
 async function fetchSnaps(){
   const{data,error}=await sb.from('port_snapshots')
-    .select('port_code,port_name,country,region,lat,lon,updated_at,vessels_anchored,vessels_berthed,econdb_congestion,econdb_delay_pct,econdb_turnaround,econdb_updated_at')
+    .select('port_code,port_name,country,region,lat,lon,updated_at,vessels_anchored,vessels_berthed,ais_recent_anchored_avg,ais_recent_berthed_avg,econdb_congestion,econdb_current_index,econdb_delay_pct,econdb_turnaround,econdb_updated_at,ais_anomaly_level')
     .order('port_code');
-  if(error){console.error(error);return[]}
+  if(error){console.error('fetchSnaps',error);return[];}
   return data||[];
 }
 async function fetchCPs(){
   const ago=new Date(Date.now()-8*864e5).toISOString().split('T')[0];
   const{data,error}=await sb.from('chokepoint_daily')
-    .select('portid,recorded_date,n_container')
-    .gte('recorded_date',ago)
+    .select('portid,recorded_date,n_container').gte('recorded_date',ago)
     .order('recorded_date',{ascending:false});
-  if(error){console.error(error);return[]}
+  if(error){console.error('fetchCPs',error);return[];}
   return data||[];
 }
 async function fetchRegionIndex(){
   const{data,error}=await sb.from('region_index').select('*').order('region');
-  if(error){console.error(error);return[]}
+  if(error){console.error('fetchRegionIndex',error);return[];}
+  return data||[];
+}
+async function fetchCPIndex(){
+  const{data,error}=await sb.from('chokepoint_index').select('*').order('chokepoint');
+  if(error){console.error('chokepoint_index',error);return[];}
+  return data||[];
+}
+async function fetchHzMacroLatest(){
+  const{data,error}=await sb.from('hormuz_macro_latest').select('*');
+  if(error){console.error('hormuz_macro_latest',error);return[];}
+  return data||[];
+}
+async function fetchHzTransitLatest(){
+  const{data,error}=await sb.from('hormuz_transit_daily').select('obs_date,inbound_cnt,outbound_cnt,total_cnt').order('obs_date',{ascending:false}).limit(1);
+  if(error){console.error('hormuz_transit_daily',error);return null;}
+  return(data||[])[0]||null;
+}
+async function fetchHzGulfLatest(){
+  const{data,error}=await sb.from('hormuz_gulf_count_daily').select('obs_date,ship_cnt').order('obs_date',{ascending:false}).limit(1);
+  if(error){console.error('hormuz_gulf_count_daily',error);return null;}
+  return(data||[])[0]||null;
+}
+async function fetchHzLog(){
+  const yesterday=new Date(Date.now()-864e5).toISOString().split('T')[0];
+  const{data,error}=await sb.from('hormuz_transit_log').select('direction,time_exit,time_enter,shipname,shiptype,dwt,country_name,operator_company').eq('obs_date',yesterday).order('time_exit',{ascending:false}).limit(100);
+  if(error){console.error('hormuz_transit_log',error);return[];}
+  return data||[];
+}
+async function fetchHzNews(){
+  const{data,error}=await sb.from('hormuz_news').select('id,title,source,url,news_time').order('news_time',{ascending:false}).limit(10);
+  if(error){console.error('hormuz_news',error);return[];}
+  return data||[];
+}
+async function fetchHzAiBrief(){
+  const{data,error}=await sb.from('hormuz_ai_brief').select('brief_date,body,source,caveat,source_url').order('brief_date',{ascending:false}).limit(1);
+  if(error){console.error('hormuz_ai_brief',error);return null;}
+  return(data||[])[0]||null;
+}
+async function fetchAnomalyFlags(){
+  try{
+    const{data,error}=await sb.from('anomaly_flags').select('target_code,target_name,source,severity,detail,detected_at').eq('acknowledged',false).order('detected_at',{ascending:false}).limit(5);
+    if(error)return[];
+    return data||[];
+  }catch{return[];}
+}
+async function fetchIntelNews(){
+  const{data,error}=await sb.from('hormuz_news').select('title,source,news_time,url').order('news_time',{ascending:false}).limit(5);
+  if(error)return[];
   return data||[];
 }
 
-/* ══════════════════════════════════════
-   SECTION 1 — 글로벌 요약
-══════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   §L  OVERVIEW RENDER — KPI ROW
+══════════════════════════════════════════════════════ */
+function renderKPI(ports){
+  const el=document.getElementById('kpi-row');
+  if(!el)return;
+  const valid=ports.filter(p=>calcMPCI(p)!==null);
+  // CI: MPCI 평균
+  const ciVals=valid.map(p=>calcMPCI(p));
+  const avgCI=ciVals.length?ciVals.reduce((a,b)=>a+b,0)/ciVals.length:null;
+  // Anchored vessels
+  const ancVals=ports.map(p=>p.ais_recent_anchored_avg??p.vessels_anchored??0).filter(v=>v>0);
+  const totalAnc=ancVals.length?ancVals.reduce((a,b)=>a+b,0):null;
+  // Avg wait (delay_pct * 0.05 days)
+  const dpVals=ports.map(p=>p.econdb_delay_pct).filter(v=>v!=null);
+  const avgWait=dpVals.length?(dpVals.reduce((a,b)=>a+b,0)/dpVals.length*0.05):null;
+  // High risk
+  const highRisk=ports.filter(p=>{const v=calcMPCI(p);return v!=null&&v>=60;}).length;
+
+  const kpis=[
+    {icon:'ti-activity',bg:'var(--danger-soft)',ic:'var(--danger)',lbl:t('kpi_ci'),
+      val:avgCI!=null?avgCI.toFixed(1):'—',unit:'/100',foot:t('kpi_vs_lw')},
+    {icon:'ti-anchor',bg:'var(--warning-soft)',ic:'var(--warning)',lbl:t('kpi_anc'),
+      val:totalAnc!=null?Math.round(totalAnc).toLocaleString():'—',unit:` ${t('kpi_ships')}`,foot:LANG==='ko'?'현재 대기 중':'currently waiting'},
+    {icon:'ti-clock',bg:'var(--orange-soft)',ic:'var(--orange)',lbl:t('kpi_wait'),
+      val:avgWait!=null?avgWait.toFixed(1):'—',unit:avgWait!=null?` ${t('kpi_days')}`:'',foot:t('kpi_vs_lw')},
+    {icon:'ti-alert-triangle',bg:'var(--danger-soft)',ic:'var(--danger)',lbl:t('kpi_hr'),
+      val:ports.length?String(highRisk):'—',unit:'',foot:`${t('kpi_ports')} (CI ≥ 60)`},
+    {icon:'ti-calendar-stats',bg:'var(--info-soft)',ic:'var(--info)',lbl:t('kpi_sr'),
+      val:t('kpi_soon'),unit:'',foot:'',placeholder:true}
+  ];
+  el.innerHTML=kpis.map(k=>`
+    <div class="kpi-card${k.placeholder?' kpi-placeholder':''}">
+      <div class="kpi-hdr">
+        <div class="kpi-icon" style="background:${k.bg}"><i class="ti ${k.icon}" style="color:${k.ic}"></i></div>
+        <span class="kpi-label">${k.lbl}</span>
+        <i class="ti ti-info-circle kpi-info"></i>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-value">${k.val}</span>
+        ${k.unit?`<span class="kpi-unit">${k.unit}</span>`:''}
+      </div>
+      ${k.foot?`<div class="kpi-foot">${k.foot}</div>`:''}
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   §M  OVERVIEW RENDER — WORLD MAP (D3)
+══════════════════════════════════════════════════════ */
+function markerColor(v){
+  if(v==null)return _isDark?'#475569':'#94a3b8';
+  if(v>=80)return _isDark?'#ef4444':'#dc2626';
+  if(v>=61)return'#f97316';
+  if(v>=31)return'#eab308';
+  return _isDark?'#22c55e':'#16a34a';
+}
+
+async function initMap(ports){
+  const container=document.getElementById('map-container');
+  if(!container)return;
+  if(!_worldData){
+    try{_worldData=await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(r=>r.json());}
+    catch(e){container.innerHTML='<div class="no-data">Map unavailable</div>';return;}
+  }
+  drawMap(container,ports);
+}
+
+function drawMap(container,ports){
+  container.innerHTML='';
+  const w=container.clientWidth||600,h=container.clientHeight||300;
+  const proj=d3.geoNaturalEarth1().scale(w/6.5).translate([w/2,h/2]);
+  const path=d3.geoPath().projection(proj);
+  const seaColor=_isDark?'#0a1929':'#dbeafe';
+  const landColor=_isDark?'#1a3333':'#f1f5f9';
+  const borderColor=_isDark?'#2a4a4a':'#cbd5e1';
+  const labelColor=_isDark?'#94a3b8':'#64748b';
+
+  const svg=d3.select(container).append('svg').attr('id','map-svg')
+    .style('position','absolute').style('inset','0').attr('width','100%').attr('height','100%')
+    .attr('viewBox',`0 0 ${w} ${h}`);
+
+  // 줌
+  const zoom=d3.zoom().scaleExtent([1,8]).on('zoom',ev=>{g.attr('transform',ev.transform);});
+  svg.call(zoom);
+  _mapSvg=svg;_mapProj=proj;_mapZoom=zoom;
+
+  const g=svg.append('g');
+  // 바다
+  g.append('rect').attr('width',w).attr('height',h).attr('fill',seaColor);
+  // 육지
+  const countries=topojson.feature(_worldData,_worldData.objects.countries);
+  g.selectAll('path.country').data(countries.features).join('path')
+    .attr('class','country').attr('d',path)
+    .attr('fill',landColor).attr('stroke',borderColor).attr('stroke-width',.5);
+
+  // 포트 마커
+  const validPorts=ports.filter(p=>p.lat&&p.lon);
+  const markerG=g.append('g').attr('class','markers');
+  validPorts.forEach(p=>{
+    const ci=calcMPCI(p);
+    const xy=proj([p.lon,p.lat]);
+    if(!xy)return;
+    const[x,y]=xy;
+    const color=markerColor(ci);
+    if(ci!=null&&ci>=61){
+      markerG.append('circle').attr('cx',x).attr('cy',y).attr('r',10)
+        .attr('fill',color).attr('opacity',0).attr('class','marker-pulse')
+        .style('animation-duration','2s');
+    }
+    const marker=markerG.append('circle').attr('cx',x).attr('cy',y).attr('r',ci!=null&&ci>=61?5:4)
+      .attr('fill',color).attr('stroke',seaColor).attr('stroke-width',1).attr('opacity',.9);
+    marker.append('title').text(`${p.port_name||p.port_code}: ${ci!=null?ci.toFixed(1):'—'}`);
+  });
+
+  // 라벨
+  const labelG=g.append('g').attr('class','labels');
+  LABEL_PORTS.forEach(p=>{
+    const xy=proj([p.lon,p.lat]);
+    if(!xy)return;
+    labelG.append('text').attr('x',xy[0]+5).attr('y',xy[1]-3)
+      .attr('font-size','9').attr('fill',labelColor)
+      .attr('font-family','Inter,sans-serif').attr('pointer-events','none').text(p.name);
+  });
+
+  // 줌 버튼
+  const ctrl=document.createElement('div');ctrl.className='map-controls';
+  ctrl.innerHTML='<button class="map-zoom-btn" onclick="mapZoom(1.4)">+</button><button class="map-zoom-btn" onclick="mapZoom(1/1.4)">−</button>';
+  container.appendChild(ctrl);
+}
+
+function redrawMap(){
+  const container=document.getElementById('map-container');
+  if(!container||!_worldData||!window._snaps)return;
+  drawMap(container,window._snaps);
+}
+window.mapZoom=function(factor){
+  if(_mapSvg&&_mapZoom){
+    _mapSvg.transition().duration(300).call(_mapZoom.scaleBy,factor);
+  }
+};
+
+/* ══════════════════════════════════════════════════════
+   §N  OVERVIEW RENDER — TOP PORTS TABLE
+══════════════════════════════════════════════════════ */
+function renderTopPorts(ports){
+  const el=document.querySelector('#top-ports-panel .top-ports-scroll');
+  const footEl=document.getElementById('tp-foot');
+  if(!el)return;
+  const sorted=ports.filter(p=>calcMPCI(p)!=null).sort((a,b)=>calcMPCI(b)-calcMPCI(a)).slice(0,10);
+  if(!sorted.length){el.innerHTML='<div class="no-data">'+t('cp_collecting')+'</div>';return;}
+  function riskBadge(v){
+    if(v>=80)return['Severe','var(--danger)','var(--danger-soft)'];
+    if(v>=61)return['High','var(--orange)','var(--orange-soft)'];
+    if(v>=31)return['Moderate','var(--warning)','var(--warning-soft)'];
+    return['Low','var(--success)','var(--success-soft)'];
+  }
+  const ciColor=v=>v>=80?'var(--danger)':v>=61?'var(--orange)':v>=31?'var(--warning)':'var(--success)';
+  el.innerHTML=`<table class="tp-table">
+    <thead><tr>
+      <th>#</th><th>${LANG==='ko'?'항만':'Port'}</th>
+      <th>${LANG==='ko'?'혼잡 지수':'Congestion'}</th>
+      <th>${LANG==='ko'?'위험도':'Risk'}</th>
+    </tr></thead>
+    <tbody>${sorted.map((p,i)=>{
+      const ci=calcMPCI(p);
+      const[rl,rc,rbg]=riskBadge(ci);
+      return`<tr>
+        <td class="tp-rank">${i+1}</td>
+        <td><div class="tp-name">${pn(p.port_code)}</div><div class="tp-ctry">${ctry(p.port_code)}</div></td>
+        <td><div class="tp-ci-wrap">
+          <span class="tp-ci-num" style="color:${ciColor(ci)}">${ci.toFixed(1)}</span>
+          <div class="tp-ci-bar"><div class="tp-ci-fill" style="width:${Math.min(100,ci)}%;background:${ciColor(ci)}"></div></div>
+        </div></td>
+        <td><span class="risk-badge" style="background:${rbg};color:${rc}">${rl}</span></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+  const total=ports.filter(p=>calcMPCI(p)!=null).length;
+  if(footEl)footEl.textContent=`Showing 1–${sorted.length} of ${total} ports`;
+}
+
+/* ══════════════════════════════════════════════════════
+   §O  OVERVIEW RENDER — REGIONAL CHART (Chart.js)
+══════════════════════════════════════════════════════ */
+function renderRegionalChart(ports){
+  const canvas=document.getElementById('regional-chart-canvas');
+  if(!canvas)return;
+  const C=THEME[_isDark?'dark':'light'];
+  const rmap={};
+  ports.forEach(p=>{
+    const r=p.region||reg(p.port_code);
+    if(!r||!REGS[r])return;
+    if(!rmap[r])rmap[r]=[];
+    rmap[r].push(calcMPCI(p));
+  });
+  const labels=[],data=[],colors=[];
+  Object.entries(REGS).forEach(([key,info])=>{
+    const vals=(rmap[key]||[]).filter(v=>v!=null);
+    if(!vals.length)return;
+    const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+    labels.push(LANG==='ko'?info.ko:info.en);
+    data.push(Math.round(avg*10)/10);
+    colors.push(avg>=80?C.danger:avg>=61?C.orange:avg>=31?C.warning:C.mint);
+  });
+  destroyChart('regional');
+  if(!data.length){canvas.style.display='none';return;}
+  canvas.style.display='';
+  const wrap=document.getElementById('regional-chart-wrap');
+  if(wrap){canvas.style.height=(wrap.clientHeight-10)+'px';}
+  _charts['regional']=new Chart(canvas,{
+    type:'bar',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:3,maxBarThickness:14}]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x.toFixed(1)}`}}},
+      scales:{
+        x:{min:0,max:100,grid:{color:C.gridLine},ticks:{color:C.muted,font:{size:9},maxTicksLimit:5}},
+        y:{grid:{display:false},ticks:{color:C.muted,font:{size:9}}}
+      }
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   §P  OVERVIEW RENDER — OPERATIONAL KPIs
+══════════════════════════════════════════════════════ */
+function renderOpKPIs(ports){
+  const el=document.getElementById('op-kpi-grid');
+  if(!el)return;
+  const totalV=ports.reduce((s,p)=>{
+    const a=p.ais_recent_anchored_avg??p.vessels_anchored??0;
+    const b=p.ais_recent_berthed_avg??p.vessels_berthed??0;
+    return s+a+b;
+  },0);
+  const avgTurn=()=>{
+    const v=ports.map(p=>p.econdb_turnaround).filter(v=>v!=null);
+    return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
+  };
+  const dwell=avgTurn();
+  const items=[
+    {lbl:t('ok_total_v'),val:totalV>0?Math.round(totalV).toLocaleString():'—',cls:''},
+    {lbl:t('ok_calls'),val:'—',cls:'op-placeholder'},
+    {lbl:t('ok_teu'),val:'—',cls:'op-placeholder'},
+    {lbl:t('ok_bunker'),val:'—',cls:'op-placeholder'},
+    {lbl:t('ok_dwell'),val:dwell!=null?dwell.toFixed(1)+' d':'—',cls:''},
+    {lbl:t('ok_ontime'),val:'—',cls:'op-placeholder'}
+  ];
+  el.innerHTML=items.map(it=>`<div class="op-mini ${it.cls}"><div class="op-lbl">${it.lbl}</div><div class="op-val">${it.val}</div></div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   §Q  OVERVIEW RENDER — REGIONAL MARITIME INDICES
+══════════════════════════════════════════════════════ */
+function renderRegionalMacro(rows){
+  const el=document.getElementById('rm-grid');
+  if(!el)return;
+  const map={};rows.forEach(r=>map[(r.index_type||'').toUpperCase()]=r);
+  const items=[
+    {key:'CTFI',lbl:'CTFI',sub:'Container Trade',real:true},
+    {key:'BDTI',lbl:'BDTI',sub:'Tanker Index',real:true},
+    {key:'BUNKER',lbl:'Bunker (VLSFO)',sub:'$/mt',real:false},
+    {key:'PROD',lbl:'Port Productivity',sub:'moves/hr',real:false}
+  ];
+  el.innerHTML=items.map(it=>{
+    if(!it.real){
+      return`<div class="rm-card rm-placeholder">
+        <div class="rm-lbl">${it.lbl}</div>
+        <div class="rm-val" style="color:var(--text-muted);font-size:13px">—</div>
+      </div>`;
+    }
+    const r=map[it.key];
+    if(!r){
+      return`<div class="rm-card">
+        <div class="rm-lbl">${it.lbl} <span class="src-badge-sm">ShipFinder</span></div>
+        <div class="rm-val" style="color:var(--text-muted)">—</div>
+      </div>`;
+    }
+    const chg=r.change_rate;
+    const chgHtml=chg?`<div class="rm-chg" style="color:${String(chg).startsWith('-')?'var(--danger)':'var(--success)'}">${chg}</div>`:'';
+    return`<div class="rm-card">
+      <div class="rm-lbl">${it.lbl} <span class="src-badge-sm">ShipFinder</span></div>
+      <div class="rm-val">${r.value!=null?r.value.toFixed(1):'—'}</div>
+      ${chgHtml}
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   §R  OVERVIEW RENDER — ALERTS
+══════════════════════════════════════════════════════ */
+function renderAlerts(flags){
+  const el=document.getElementById('alert-list');
+  if(!el)return;
+  // Badge
+  const badge=document.getElementById('alert-badge');
+  if(badge){
+    if(flags.length>0){badge.style.display='flex';badge.textContent=flags.length;}
+    else{badge.style.display='none';}
+  }
+  if(!flags.length){
+    el.innerHTML=`<div class="alert-empty">${t('al_none')}</div>`;
+    return;
+  }
+  const sevIcon=s=>s==='severe'?'⚠️':s==='medium'?'⚡':'ℹ️';
+  el.innerHTML=flags.map(f=>`<div class="alert-item">
+    <span class="alert-sev">${sevIcon(f.severity)}</span>
+    <div class="alert-body">
+      <div class="alert-tgt">${f.target_name||f.target_code||'—'}</div>
+      <div class="alert-detail">${f.detail||''}</div>
+    </div>
+    <span class="alert-time">${fmtAgo(f.detected_at)}</span>
+  </div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   §S  OVERVIEW RENDER — CRITICAL STRAITS (Bottom)
+══════════════════════════════════════════════════════ */
+function renderCriticalStraits(rows){
+  const el=document.getElementById('cs-wrap');
+  if(!el)return;
+  if(!rows||!rows.length){
+    el.innerHTML=`<div class="no-data">${t('cs_collecting')}</div>`;
+    return;
+  }
+  const ORDER=['Malacca','Suez','Hormuz','Panama','Turkish Straits','Cape of Good Hope'];
+  const map={};rows.forEach(r=>map[r.chokepoint]=r);
+  const sorted=ORDER.map(n=>map[n]).filter(Boolean).concat(rows.filter(r=>!ORDER.includes(r.chokepoint)));
+  const statusColor=s=>s==='severe'?'var(--danger)':s==='elevated'?'var(--orange)':'var(--success)';
+  const statusLabel=s=>s==='severe'?t('cp_status_severe'):s==='elevated'?t('cp_status_elevated'):t('cp_status_normal');
+  el.innerHTML=`<table class="cs-table">
+    <thead><tr>
+      <th>${t('cs_th_strait')}</th>
+      <th>${t('cs_th_pct')}</th>
+      <th>${t('cs_th_status')}</th>
+    </tr></thead>
+    <tbody>${sorted.map(r=>{
+      const pct=r.pct_of_normal;
+      const pctColor=pct!=null?(pct<60?'var(--danger)':pct<80?'var(--warning)':'var(--success)'):'var(--text-muted)';
+      return`<tr>
+        <td class="cs-name">${r.chokepoint}</td>
+        <td class="cs-pct" style="color:${pctColor}">${pct!=null?pct.toFixed(0)+'%':'—'}</td>
+        <td class="cs-status" style="color:${statusColor(r.status||'')}">${statusLabel(r.status||'unknown')}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   §T  OVERVIEW RENDER — INTELLIGENCE HIGHLIGHTS
+══════════════════════════════════════════════════════ */
+const INTEL_COLORS=['var(--mint)','var(--danger)','var(--info)','var(--warning)','var(--orange)'];
+function renderIntelligence(rows){
+  const el=document.getElementById('intel-list');
+  if(!el)return;
+  if(!rows||!rows.length){
+    el.innerHTML=`<div class="no-data" style="font-size:11px">Intelligence data will be connected soon.</div>`;
+    return;
+  }
+  el.innerHTML=rows.map((r,i)=>`<div class="intel-item">
+    <div class="intel-dot" style="background:${INTEL_COLORS[i%INTEL_COLORS.length]}"></div>
+    <div class="intel-body">
+      <div class="intel-title"><a href="${r.url||'#'}" target="_blank" rel="noopener noreferrer">${r.title||'—'}</a></div>
+      <div class="intel-time">${r.source||'ShipFinder'} · ${fmtAgo(r.news_time)}</div>
+    </div>
+  </div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   §U  PORTS TAB — 기존 렌더 함수들
+══════════════════════════════════════════════════════ */
 function renderS1(ports){
   const valid=ports.filter(p=>calcMPCI(p)!==null);
   const total=ports.length,wd=valid.length;
   const con=valid.filter(p=>getMPCILevel(calcMPCI(p))==='CONGESTED').length;
-
-  const latestPort=ports.filter(p=>p.econdb_updated_at||p.updated_at)
-    .sort((a,b)=>new Date(b.econdb_updated_at||b.updated_at)-new Date(a.econdb_updated_at||a.updated_at))[0];
+  const latestPort=ports.filter(p=>p.econdb_updated_at||p.updated_at).sort((a,b)=>new Date(b.econdb_updated_at||b.updated_at)-new Date(a.econdb_updated_at||a.updated_at))[0];
   const ts=latestPort?.econdb_updated_at||latestPort?.updated_at;
-  if(ts){
-    document.getElementById('last-upd').textContent=
-      (LANG==='ko'?'데이터 기준: ':'Data as of: ')+new Date(ts).toLocaleString(LANG==='ko'?'ko-KR':'en-US');
-  }
-
-  const rmap={};valid.forEach(p=>{
-    const r=p.region||reg(p.port_code)||'other';
-    if(!rmap[r])rmap[r]={t:0,c:0};
-    rmap[r].t++;
-    if(getMPCILevel(calcMPCI(p))==='CONGESTED')rmap[r].c++;
-  });
+  if(ts){const lu=document.getElementById('last-upd');if(lu)lu.textContent=(LANG==='ko'?'데이터 기준: ':'Data as of: ')+new Date(ts).toLocaleString(LANG==='ko'?'ko-KR':'en-US');}
+  const rmap={};valid.forEach(p=>{const r=p.region||reg(p.port_code)||'other';if(!rmap[r])rmap[r]={t:0,c:0};rmap[r].t++;if(getMPCILevel(calcMPCI(p))==='CONGESTED')rmap[r].c++;});
   const conRegs=Object.entries(rmap).filter(([,v])=>v.t>0&&v.c/v.t>=.5).map(([k])=>k);
-
   let summary;
-  if(LANG==='ko'){
-    if(!wd)summary='데이터를 받아오는 중입니다. 잠시 후 다시 확인해 주세요.';
-    else if(!conRegs.length&&con/Math.max(wd,1)<.2)summary='전반적으로 안정. 주의 항만 없음';
-    else if(conRegs.length)summary=`${conRegs.map(r=>(REGS[r]||{}).ko||r).join('·')} 항만 전반 혼잡. ETA +2~3일 예상`;
-    else summary=`전반 안정. ${con}개 항만 혼잡 모니터링 중`;
-  }else{
-    if(!wd)summary='Receiving data. Please check back shortly.';
-    else if(!conRegs.length&&con/Math.max(wd,1)<.2)summary='Overall stable. No major congestion alerts.';
-    else if(conRegs.length)summary=`${conRegs.map(r=>(REGS[r]||{}).en||r).join(' & ')} broadly congested. ETA +2–3 days expected.`;
-    else summary=`Overall stable. ${con} port(s) congested.`;
-  }
-
-  document.getElementById('sum-grid').innerHTML=
-    `<div class="sum-card">
-      <div class="sc-lbl">${t('sum_mon')}</div>
-      <div class="sc-val">${total}</div>
-      <div class="sc-sub">${LANG==='ko'?'개 항만 모니터링':'ports monitored'}</div>
-    </div>`+
-    `<div class="sum-card sc-data">
-      <div class="sc-lbl">${t('sum_data')}</div>
-      <div class="sc-val">${wd}<sup>/${total}</sup></div>
-      <div class="sc-sub">${LANG==='ko'?'개 항만 데이터 확보':'ports with data'}</div>
-    </div>`+
-    `<div class="sum-card sc-red">
-      <div class="sc-lbl">${t('sum_con')}</div>
-      <div class="sc-val">${con}</div>
-      <div class="sc-sub">${LANG==='ko'?`개 항만 (전체 ${Math.round(con/Math.max(wd,1)*100)}%)`:
-        `ports (${Math.round(con/Math.max(wd,1)*100)}% of tracked)`}</div>
-    </div>`+
-    `<div class="today-card">
-      <div class="tc-lbl">${t('sum_today')}</div>
-      <div class="tc-txt">"${summary}"</div>
-    </div>`;
+  if(LANG==='ko'){if(!wd)summary='데이터를 받아오는 중입니다.';else if(!conRegs.length&&con/Math.max(wd,1)<.2)summary='전반적으로 안정. 주의 항만 없음';else if(conRegs.length)summary=`${conRegs.map(r=>(REGS[r]||{}).ko||r).join('·')} 항만 전반 혼잡. ETA +2~3일 예상`;else summary=`전반 안정. ${con}개 항만 혼잡 모니터링 중`;}
+  else{if(!wd)summary='Receiving data.';else if(!conRegs.length&&con/Math.max(wd,1)<.2)summary='Overall stable. No major alerts.';else if(conRegs.length)summary=`${conRegs.map(r=>(REGS[r]||{}).en||r).join(' & ')} congested.`;else summary=`Overall stable. ${con} port(s) congested.`;}
+  const sg=document.getElementById('sum-grid');if(!sg)return;
+  sg.innerHTML=`<div class="sum-card"><div class="sc-lbl">${t('sum_mon')}</div><div class="sc-val">${total}</div><div class="sc-sub">${LANG==='ko'?'개 항만 모니터링':'ports monitored'}</div></div>`+
+    `<div class="sum-card sc-data"><div class="sc-lbl">${t('sum_data')}</div><div class="sc-val">${wd}<sup>/${total}</sup></div><div class="sc-sub">${LANG==='ko'?'개 항만 데이터 확보':'ports with data'}</div></div>`+
+    `<div class="sum-card sc-red"><div class="sc-lbl">${t('sum_con')}</div><div class="sc-val">${con}</div><div class="sc-sub">${LANG==='ko'?`개 항만 (전체 ${Math.round(con/Math.max(wd,1)*100)}%)`:` ports (${Math.round(con/Math.max(wd,1)*100)}% of tracked)`}</div></div>`+
+    `<div class="today-card"><div class="tc-lbl">${t('sum_today')}</div><div class="tc-txt">"${summary}"</div></div>`;
 }
 
-/* ══════════════════════════════════════
-   SECTION 2 — 권역별 혼잡도
-══════════════════════════════════════ */
 function renderS2(ports){
   const rmap={};
-  ports.forEach(p=>{
-    const r=p.region||reg(p.port_code);
-    if(!r)return;
-    if(!rmap[r])rmap[r]=[];
-    rmap[r].push(p);
-  });
-
-  document.getElementById('region-grid').innerHTML=Object.entries(REGS).map(([key,info])=>{
-    const rp=rmap[key]||[];
-    const rname=LANG==='ko'?info.ko:info.en;
-    const vp=rp.filter(p=>calcMPCI(p)!==null);
-
-    if(!vp.length){
-      return`<div class="rc lN">
-        <div class="rc-hdr">
-          <span class="rc-name">${rname}</span>
-          <span class="badge bN">${t('lv_N')}</span>
-        </div>
-        <div class="rc-nodata">
-          <div class="nd-ico">📡</div>
-          <div class="nd-msg">${LANG==='ko'?'데이터를 받아오는 중...':'Receiving data...'}</div>
-          <div class="nd-sub">${LANG==='ko'?`0 / ${rp.length}개 항만`:`0 / ${rp.length} ports`}</div>
-        </div>
-      </div>`;
-    }
-
-    const avg=vp.reduce((s,p)=>s+calcMPCI(p),0)/vp.length;
-    const lv=lvlCode(avg);
+  ports.forEach(p=>{const r=p.region||reg(p.port_code);if(!r)return;if(!rmap[r])rmap[r]=[];rmap[r].push(p);});
+  const el=document.getElementById('region-grid');if(!el)return;
+  el.innerHTML=Object.entries(REGS).map(([key,info])=>{
+    const rp=rmap[key]||[];const rname=LANG==='ko'?info.ko:info.en;const vp=rp.filter(p=>calcMPCI(p)!==null);
+    if(!vp.length)return`<div class="rc lN"><div class="rc-hdr"><span class="rc-name">${rname}</span><span class="badge bN">${t('lv_N')}</span></div><div class="rc-nodata"><div class="nd-ico">📡</div><div class="nd-msg">${LANG==='ko'?'데이터를 받아오는 중...':'Receiving data...'}</div><div class="nd-sub">${LANG==='ko'?`0 / ${rp.length}개 항만`:`0 / ${rp.length} ports`}</div></div></div>`;
+    const avg=vp.reduce((s,p)=>s+calcMPCI(p),0)/vp.length;const lv=lvlCode(avg);
     const con=vp.filter(p=>getMPCILevel(calcMPCI(p))==='CONGESTED').length;
     const bus=vp.filter(p=>getMPCILevel(calcMPCI(p))==='BUSY').length;
     const avgTurn=vp.reduce((s,p)=>s+(p.econdb_turnaround||0),0)/vp.length;
     const avgDly=vp.reduce((s,p)=>s+(p.econdb_delay_pct||0),0)/vp.length;
     const tstr=avgTurn>=1?`${avgTurn.toFixed(1)}${LANG==='ko'?'일':' d'}`:`${Math.round(avgTurn*24)}${LANG==='ko'?'h':'h'}`;
-
-    return`<div class="rc l${lv}">
-      <div class="rc-hdr">
-        <span class="rc-name">${rname}</span>
-        <span class="badge b${lv}">${lvlLabel(avg)}</span>
-      </div>
-      <div class="rc-score s${lv}">${avg.toFixed(1)}</div>
-      <div class="rc-score-lbl">${t('idx_lbl')} · ${vp.length}/${rp.length}${LANG==='ko'?'개':''}</div>
+    return`<div class="rc l${lv}"><div class="rc-hdr"><span class="rc-name">${rname}</span><span class="badge b${lv}">${lvlLabel(avg)}</span></div>
+      <div class="rc-score s${lv}">${avg.toFixed(1)}</div><div class="rc-score-lbl">${t('idx_lbl')} · ${vp.length}/${rp.length}${LANG==='ko'?'개':''}</div>
       <div class="prog-wrap"><div class="prog-fill f${lv}" style="width:${Math.min(100,avg)}%"></div></div>
-      <div class="rc-stats">
-        <div class="rc-stat">
-          <div class="rs-lbl">${LANG==='ko'?'혼잡/주의':'Cong/Busy'}</div>
-          <div class="rs-val">🔴${con} 🟠${bus}</div>
-        </div>
-        <div class="rc-stat">
-          <div class="rs-lbl">${t('avg_wait')}</div>
-          <div class="rs-val">${tstr}</div>
-        </div>
-        <div class="rc-stat">
-          <div class="rs-lbl">${LANG==='ko'?'평균 지연율':'Avg delay'}</div>
-          <div class="rs-val">${Math.round(avgDly)}%</div>
-        </div>
-        <div class="rc-stat">
-          <div class="rs-lbl">${LANG==='ko'?'데이터 항만':'Data ports'}</div>
-          <div class="rs-val">${vp.length} / ${rp.length}</div>
-        </div>
-      </div>
-    </div>`;
+      <div class="rc-stats"><div class="rc-stat"><div class="rs-lbl">${LANG==='ko'?'혼잡/주의':'Cong/Busy'}</div><div class="rs-val">🔴${con} 🟠${bus}</div></div>
+      <div class="rc-stat"><div class="rs-lbl">${t('avg_wait')}</div><div class="rs-val">${tstr}</div></div>
+      <div class="rc-stat"><div class="rs-lbl">${LANG==='ko'?'평균 지연율':'Avg delay'}</div><div class="rs-val">${Math.round(avgDly)}%</div></div>
+      <div class="rc-stat"><div class="rs-lbl">${LANG==='ko'?'데이터 항만':'Data ports'}</div><div class="rs-val">${vp.length} / ${rp.length}</div></div>
+      </div></div>`;
   }).join('');
 }
 
-/* ══════════════════════════════════════
-   SECTION RA — 권역 해운 지표
-══════════════════════════════════════ */
 function renderRegionAnalytics(rows){
-  const el=document.getElementById('ra-grid');
-  if(!el)return;
-  if(!rows||!rows.length){
-    el.innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div>${LANG==='ko'?'권역 데이터를 받아오는 중...':'Receiving regional data...'}</div>`;
-    return;
-  }
+  const el=document.getElementById('ra-grid');if(!el)return;
+  if(!rows||!rows.length){el.innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div>${LANG==='ko'?'권역 데이터를 받아오는 중...':'Receiving regional data...'}</div>`;return;}
   const fpColor={building:'var(--orange)',neutral:'var(--muted2)',easing:'var(--green)'};
   const fpBg={building:'var(--orange-d)',neutral:'rgba(100,116,139,.1)',easing:'var(--green-d)'};
   const drColor={elevated:'var(--red)',moderate:'var(--orange)',low:'var(--green)'};
   const drBg={elevated:'var(--red-d)',moderate:'var(--orange-d)',low:'var(--green-d)'};
   const fmt1=v=>v!=null?v.toFixed(1):'--';
   const fmtSign=v=>v!=null?(v>=0?'+':'')+v.toFixed(1):'--';
-
   el.innerHTML=rows.map((r,i)=>{
-    const ci=r.congestion_index;
-    const ciPct=ci!=null?Math.min(100,Math.max(0,ci)):0;
+    const ci=r.congestion_index;const ciPct=ci!=null?Math.min(100,Math.max(0,ci)):0;
     const ciColor=ci>=75?'var(--red)':ci>=50?'var(--orange)':ci>=25?'var(--yellow)':'var(--green)';
-    const fp=r.freight_pressure||'neutral';
-    const dr=r.delay_risk||'low';
+    const fp=r.freight_pressure||'neutral';const dr=r.delay_risk||'low';
     const fpLabel={building:t('fp_building'),neutral:t('fp_neutral'),easing:t('fp_easing')}[fp]||fp;
     const drLabel={elevated:t('dr_elevated'),moderate:t('dr_moderate'),low:t('dr_low')}[dr]||dr;
     const narrative=LANG==='ko'?(r.narrative_ko||''):(r.narrative_en||'');
-    const delay=`.${Math.min(i,8)*5+5}s`;
     const trend=r.congestion_trend_pct;
-
-    return`<div class="ra-card" style="animation-delay:${delay}">
-      <div class="ra-hdr">
-        <div class="ra-name">${r.region}</div>
-        <div class="ra-badges">
-          <span class="badge" style="background:${fpBg[fp]};color:${fpColor[fp]}">${fpLabel}</span>
-          <span class="badge" style="background:${drBg[dr]};color:${drColor[dr]}">${drLabel}</span>
-        </div>
-      </div>
-      <div style="font-size:10px;color:var(--muted);font-family:var(--ff-mono);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">
-        ${t('lbl_ci')}${trend!=null?` <span style="color:${trend>=0?'var(--orange)':'var(--green)'}">${fmtSign(trend)}%</span>`:''}
-      </div>
-      <div class="ci-bar-wrap">
-        <div class="ci-bar-track"><div class="ci-bar-fill" style="width:${ciPct}%;background:${ciColor}"></div></div>
-        <div class="ci-num" style="color:${ciColor}">${ci!=null?Math.round(ci):'--'}</div>
-      </div>
+    return`<div class="ra-card">
+      <div class="ra-hdr"><div class="ra-name">${r.region}</div>
+      <div class="ra-badges"><span class="badge" style="background:${fpBg[fp]};color:${fpColor[fp]}">${fpLabel}</span><span class="badge" style="background:${drBg[dr]};color:${drColor[dr]}">${drLabel}</span></div></div>
+      <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">${t('lbl_ci')}${trend!=null?` <span style="color:${trend>=0?'var(--orange)':'var(--green)'}">${fmtSign(trend)}%</span>`:''}</div>
+      <div class="ci-bar-wrap"><div class="ci-bar-track"><div class="ci-bar-fill" style="width:${ciPct}%;background:${ciColor}"></div></div><div class="ci-num" style="color:${ciColor}">${fmt1(ci)}</div></div>
       <div class="ra-metrics">
-        <div class="ra-metric">
-          <div class="rm-lbl">${t('lbl_blank')}</div>
-          <div class="rm-val">${fmt1(r.blank_sailing_pct)}%
-            ${r.blank_sailing_trend_pp!=null?`<span style="font-size:11px;color:var(--muted)">${fmtSign(r.blank_sailing_trend_pp)}pp</span>`:''}
-          </div>
-        </div>
-        <div class="ra-metric">
-          <div class="rm-lbl">${t('lbl_fwd')}</div>
-          <div class="rm-val">${fmt1(r.blank_sailing_fwd_pct)}%</div>
-        </div>
-        <div class="ra-metric">
-          <div class="rm-lbl">${t('lbl_yoy')}</div>
-          <div class="rm-val" style="color:${r.schedule_yoy_pct>=0?'var(--green)':'var(--orange)'}">
-            ${r.schedule_yoy_pct!=null?(r.schedule_yoy_pct>=0?'+':'')+r.schedule_yoy_pct.toFixed(1)+'%':'--'}
-          </div>
-        </div>
+        <div class="ra-metric"><div class="rm-lbl-p">${t('lbl_blank')}</div><div class="rm-val-p">${fmt1(r.blank_sailing_pct)}%</div></div>
+        <div class="ra-metric"><div class="rm-lbl-p">${t('lbl_yoy')}</div><div class="rm-val-p">${fmtSign(r.berth_occupancy_yoy)}%</div></div>
+        <div class="ra-metric"><div class="rm-lbl-p">${t('lbl_fwd')}</div><div class="rm-val-p">${r.forward_outlook||'—'}</div></div>
       </div>
-      ${narrative?`<div class="ra-narrative">${narrative}</div>`:''}
-      ${r.data_week?`<div class="ra-week">${LANG==='ko'?'기준주':'Week'}: ${r.data_week}</div>`:''}
+      ${narrative?`<div class="ra-narrative">${narrative}<div class="ra-week">${r.reference_week||''}</div></div>`:''}
     </div>`;
   }).join('');
 }
 
-/* ══════════════════════════════════════
-   SECTION 3 — TOP 5
-══════════════════════════════════════ */
 function renderS3(ports){
-  const top=ports.filter(p=>calcMPCI(p)!==null)
-    .sort((a,b)=>calcMPCI(b)-calcMPCI(a)).slice(0,5);
-
-  if(!top.length){
-    document.getElementById('t5-body').innerHTML=
-      `<tr><td colspan="7"><div class="loading"><div class="spin"></div>${LANG==='ko'?'데이터를 받아오는 중...':'Receiving data...'}</div></td></tr>`;
-    return;
-  }
-
-  document.getElementById('t5-body').innerHTML=top.map(p=>{
-    const mpci=calcMPCI(p),lv=lvlCode(mpci);
-    const col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)',N:'var(--muted)'}[lv];
-    const turn=p.econdb_turnaround!=null?`${p.econdb_turnaround.toFixed(1)}${LANG==='ko'?'일':' d'}`:'--';
-    const delay=p.econdb_delay_pct!=null?`${Math.round(p.econdb_delay_pct)}%`:'--';
-    const anc=p.vessels_anchored!=null?`${p.vessels_anchored}${LANG==='ko'?'척':''}`:'--';
+  const tb=document.getElementById('t5-body');if(!tb)return;
+  const top=ports.filter(p=>calcMPCI(p)!==null).sort((a,b)=>calcMPCI(b)-calcMPCI(a)).slice(0,5);
+  if(!top.length){tb.innerHTML=`<tr><td colspan="7"><div class="no-data">${LANG==='ko'?'데이터를 받아오는 중...':'Receiving data...'}</div></td></tr>`;return;}
+  tb.innerHTML=top.map(p=>{
+    const mpci=calcMPCI(p);const lv=lvlCode(mpci);
+    const turn=p.econdb_turnaround!=null?p.econdb_turnaround.toFixed(1)+' d':'—';
+    const dly=p.econdb_delay_pct!=null?Math.round(p.econdb_delay_pct)+'%':'—';
+    const anc=p.ais_recent_anchored_avg??p.vessels_anchored;const ancStr=anc!=null?Math.round(anc)+'척':'—';
     return`<tr onclick="pickPort('${p.port_code}')">
-      <td>
-        <div class="port-cell">
-          <span class="port-name">${pn(p.port_code)}${staleTag(p.econdb_updated_at)}</span>
-          <span class="port-code">${p.port_code}</span>
-        </div>
-      </td>
+      <td><div class="port-cell"><div class="port-name">${pn(p.port_code)}</div><div class="port-code">${p.port_code}${staleTag(p.econdb_updated_at)}</div></div></td>
       <td style="color:var(--muted2)">${ctry(p.port_code)}</td>
-      <td><span class="score-num" style="color:${col}">${mpci!=null?mpci.toFixed(1):'--'}</span></td>
-      <td style="color:var(--muted2)">${turn}</td>
-      <td style="color:var(--muted2)">${delay}</td>
-      <td style="color:var(--muted2)">${anc}</td>
+      <td><span class="score-num s${lv}">${mpci.toFixed(1)}</span></td>
+      <td style="font-size:12px">${turn}</td><td style="font-size:12px">${dly}</td>
+      <td style="font-size:12px">${ancStr}</td>
       <td><span class="badge b${lv}">${lvlLabel(mpci)}</span></td>
     </tr>`;
   }).join('');
 }
 
-/* ══════════════════════════════════════
-   SECTION 4 — 조기 경보
-══════════════════════════════════════ */
 function renderS4(){
-  document.getElementById('ew-box').innerHTML=
-    `<div class="coming-soon">
-      <div class="cs-ico">📡</div>
-      <div class="cs-title">${LANG==='ko'?'조기 경보 준비 중':'Early Warning Coming Soon'}</div>
-      <div class="cs-msg">${t('s4_coming')}</div>
-    </div>`;
+  const el=document.getElementById('ew-box');if(!el)return;
+  el.innerHTML=`<div class="no-data" style="text-align:left;padding:0;font-size:13px;color:var(--muted2)">${t('s4_coming')}</div>`;
 }
 
-/* ══════════════════════════════════════
-   SECTION 5 — 해협
-══════════════════════════════════════ */
-function renderS5(raw){
-  const pmap={};raw.forEach(r=>{if(!pmap[r.portid])pmap[r.portid]=[];pmap[r.portid].push(r)});
-  const defs=[
-    {id:"SUEZCANALOUTH",nk:"수에즈 운하",ne:"Suez Canal",dk:"cp_suez"},
-    {id:"PANAMACANALS",nk:"파나마 운하",ne:"Panama Canal",dk:"cp_pan"},
-    {id:"MALACCASTRAIT",nk:"말라카 해협",ne:"Malacca Strait",dk:"cp_mal"}
-  ];
-  document.getElementById('cp-grid').innerHTML=defs.map(def=>{
-    const nm=LANG==='ko'?def.nk:def.ne;
-    const desc=t(def.dk).split('\n');
-    const recs=(pmap[def.id]||[]).sort((a,b)=>b.recorded_date.localeCompare(a.recorded_date));
+/* ══════════════════════════════════════════════════════
+   §V  STRAITS TAB — 기존 chokepoint 렌더 함수들
+══════════════════════════════════════════════════════ */
+function cpStatusBadge(status){
+  const map={normal:{cls:'bL',key:'cp_status_normal'},elevated:{cls:'bB',key:'cp_status_elevated'},severe:{cls:'bC',key:'cp_status_severe'},unknown:{cls:'bN',key:'cp_status_unknown'}};
+  const m=map[status]||map.unknown;return`<span class="badge ${m.cls}">${t(m.key)}</span>`;
+}
+function cpPctColor(pct){if(pct==null)return'var(--muted)';if(pct<60)return'var(--red)';if(pct<80)return'var(--orange)';return'var(--green)';}
 
-    if(!recs.length){
-      return`<div class="cp-card">
-        <div class="cp-name">${nm}</div>
-        <div class="cp-desc">${desc[0]}</div>
-        <div class="cp-vals">
-          <div><div class="cp-val-lbl">${t('today_s')}</div><div class="cp-val-num" style="color:var(--muted)">--</div></div>
-          <div><div class="cp-val-lbl">${t('avg7')}</div><div class="cp-val-num" style="color:var(--muted)">--</div></div>
-        </div>
-        <div class="cp-divider"></div>
-        <div class="cp-status">${collectingBadge()}</div>
-        <div class="cp-note">${desc[1]||''}</div>
-      </div>`;
-    }
-
-    const today=recs[0];
-    const last7=recs.slice(0,7);
-    const avg7=last7.reduce((s,r)=>s+(r.n_container||0),0)/last7.length;
-    const ratio=avg7>0?(today.n_container||0)/avg7:null;
-    const status=ratio===null?t('cp_ok'):ratio<.4?t('cp_alert'):ratio<.6?t('cp_caut'):t('cp_ok');
-    const col=ratio===null?'var(--text)':ratio<.4?'var(--red)':ratio<.6?'var(--orange)':'var(--green)';
-
-    return`<div class="cp-card">
-      <div class="cp-name">${nm}</div>
-      <div class="cp-desc">${desc[0]}</div>
-      <div class="cp-vals">
-        <div><div class="cp-val-lbl">${t('today_s')}</div><div class="cp-val-num" style="color:${col}">${(today.n_container||0).toLocaleString()}</div></div>
-        <div><div class="cp-val-lbl">${t('avg7')}</div><div class="cp-val-num" style="color:var(--muted2)">${Math.round(avg7).toLocaleString()}</div></div>
-      </div>
-      <div class="cp-divider"></div>
-      <div class="cp-status">${status}</div>
-      <div class="cp-note">${desc[1]||''}</div>
-    </div>`;
+function renderCPIndex(rows){
+  const el=document.getElementById('cpi-grid');if(!el)return;
+  if(!rows||!rows.length){el.innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div>${LANG==='ko'?'수집 중...':'Collecting...'}</div>`;return;}
+  el.innerHTML=rows.map(r=>{
+    const pct=r.pct_of_normal;const col=cpPctColor(pct);const pctFill=pct!=null?Math.min(100,Math.max(0,pct)):0;
+    const trend=r.trend_pct;const trendStr=trend!=null?`<span class="cpi-trend" style="color:${trend>=0?'var(--orange)':'var(--green)'}">${trend>=0?'▲':'▼'}${Math.abs(trend).toFixed(1)}%</span>`:'';
+    const narrative=LANG==='ko'?(r.narrative_ko||''):(r.narrative_en||'');
+    const teu=r.teu_total!=null?Math.round(r.teu_total).toLocaleString():'--';
+    const dirA=r.dir_a_code||'N';const dirB=r.dir_b_code||'S';
+    const teuA=r.teu_dir_a!=null?Math.round(r.teu_dir_a).toLocaleString():(r.teu_north!=null?Math.round(r.teu_north).toLocaleString():'--');
+    const teuB=r.teu_dir_b!=null?Math.round(r.teu_dir_b).toLocaleString():(r.teu_south!=null?Math.round(r.teu_south).toLocaleString():'--');
+    let waterBlock='';
+    if(r.water_level!=null){const draft=r.draft_status==='low'?`<span style="color:var(--orange)">${t('cp_draft_low')}</span>`:`<span style="color:var(--green)">${t('cp_draft_normal')}</span>`;waterBlock=`<div class="cpi-water"><strong>${t('cp_water_lbl')}</strong>: ${r.water_level.toFixed(2)} m (avg ${r.water_level_avg!=null?r.water_level_avg.toFixed(2):'--'} m) — ${draft}</div>`;}
+    return`<div class="cpi-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px;gap:8px"><div class="cpi-name">${r.chokepoint}</div>${cpStatusBadge(r.status||'unknown')}</div>
+      <div class="cpi-week">${r.data_week?`${LANG==='ko'?'기준주':'Week'}: ${r.data_week}`:collectingBadge()}</div>
+      <div class="cpi-teu" style="color:${col}">${teu}</div>
+      <div class="cpi-dirs">${dirA} ${teuA} TEU &nbsp;/&nbsp; ${dirB} ${teuB} TEU</div>
+      <div class="cpi-pct-lbl">${t('cp_pct_of_normal')}</div>
+      <div class="cpi-pct-bar-wrap"><div class="cpi-pct-fill" style="width:${pctFill}%;background:${col}"></div></div>
+      <div class="cpi-pct-row"><span class="cpi-pct-num" style="color:${col}">${pct!=null?pct.toFixed(1)+'%':t('cp_collecting')}</span>${trendStr}</div>
+      ${narrative?`<div class="cpi-narrative">${narrative}</div>`:''}${waterBlock}</div>`;
   }).join('');
 }
 
-/* ══════════════════════════════════════
-   SECTION 6 — ETA Form
-══════════════════════════════════════ */
-function buildEtaForm(ports){
-  const os=document.getElementById('e-origin');
-  os.innerHTML=`<option value="">-- ${LANG==='ko'?'항만 선택':'Select Port'} --</option>`+
-    ORIGIN_PORTS.map(o=>`<option value="${o.code}">${LANG==='ko'?o.ko:o.en}</option>`).join('');
-  const ps=document.getElementById('e-port');
-  ps.innerHTML=`<option value="">-- ${LANG==='ko'?'항만 선택':'Select Port'} --</option>`+
-    ports.map(p=>`<option value="${p.port_code}">${pn(p.port_code)} (${p.port_code})</option>`).join('');
-  document.getElementById('e-etd').value=new Date().toISOString().split('T')[0];
-  os.onchange=()=>updateDist();
-  ps.onchange=()=>{updateHint(ports);updateDist()};
-  document.getElementById('e-btn').onclick=runEta;
+function renderHzMacro(rows){
+  const el=document.getElementById('hz-macro-grid');if(!el)return;
+  if(!rows||!rows.length){el.innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>`;return;}
+  const ORDER=['WTI','BRENT','BDTI','CTFI'];const map={};rows.forEach(r=>map[(r.index_type||'').toUpperCase()]=r);
+  el.innerHTML=ORDER.map(k=>{
+    const r=map[k];if(!r)return`<div class="macro-card"><div class="mc-type">${k}</div><div class="mc-val" style="color:var(--muted)">--</div></div>`;
+    const chg=r.change_rate;const chgStr=chg?`<span class="mc-chg" style="color:${String(chg).startsWith('-')?'var(--red)':'var(--green)'}">${chg}</span>`:'';
+    const unit=k==='BDTI'||k==='CTFI'?'pts':'$/bbl';
+    return`<div class="macro-card"><div class="mc-type">${k} <span style="color:var(--muted);font-size:9px">${unit}</span></div><div class="mc-val">${r.value!=null?r.value.toFixed(1):'--'}</div>${chgStr}<div class="mc-date">${r.data_date||''}</div></div>`;
+  }).join('');
 }
 
-function updateHint(ports){
-  const code=document.getElementById('e-port').value;
-  const hint=document.getElementById('port-hint');
-  if(!code){hint.innerHTML='';return}
-  const p=ports.find(x=>x.port_code===code);
-  if(!p){hint.innerHTML='';return}
-  const mpci=calcMPCI(p);
-  if(mpci===null){hint.innerHTML=collectingBadge();return}
-  const lv=lvlCode(mpci);
-  const col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)'}[lv];
-  hint.innerHTML=`<span style="color:${col}">${lvlLabel(mpci)}</span>${staleTag(p.econdb_updated_at)} <span style="color:var(--muted)">— ${mpci.toFixed(1)}</span>`;
+function renderHzStats(gulf,transit){
+  const el=document.getElementById('hz-stats-2col');if(!el)return;
+  const gulfCnt=gulf?.ship_cnt!=null?gulf.ship_cnt.toLocaleString():'--';
+  const gulfDate=gulf?.obs_date||'';
+  const inCnt=transit?.inbound_cnt!=null?transit.inbound_cnt.toLocaleString():'--';
+  const outCnt=transit?.outbound_cnt!=null?transit.outbound_cnt.toLocaleString():'--';
+  const totCnt=transit?.total_cnt!=null?transit.total_cnt.toLocaleString():'--';
+  const trDate=transit?.obs_date||'';
+  el.innerHTML=`<div class="stat-box"><div class="stat-lbl">${t('hz_gulf_lbl')} <span class="src-badge">ShipFinder</span></div><div class="stat-val">${gulfCnt}</div><div class="stat-sub">${LANG==='ko'?'척':'ships'} · ${gulfDate}</div></div>
+    <div class="stat-box"><div class="stat-lbl">${t('hz_transit_lbl')} <span class="src-badge">ShipFinder</span></div><div class="stat-val">${totCnt}</div><div class="stat-sub">${trDate}</div>
+    <div class="transit-dir"><span class="transit-dir-item dir-in">${t('hz_in')} ${inCnt}</span><span class="transit-dir-item dir-out">${t('hz_out')} ${outCnt}</span></div></div>`;
 }
 
-function updateDist(){
-  const orig=document.getElementById('e-origin').value;
-  const dest=document.getElementById('e-port').value;
-  const ni=document.getElementById('e-nm');
-  const na=document.getElementById('nm-auto');
-  if(!orig||!dest){ni.style.display='none';ni.value='';na.style.display='none';return}
-  if(orig==='custom'){na.style.display='none';ni.style.display='block';ni.placeholder=LANG==='ko'?'직접 입력 (해리, nm)':'Enter distance (nm)';ni.value='';return}
-  const dist=DISTANCE_TABLE[orig+'-'+dest];
-  if(dist!==undefined){
-    ni.style.display='none';ni.value=dist;
-    na.style.display='block';
-    na.innerHTML=`🗺️ <strong style="color:var(--mint)">${dist.toLocaleString()} nm</strong> <span style="color:var(--muted);font-size:12px">${LANG==='ko'?'(자동 계산)':'(auto-calculated)'}</span>`;
-  }else{
-    na.style.display='none';ni.style.display='block';ni.value='';
-    ni.placeholder=LANG==='ko'?'해당 구간 거리 정보가 없습니다. 직접 입력해주세요 (nm)':'No route data. Please enter distance (nm)';
-  }
+function renderHzLog(rows){
+  const el=document.getElementById('hz-log-body');if(!el)return;
+  if(!rows||!rows.length){el.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:18px">${t('cp_collecting')}</td></tr>`;return;}
+  el.innerHTML=rows.map(r=>{
+    const dir=r.direction==='in'?`<span class="dir-in">IN ▶</span>`:`<span class="dir-out">◀ OUT</span>`;
+    const ts=r.time_exit?new Date(r.time_exit).toLocaleTimeString(LANG==='ko'?'ko-KR':'en-US',{hour:'2-digit',minute:'2-digit'}):'--';
+    const dwt=r.dwt!=null?Math.round(r.dwt).toLocaleString():'--';
+    return`<tr><td>${dir}</td><td style="font-size:11px;color:var(--muted2)">${ts}</td><td style="font-weight:600">${r.shipname||'--'}</td><td style="color:var(--muted2)">${r.shiptype||'--'}</td><td style="font-size:11px;color:var(--muted2)">${dwt}</td><td style="color:var(--muted2)">${r.country_name||'--'}</td><td style="color:var(--muted2);font-size:11px">${r.operator_company||'--'}</td></tr>`;
+  }).join('');
 }
 
-function pickPort(code){
-  const s=document.getElementById('e-port');
-  s.value=code;s.dispatchEvent(new Event('change'));
-  document.getElementById('sec6').scrollIntoView({behavior:'smooth',block:'start'});
+function renderHzNews(rows){
+  const el=document.getElementById('hz-news-list');if(!el)return;
+  if(!rows||!rows.length){el.innerHTML=`<div class="no-data">${t('hz_no_news')}</div>`;return;}
+  el.innerHTML=rows.map(r=>{
+    const ts=r.news_time?new Date(r.news_time).toLocaleDateString(LANG==='ko'?'ko-KR':'en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    return`<div class="news-item"><div class="news-title"><a href="${r.url||'#'}" target="_blank" rel="noopener noreferrer">${r.title||'--'}</a></div><div class="news-meta">${t('hz_news_src')}: ${r.source||'ShipFinder'} · ${ts}</div></div>`;
+  }).join('');
 }
 
-async function runEta(){
-  const code=document.getElementById('e-port').value;
-  const etd=document.getElementById('e-etd').value;
-  const nm=parseFloat(document.getElementById('e-nm').value);
-  if(!code||!etd||!nm||isNaN(nm)){
-    alert(LANG==='ko'?'출발항, 도착항, 출발일, 거리를 모두 입력해주세요.':'Please fill in all fields.');return;
-  }
-  const btn=document.getElementById('e-btn');
-  btn.disabled=true;btn.textContent=LANG==='ko'?'계산 중...':'Calculating...';
-  document.getElementById('eta-ph').innerHTML=`<div class="loading"><div class="spin"></div>${LANG==='ko'?'분석 중...':'Analyzing...'}</div>`;
-  document.getElementById('eta-ph').style.display='flex';
-  document.getElementById('eta-rc').style.display='none';
-  document.getElementById('eta-result').style.justifyContent='center';
-  try{
-    const res=await fetch(`${CFG.API_URL}/eta/calculate`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({port_code:code,carrier:null,etd,distance_nm:nm,v_design:20,bn:4,heading_deg:90})
-    });
-    if(!res.ok)throw new Error('api-err');
-    showResult(await res.json(),code,false);
-  }catch(e){showFallback(code,etd,nm)}
-  finally{btn.disabled=false;btn.textContent=t('ef_btn')}
+function renderHzAiBrief(row){
+  const el=document.getElementById('hz-ai-brief');if(!el)return;
+  if(!row||!row.body){el.innerHTML=`<div class="no-data">${t('cp_collecting')}</div>`;return;}
+  const linkBtn=row.source_url?`<a class="ai-linkout" href="${row.source_url}" target="_blank" rel="noopener noreferrer">↗ ${t('hz_ai_linkout')}</a>`:'';
+  el.innerHTML=`<div class="ai-caveat">⚠️ ${t('hz_ai_caveat')}</div>`+(row.source_url?`<div>${linkBtn}</div>`:`<div class="ai-body">${row.body}</div>`);
 }
 
-function showResult(d,code,approx){
-  document.getElementById('eta-ph').style.display='none';
-  document.getElementById('eta-result').style.justifyContent='flex-start';
-  const rc=document.getElementById('eta-rc');rc.style.display='block';
-  const name=pn(code);
-  const portData=(window._snaps||[]).find(p=>p.port_code===code);
-  const mpci=portData?calcMPCI(portData):(d.breakdown?.mpci_score??null);
-  const isBad=mpci!==null&&mpci>=50;
-
-  const mpciNote=portData&&calcMPCI(portData)!==null
-    ?`<div class="eta-info" style="margin-bottom:10px">📊 ${name} ${LANG==='ko'?'현재 혼잡도':'Congestion'}: <strong>${mpci!=null?mpci.toFixed(1):'--'}</strong> (${lvlLabel(mpci)})${staleTag(portData.econdb_updated_at)}</div>`
-    :`<div class="eta-info" style="margin-bottom:10px"><span style="color:var(--muted2)">${t('eta_nodata')}</span></div>`;
-
-  rc.innerHTML=
-    `<div class="eta-rtitle">${name} ${t(approx?'arr_approx':'arr_dest')}</div>`+
-    `<div class="eta-rows">`+
-      `<div class="eta-row p10"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_early')}</span><span class="eta-rdate">${fmtD(d.p10)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:60%"></div></div><div class="eta-rnote">${t('arr_early_d')}</div></div>`+
-      `<div class="eta-row p50"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_likely')}</span><span class="eta-rdate">${fmtD(d.p50)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:100%"></div></div><div class="eta-rnote">${t('arr_likely_d')}</div></div>`+
-      `<div class="eta-row p90"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_late')}</span><span class="eta-rdate">${fmtD(d.p90)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:80%"></div></div><div class="eta-rnote">${t('arr_late_d')}</div></div>`+
-    `</div>`+
-    mpciNote+
-    (isBad?`<div class="eta-alert">⚠️ ${name} ${LANG==='ko'?`현재 ${lvlLabel(mpci)} — 선사 공지 ETA보다 약 ${waitLbl(mpci)} 늦을 수 있습니다`:`currently ${lvlLabel(mpci)} — may arrive ${waitLbl(mpci)} later than carrier ETA`}</div>`:'')+
-    `<div class="eta-info"><strong>${t('dnd_ttl')}</strong><br>${t('dnd_body').replace('%D%',fmtD(d.p50))}</div>`+
-    (approx?`<div style="font-size:11px;color:var(--muted);margin-top:12px">※ ${LANG==='ko'?'API 서버 연결 전 추정값입니다':'Approximate — API server not connected'}</div>`:'');
-}
-
-function showFallback(code,etd,nm){
-  const portData=(window._snaps||[]).find(p=>p.port_code===code);
-  const mpci=portData?calcMPCI(portData):null;
-  const waitH=portData?.econdb_turnaround!=null?portData.econdb_turnaround*24:waitDays(mpci??50)*24;
-  const bh=nm/20,tot=bh+waitH,sig=Math.max(24,tot*.15);
-  const etdD=new Date(etd),p50=new Date(etdD.getTime()+tot*36e5);
-  const p10=new Date(p50.getTime()-1.28*sig*36e5),p90=new Date(p50.getTime()+1.28*sig*36e5);
-  showResult({p10:p10.toISOString(),p50:p50.toISOString(),p90:p90.toISOString(),breakdown:{mpci_score:mpci}},code,true);
-}
-
-/* ══════════════════════════════════════
-   VIEW TOGGLE
-══════════════════════════════════════ */
-function setView(v){
-  const isPort=v==='port';
-  document.getElementById('view-port').style.display=isPort?'':'none';
-  document.getElementById('view-chokepoint').style.display=isPort?'none':'';
-  document.getElementById('nav-port').style.display=isPort?'':'none';
-  document.getElementById('nav-cp').style.display=isPort?'none':'';
-  document.getElementById('btn-view-port').className='vt-btn'+(isPort?' active':'');
-  document.getElementById('btn-view-cp').className='vt-btn'+(isPort?'':' active');
-  if(!isPort&&!window._cpLoaded){
-    window._cpLoaded=true;
-    loadChokepoints();
-  }
-}
-
-/* ══════════════════════════════════════
-   CHOKEPOINT — Supabase 조회
-══════════════════════════════════════ */
-async function fetchCPIndex(){
-  const{data,error}=await sb.from('chokepoint_index').select('*').order('chokepoint');
-  if(error){console.error('chokepoint_index',error);return[]}
-  return data||[];
-}
-async function fetchHzMacroLatest(){
-  const{data,error}=await sb.from('hormuz_macro_latest').select('*');
-  if(error){console.error('hormuz_macro_latest',error);return[]}
-  return data||[];
-}
-async function fetchHzTransitLatest(){
-  const{data,error}=await sb.from('hormuz_transit_daily')
-    .select('obs_date,inbound_cnt,outbound_cnt,total_cnt')
-    .order('obs_date',{ascending:false}).limit(1);
-  if(error){console.error('hormuz_transit_daily',error);return null}
-  return (data||[])[0]||null;
-}
-async function fetchHzGulfLatest(){
-  const{data,error}=await sb.from('hormuz_gulf_count_daily')
-    .select('obs_date,ship_cnt')
-    .order('obs_date',{ascending:false}).limit(1);
-  if(error){console.error('hormuz_gulf_count_daily',error);return null}
-  return (data||[])[0]||null;
-}
-async function fetchHzLog(){
-  // 어제 날짜
-  const yesterday=new Date(Date.now()-864e5).toISOString().split('T')[0];
-  const{data,error}=await sb.from('hormuz_transit_log')
-    .select('direction,time_exit,time_enter,shipname,shiptype,dwt,country_name,operator_company')
-    .eq('obs_date',yesterday)
-    .order('time_exit',{ascending:false})
-    .limit(100);
-  if(error){console.error('hormuz_transit_log',error);return[]}
-  return data||[];
-}
-async function fetchHzNews(){
-  const{data,error}=await sb.from('hormuz_news')
-    .select('id,title,source,url,news_time')
-    .order('news_time',{ascending:false})
-    .limit(10);
-  if(error){console.error('hormuz_news',error);return[]}
-  return data||[];
-}
-async function fetchHzAiBrief(){
-  const{data,error}=await sb.from('hormuz_ai_brief')
-    .select('brief_date,body,source,caveat,source_url')
-    .order('brief_date',{ascending:false}).limit(1);
-  if(error){console.error('hormuz_ai_brief',error);return null}
-  return (data||[])[0]||null;
+function renderChokepoints(d){
+  renderCPIndex(d.cpIdx||[]);renderHzMacro(d.macro||[]);
+  renderHzStats(d.gulf,d.transit);renderHzLog(d.log||[]);
+  renderHzNews(d.news||[]);renderHzAiBrief(d.ai);
 }
 
 async function loadChokepoints(){
@@ -1262,227 +2069,133 @@ async function loadChokepoints(){
       fetchHzGulfLatest(),fetchHzLog(),fetchHzNews(),fetchHzAiBrief()
     ]);
     const d={cpIdx,macro,transit,gulf,log,news,ai};
-    window._cpData=d;
-    renderChokepoints(d);
-  }catch(e){
-    console.error('loadChokepoints error',e);
+    window._cpData=d;renderChokepoints(d);
+  }catch(e){console.error('loadChokepoints',e);}
+}
+
+/* ══════════════════════════════════════════════════════
+   §W  ETA FORECAST TAB
+══════════════════════════════════════════════════════ */
+function buildEtaForm(ports){
+  const destEl=document.getElementById('e-port');
+  const origEl=document.getElementById('e-origin');
+  if(!destEl||!origEl)return;
+  const destOpts=ports.filter(p=>PM[p.port_code]).sort((a,b)=>pn(a.port_code).localeCompare(pn(b.port_code)));
+  destEl.innerHTML='<option value="">-- 항만 선택 --</option>'+destOpts.map(p=>`<option value="${p.port_code}">${pn(p.port_code)} (${p.port_code})</option>`).join('');
+  origEl.innerHTML='<option value="">-- 항만 선택 --</option>'+ORIGIN_PORTS.map(p=>`<option value="${p.code}">${LANG==='ko'?p.ko:p.en}</option>`).join('');
+  destEl.addEventListener('change',()=>{updatePortHint(ports);updateDist();});
+  origEl.addEventListener('change',updateDist);
+  document.getElementById('e-btn')?.addEventListener('click',runEta);
+  const today=new Date().toISOString().split('T')[0];
+  const etdEl=document.getElementById('e-etd');if(etdEl)etdEl.value=today;
+}
+function updatePortHint(ports){
+  const code=document.getElementById('e-port')?.value;const hint=document.getElementById('port-hint');if(!hint)return;
+  if(!code){hint.innerHTML='';return;}
+  const p=ports.find(x=>x.port_code===code);const mpci=p?calcMPCI(p):null;
+  if(mpci==null){hint.innerHTML=`<span style="color:var(--muted2)">${t('eta_nodata')}</span>`;return;}
+  const col={C:'var(--red)',B:'var(--orange)',S:'var(--yellow)',L:'var(--green)',N:'var(--muted)'}[lvlCode(mpci)]||'var(--muted)';
+  hint.innerHTML=`<span style="color:${col}">${lvlLabel(mpci)}</span>${staleTag(p?.econdb_updated_at)} <span style="color:var(--muted)">— ${mpci.toFixed(1)}</span>`;
+}
+function updateDist(){
+  const orig=document.getElementById('e-origin')?.value;const dest=document.getElementById('e-port')?.value;
+  const ni=document.getElementById('e-nm');const na=document.getElementById('nm-auto');
+  if(!orig||!dest){if(ni)ni.style.display='none';if(na)na.style.display='none';return;}
+  if(orig==='custom'){if(na)na.style.display='none';if(ni){ni.style.display='block';ni.value='';}return;}
+  const dist=DISTANCE_TABLE[orig+'-'+dest];
+  if(dist!==undefined){
+    if(ni){ni.style.display='none';ni.value=dist;}
+    if(na){na.style.display='block';na.innerHTML=`🗺️ <strong style="color:var(--mint)">${dist.toLocaleString()} nm</strong> <span style="color:var(--muted);font-size:11px">${LANG==='ko'?'(자동 계산)':'(auto-calculated)'}</span>`;}
+  }else{
+    if(na)na.style.display='none';if(ni){ni.style.display='block';ni.value='';ni.placeholder=LANG==='ko'?'직접 입력 (해리, nm)':'Enter distance (nm)';}
   }
 }
-
-/* ══════════════════════════════════════
-   CHOKEPOINT — 렌더 함수들
-══════════════════════════════════════ */
-function cpStatusBadge(status){
-  const map={
-    normal:{cls:'bL',key:'cp_status_normal'},
-    elevated:{cls:'bB',key:'cp_status_elevated'},
-    severe:{cls:'bC',key:'cp_status_severe'},
-    unknown:{cls:'bN',key:'cp_status_unknown'}
-  };
-  const m=map[status]||map.unknown;
-  return`<span class="badge ${m.cls}">${t(m.key)}</span>`;
+function pickPort(code){
+  setTab('forecast');
+  setTimeout(()=>{const s=document.getElementById('e-port');if(s){s.value=code;s.dispatchEvent(new Event('change'));}},50);
 }
-function cpPctColor(pct){
-  if(pct==null)return'var(--muted)';
-  if(pct<60)return'var(--red)';
-  if(pct<80)return'var(--orange)';
-  return'var(--green)';
+async function runEta(){
+  const code=document.getElementById('e-port')?.value;const etd=document.getElementById('e-etd')?.value;
+  const nm=parseFloat(document.getElementById('e-nm')?.value);
+  if(!code||!etd||!nm||isNaN(nm)){alert(LANG==='ko'?'출발항, 도착항, 출발일, 거리를 모두 입력해주세요.':'Please fill in all fields.');return;}
+  const btn=document.getElementById('e-btn');
+  if(btn){btn.disabled=true;btn.textContent=LANG==='ko'?'계산 중...':'Calculating...';}
+  const ph=document.getElementById('eta-ph');const rc=document.getElementById('eta-rc');
+  if(ph){ph.innerHTML=`<div class="loading"><div class="spin"></div>${LANG==='ko'?'분석 중...':'Analyzing...'}</div>`;ph.style.display='flex';}
+  if(rc)rc.style.display='none';
+  const res=document.getElementById('eta-result');if(res)res.style.justifyContent='center';
+  try{
+    const r=await fetch(`${CFG.API_URL}/eta/calculate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({port_code:code,carrier:null,etd,distance_nm:nm,v_design:20,bn:4,heading_deg:90})});
+    if(!r.ok)throw new Error('api-err');showResult(await r.json(),code,false);
+  }catch{showFallback(code,etd,nm);}
+  finally{if(btn){btn.disabled=false;btn.textContent=t('ef_btn');}}
 }
-
-function renderCPIndex(rows){
-  const el=document.getElementById('cpi-grid');
-  if(!el)return;
-  if(!rows||!rows.length){
-    el.innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div>${LANG==='ko'?'수집 중...':'Collecting...'}</div>`;
-    return;
-  }
-  el.innerHTML=rows.map(r=>{
-    const pct=r.pct_of_normal;
-    const col=cpPctColor(pct);
-    const pctFill=pct!=null?Math.min(100,Math.max(0,pct)):0;
-    const trend=r.trend_pct;
-    const trendStr=trend!=null
-      ?`<span class="cpi-trend" style="color:${trend>=0?'var(--orange)':'var(--green)'}">${trend>=0?'▲':'▼'}${Math.abs(trend).toFixed(1)}%</span>`
-      :'';
-    const narrative=LANG==='ko'?(r.narrative_ko||''):(r.narrative_en||'');
-    const teu=r.teu_total!=null?Math.round(r.teu_total).toLocaleString():'--';
-    const n=r.teu_north!=null?Math.round(r.teu_north).toLocaleString():'--';
-    const s=r.teu_south!=null?Math.round(r.teu_south).toLocaleString():'--';
-
-    let waterBlock='';
-    if(r.water_level!=null){
-      const draft=r.draft_status==='low'?`<span style="color:var(--orange)">${t('cp_draft_low')}</span>`:`<span style="color:var(--green)">${t('cp_draft_normal')}</span>`;
-      waterBlock=`<div class="cpi-water">
-        <strong>${t('cp_water_lbl')}</strong>: ${r.water_level.toFixed(2)} m
-        (${LANG==='ko'?'평균':'avg'} ${r.water_level_avg!=null?r.water_level_avg.toFixed(2):'--'} m) — ${draft}
-      </div>`;
-    }
-
-    return`<div class="cpi-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px;gap:8px">
-        <div class="cpi-name">${r.chokepoint}</div>
-        ${cpStatusBadge(r.status||'unknown')}
-      </div>
-      <div class="cpi-week">${r.data_week?`${LANG==='ko'?'기준주':'Week'}: ${r.data_week}`:collectingBadge()}</div>
-      <div class="cpi-teu" style="color:${col}">${teu}</div>
-      <div class="cpi-dirs">N ${n} TEU &nbsp;/&nbsp; S ${s} TEU</div>
-      <div class="cpi-pct-lbl">${t('cp_pct_of_normal')}</div>
-      <div class="cpi-pct-bar-wrap"><div class="cpi-pct-fill" style="width:${pctFill}%;background:${col}"></div></div>
-      <div class="cpi-pct-row">
-        <span class="cpi-pct-num" style="color:${col}">${pct!=null?pct.toFixed(1)+'%':t('cp_collecting')}</span>
-        ${trendStr}
-      </div>
-      ${narrative?`<div class="cpi-narrative">${narrative}</div>`:''}
-      ${waterBlock}
-    </div>`;
-  }).join('');
+function showResult(d,code,approx){
+  const ph=document.getElementById('eta-ph');const rc=document.getElementById('eta-rc');const res=document.getElementById('eta-result');
+  if(ph)ph.style.display='none';if(res)res.style.justifyContent='flex-start';if(!rc)return;rc.style.display='block';
+  const name=pn(code);const portData=(window._snaps||[]).find(p=>p.port_code===code);
+  const mpci=portData?calcMPCI(portData):(d.breakdown?.mpci_score??null);const isBad=mpci!==null&&mpci>=50;
+  const mpciNote=portData&&calcMPCI(portData)!==null
+    ?`<div class="eta-info" style="margin-bottom:8px">📊 ${name} ${LANG==='ko'?'현재 혼잡도':'Congestion'}: <strong>${mpci!=null?mpci.toFixed(1):'--'}</strong> (${lvlLabel(mpci)})${staleTag(portData.econdb_updated_at)}</div>`
+    :`<div class="eta-info" style="margin-bottom:8px"><span style="color:var(--muted2)">${t('eta_nodata')}</span></div>`;
+  rc.innerHTML=`<div class="eta-rtitle">${name} ${t(approx?'arr_approx':'arr_dest')}</div>
+    <div class="eta-rows">
+      <div class="eta-row p10"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_early')}</span><span class="eta-rdate">${fmtD(d.p10)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:60%"></div></div><div class="eta-rnote">${t('arr_early_d')}</div></div>
+      <div class="eta-row p50"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_likely')}</span><span class="eta-rdate">${fmtD(d.p50)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:100%"></div></div><div class="eta-rnote">${t('arr_likely_d')}</div></div>
+      <div class="eta-row p90"><div class="eta-row-hdr"><span class="eta-rtype">${t('arr_late')}</span><span class="eta-rdate">${fmtD(d.p90)}</span></div><div class="eta-bar-wrap"><div class="eta-bar" style="width:80%"></div></div><div class="eta-rnote">${t('arr_late_d')}</div></div>
+    </div>${mpciNote}${isBad?`<div class="eta-alert">⚠️ ${name} ${LANG==='ko'?`현재 ${lvlLabel(mpci)} — 약 ${waitLbl(mpci)} 지연 가능`:`currently ${lvlLabel(mpci)} — may arrive ${waitLbl(mpci)} later`}</div>`:''}
+    <div class="eta-info"><strong>${t('dnd_ttl')}</strong><br>${t('dnd_body').replace('%D%',fmtD(d.p50))}</div>
+    ${approx?`<div style="font-size:10px;color:var(--muted);margin-top:10px">※ ${LANG==='ko'?'API 서버 연결 전 추정값입니다':'Approximate — API server not connected'}</div>`:''}`;
+}
+function showFallback(code,etd,nm){
+  const portData=(window._snaps||[]).find(p=>p.port_code===code);const mpci=portData?calcMPCI(portData):null;
+  const waitH=portData?.econdb_turnaround!=null?portData.econdb_turnaround*24:waitDays(mpci??50)*24;
+  const bh=nm/20,tot=bh+waitH,sig=Math.max(24,tot*.15);
+  const etdD=new Date(etd),p50=new Date(etdD.getTime()+tot*36e5);
+  const p10=new Date(p50.getTime()-1.28*sig*36e5),p90=new Date(p50.getTime()+1.28*sig*36e5);
+  showResult({p10:p10.toISOString(),p50:p50.toISOString(),p90:p90.toISOString(),breakdown:{mpci_score:mpci}},code,true);
 }
 
-function renderHzMacro(rows){
-  const el=document.getElementById('hz-macro-grid');
-  if(!el)return;
-  if(!rows||!rows.length){
-    el.innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>`;
-    return;
-  }
-  const ORDER=['WTI','BRENT','BDTI','CTFI'];
-  const map={};rows.forEach(r=>map[(r.index_type||'').toUpperCase()]=r);
-  el.innerHTML=ORDER.map(k=>{
-    const r=map[k];
-    if(!r)return`<div class="macro-card"><div class="mc-type">${k}</div><div class="mc-val" style="color:var(--muted)">--</div></div>`;
-    const chg=r.change_rate;
-    const chgStr=chg?`<span class="mc-chg" style="color:${String(chg).startsWith('-')?'var(--red)':'var(--green)'}">${chg}</span>`:'';
-    const unit=k==='BDTI'||k==='CTFI'?'pts':'$/bbl';
-    return`<div class="macro-card">
-      <div class="mc-type">${k} <span style="color:var(--muted);font-size:9px">${unit}</span></div>
-      <div class="mc-val">${r.value!=null?r.value.toFixed(1):'--'}</div>
-      ${chgStr}
-      <div class="mc-date">${r.data_date||''}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderHzStats(gulf,transit){
-  const el=document.getElementById('hz-stats-2col');
-  if(!el)return;
-  const gulfCnt=gulf?.ship_cnt!=null?gulf.ship_cnt.toLocaleString():'--';
-  const gulfDate=gulf?.obs_date||'';
-  const inCnt=transit?.inbound_cnt!=null?transit.inbound_cnt.toLocaleString():'--';
-  const outCnt=transit?.outbound_cnt!=null?transit.outbound_cnt.toLocaleString():'--';
-  const totCnt=transit?.total_cnt!=null?transit.total_cnt.toLocaleString():'--';
-  const trDate=transit?.obs_date||'';
-
-  el.innerHTML=
-    `<div class="stat-box">
-      <div class="stat-lbl">${t('hz_gulf_lbl')} <span class="src-badge">ShipFinder</span></div>
-      <div class="stat-val">${gulfCnt}</div>
-      <div class="stat-sub">${LANG==='ko'?'척':'ships'} · ${gulfDate}</div>
-    </div>`+
-    `<div class="stat-box">
-      <div class="stat-lbl">${t('hz_transit_lbl')} <span class="src-badge">ShipFinder</span></div>
-      <div class="stat-val">${totCnt}</div>
-      <div class="stat-sub">${trDate}</div>
-      <div class="transit-dir">
-        <span class="transit-dir-item dir-in">${t('hz_in')} ${inCnt}</span>
-        <span class="transit-dir-item dir-out">${t('hz_out')} ${outCnt}</span>
-      </div>
-    </div>`;
-}
-
-function renderHzLog(rows){
-  const el=document.getElementById('hz-log-body');
-  if(!el)return;
-  if(!rows||!rows.length){
-    el.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">${t('cp_collecting')}</td></tr>`;
-    return;
-  }
-  el.innerHTML=rows.map(r=>{
-    const dir=r.direction==='in'
-      ?`<span class="dir-in">IN ▶</span>`
-      :`<span class="dir-out">◀ OUT</span>`;
-    const ts=r.time_exit?new Date(r.time_exit).toLocaleTimeString(LANG==='ko'?'ko-KR':'en-US',{hour:'2-digit',minute:'2-digit'}):'--';
-    const dwt=r.dwt!=null?Math.round(r.dwt).toLocaleString():'--';
-    return`<tr>
-      <td>${dir}</td>
-      <td style="font-family:var(--ff-mono);font-size:11px;color:var(--muted2)">${ts}</td>
-      <td style="font-weight:600">${r.shipname||'--'}</td>
-      <td style="color:var(--muted2)">${r.shiptype||'--'}</td>
-      <td style="font-family:var(--ff-mono);font-size:11px;color:var(--muted2)">${dwt}</td>
-      <td style="color:var(--muted2)">${r.country_name||'--'}</td>
-      <td style="color:var(--muted2);font-size:11px">${r.operator_company||'--'}</td>
-    </tr>`;
-  }).join('');
-}
-
-function renderHzNews(rows){
-  const el=document.getElementById('hz-news-list');
-  if(!el)return;
-  if(!rows||!rows.length){
-    el.innerHTML=`<div class="no-data-block">${t('hz_no_news')}</div>`;
-    return;
-  }
-  // 제목+출처+URL만 (본문 복제 금지). link-out 기본.
-  el.innerHTML=rows.map(r=>{
-    const ts=r.news_time?new Date(r.news_time).toLocaleDateString(LANG==='ko'?'ko-KR':'en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-    return`<div class="news-item">
-      <div class="news-title"><a href="${r.url||'#'}" target="_blank" rel="noopener noreferrer">${r.title||'--'}</a></div>
-      <div class="news-meta">${t('hz_news_src')}: ${r.source||'ShipFinder'} &nbsp;·&nbsp; ${ts}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderHzAiBrief(row){
-  const el=document.getElementById('hz-ai-brief');
-  if(!el)return;
-  if(!row||!row.body){
-    el.innerHTML=`<div class="no-data-block">${t('cp_collecting')}</div>`;
-    return;
-  }
-  // AI 브리핑: 원문+출처 박스. link-out 우선.
-  const linkBtn=row.source_url
-    ?`<a class="ai-linkout" href="${row.source_url}" target="_blank" rel="noopener noreferrer">↗ ${t('hz_ai_linkout')}</a>`
-    :'';
-  el.innerHTML=
-    `<div class="ai-caveat">⚠️ ${t('hz_ai_caveat')}</div>`+
-    (row.source_url
-      ?`<div>${linkBtn}</div>`
-      :`<div class="ai-body">${row.body}</div>`
-    );
-}
-
-function renderChokepoints(d){
-  renderCPIndex(d.cpIdx||[]);
-  renderHzMacro(d.macro||[]);
-  renderHzStats(d.gulf,d.transit);
-  renderHzLog(d.log||[]);
-  renderHzNews(d.news||[]);
-  renderHzAiBrief(d.ai);
-}
-
-/* ══════════════════════════════════════
-   MAIN ORCHESTRATION
-══════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   §X  ORCHESTRATION
+══════════════════════════════════════════════════════ */
 function renderAll(ports,cps,ri){
-  renderS1(ports);
-  renderS2(ports);
-  renderRegionAnalytics(ri||[]);
-  renderS3(ports);
-  renderS4();
-  renderS5(cps);
+  // Ports 탭
+  renderS1(ports);renderS2(ports);renderRegionAnalytics(ri||[]);renderS3(ports);renderS4();
 }
 
 async function init(){
+  initTheme();
+  document.getElementById('themeToggle').addEventListener('click',toggleTheme);
   try{
-    const[ports,cps,ri]=await Promise.all([fetchSnaps(),fetchCPs(),fetchRegionIndex()]);
+    const[ports,cps,ri,cpIdx,macroLatest,flags,news]=await Promise.all([
+      fetchSnaps(),fetchCPs(),fetchRegionIndex(),
+      fetchCPIndex(),fetchHzMacroLatest(),fetchAnomalyFlags(),fetchIntelNews()
+    ]);
     window._snaps=ports;window._cps=cps;window._ri=ri;
+    window._cpIdx=cpIdx;window._macroLatest=macroLatest;
+    window._alertData=flags;window._newsData=news;
+    // Overview 렌더
+    renderKPI(ports);
+    renderTopPorts(ports);
+    renderRegionalChart(ports);
+    renderOpKPIs(ports);
+    renderRegionalMacro(macroLatest);
+    renderAlerts(flags);
+    renderCriticalStraits(cpIdx);
+    renderIntelligence(news);
+    // 지도 (비동기)
+    initMap(ports);
+    // Ports 탭 렌더
     renderAll(ports,cps,ri);
+    // ETA 폼
     buildEtaForm(ports);
   }catch(e){
     console.error('init error',e);
-    document.getElementById('sum-grid').innerHTML=
-      `<div class="no-data-block" style="grid-column:1/-1">⚠️ ${LANG==='ko'?'데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.':'Failed to load data. Please refresh.'}</div>`;
+    const sg=document.getElementById('kpi-row');
+    if(sg)sg.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-muted)">⚠️ ${LANG==='ko'?'데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.':'Failed to load data. Please refresh.'}</div>`;
   }
-  setTimeout(init,CFG.REFRESH);
+  setTimeout(()=>init(),CFG.REFRESH);
 }
 
 document.addEventListener('DOMContentLoaded',init);
