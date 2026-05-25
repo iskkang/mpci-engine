@@ -1502,6 +1502,30 @@ async function fetchIntelNews(){
   if(error)return[];
   return data||[];
 }
+async function fetchMapPorts(){
+  // econdb_ports: 새 파이프라인에서 수집한 항만 마스터 (lat/lon 보장)
+  try{
+    const{data,error}=await sb.from('econdb_ports')
+      .select('locode,port_name,region,lat,lon')
+      .not('lat','is',null).not('lon','is',null);
+    if(error)throw error;
+    const d=data||[];
+    console.log(`[MTL] econdb_ports with coords: ${d.length}`);
+    return d;
+  }catch(e){console.warn('fetchMapPorts fallback to port_snapshots:',e);return[];}
+}
+async function fetchTopCongestionPorts(){
+  // econdb_port_snapshots: 오늘 날짜 congestion Top 20
+  try{
+    const today=new Date().toISOString().slice(0,10);
+    const{data,error}=await sb.from('econdb_port_snapshots')
+      .select('locode,page_rank,port_congestion,delay_percent,import_dwell,turnaround,last_import_teu,last_export_teu')
+      .eq('sort_type','congestion').eq('snapshot_date',today)
+      .order('page_rank').limit(10);
+    if(error)throw error;
+    return data||[];
+  }catch(e){console.warn('fetchTopCongestionPorts error:',e);return[];}
+}
 
 /* ══════════════════════════════════════════════════════
    §L  OVERVIEW RENDER — KPI ROW
@@ -1560,14 +1584,26 @@ function markerColor(v){
   return _isDark?'#22c55e':'#16a34a';
 }
 
-async function initMap(ports){
+async function initMap(ports, mapPorts){
   const container=document.getElementById('map-container');
   if(!container)return;
   if(!_worldData){
     try{_worldData=await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(r=>r.json());}
     catch(e){container.innerHTML='<div class="no-data">Map unavailable</div>';return;}
   }
-  drawMap(container,ports);
+  // econdb_ports(새 파이프라인) 데이터가 있으면 우선 사용, 없으면 port_snapshots 폴백
+  const ePorts = (mapPorts||[]).filter(p=>p.lat&&p.lon);
+  const legacyPorts = (ports||[]).filter(p=>p.lat&&p.lon);
+  const usePorts = ePorts.length>0 ? ePorts : legacyPorts;
+  // econdb_ports는 congestion 없으므로 port_snapshots와 병합
+  const snapMap = Object.fromEntries((ports||[]).map(p=>[p.port_code,p]));
+  const merged = usePorts.map(p=>{
+    const snap = snapMap[p.locode] || snapMap[(p.locode||'').replace(' ','')];
+    return{...p, port_code:p.locode, econdb_congestion:snap?.econdb_congestion, econdb_current_index:snap?.econdb_current_index};
+  });
+  console.log(`[MTL] map markers: ${merged.length} (source: ${ePorts.length>0?'econdb_ports':'port_snapshots'})`);
+  window._mapPorts=merged;
+  drawMap(container, merged);
 }
 
 function drawMap(container,ports){
@@ -1636,8 +1672,10 @@ function drawMap(container,ports){
 
 function redrawMap(){
   const container=document.getElementById('map-container');
-  if(!container||!_worldData||!window._snaps)return;
-  drawMap(container,window._snaps);
+  if(!container||!_worldData)return;
+  const ports=window._mapPorts||window._snaps||[];
+  if(!ports.length)return;
+  drawMap(container,ports);
 }
 window.mapZoom=function(factor){
   if(_mapSvg&&_mapZoom){
@@ -2171,24 +2209,35 @@ async function init(){
   initTheme();
   document.getElementById('themeToggle').addEventListener('click',toggleTheme);
   try{
-    const[ports,cps,ri,cpIdx,macroLatest,flags,news]=await Promise.all([
+    const[ports,cps,ri,cpIdx,macroLatest,flags,news,mapPorts,topCongestion]=await Promise.all([
       fetchSnaps(),fetchCPs(),fetchRegionIndex(),
-      fetchCPIndex(),fetchHzMacroLatest(),fetchAnomalyFlags(),fetchIntelNews()
+      fetchCPIndex(),fetchHzMacroLatest(),fetchAnomalyFlags(),fetchIntelNews(),
+      fetchMapPorts(),fetchTopCongestionPorts()
     ]);
     window._snaps=ports;window._cps=cps;window._ri=ri;
     window._cpIdx=cpIdx;window._macroLatest=macroLatest;
     window._alertData=flags;window._newsData=news;
+    window._topCongestion=topCongestion;
     // Overview 렌더
     renderKPI(ports);
-    renderTopPorts(ports);
+    // econdb_port_snapshots 필드명 → renderTopPorts 가 읽는 필드명으로 정규화
+    const normalizedTop = topCongestion.map(p=>({
+      ...p,
+      port_code:          p.locode,
+      econdb_congestion:  p.port_congestion,
+      econdb_delay_pct:   p.delay_percent,
+      econdb_turnaround:  p.turnaround,
+      port_name:          p.locode,
+    }));
+    renderTopPorts(normalizedTop.length>0?normalizedTop:ports);
     renderRegionalChart(ports);
     renderOpKPIs(ports);
     renderRegionalMacro(macroLatest);
     renderAlerts(flags);
     renderCriticalStraits(cpIdx);
     renderIntelligence(news);
-    // 지도 (비동기)
-    initMap(ports);
+    // 지도 (비동기) — econdb_ports 우선, 없으면 port_snapshots 폴백
+    initMap(ports, mapPorts);
     // Ports 탭 렌더
     renderAll(ports,cps,ri);
     // ETA 폼

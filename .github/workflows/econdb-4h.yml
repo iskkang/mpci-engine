@@ -1,21 +1,18 @@
-name: EconDB 4h Fetch
+name: EconDB 4h Fetch (DISABLED)
+
+# ⚠️ 이 워크플로우는 fetch_econdb.yml 로 대체되어 비활성화됨
+# fetch_econdb.py가 --job 인수를 요구하도록 변경되어 스케줄 실행 불가
 
 on:
-  schedule:
-    - cron: '0 */4 * * *'  # 매 4시간
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: '이 워크플로우는 deprecated입니다. fetch_econdb.yml을 사용하세요.'
+        required: true
+        default: 'cancel'
 
 jobs:
-  fetch:
+  noop:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install -r requirements.txt
-      - run: python scripts/fetch_econdb.py
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          ECONDB_WATCHLIST: ALL
+      - run: echo "이 워크플로우는 비활성화되었습니다. fetch_econdb.yml을 사용하세요."
