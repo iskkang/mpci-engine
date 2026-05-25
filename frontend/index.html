@@ -255,7 +255,7 @@ button { cursor: pointer; font-family: inherit; }
 .kpi-row    { flex: 0 0 auto; display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
 .map-row    { flex: 1 1 0; min-height: 220px; display: grid; grid-template-columns: 63% 37%; gap: 8px; }
 .second-row { flex: 0 0 200px; display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-.bottom-row { flex: 0 0 160px; display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.bottom-row { flex: 0 0 220px; display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
 .app-footer { flex: 0 0 26px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); padding: 0 2px; }
 
 /* ═══════════════════════════════════════════════════
@@ -652,7 +652,7 @@ button { cursor: pointer; font-family: inherit; }
 @media (max-width: 1200px) {
   .kpi-row    { grid-template-columns: repeat(3,1fr); }
   .second-row { grid-template-columns: repeat(2,1fr); }
-  .bottom-row { grid-template-columns: repeat(2,1fr); }
+  .bottom-row { grid-template-columns: 1fr; }
   .map-row    { grid-template-columns: 1fr; }
 }
 @media (max-width: 900px) {
@@ -666,6 +666,30 @@ button { cursor: pointer; font-family: inherit; }
   .kpi-row    { grid-template-columns: 1fr 1fr; }
   .sum-grid, .region-grid, .cpi-grid, .macro-grid, .stats-2col { grid-template-columns: 1fr; }
 }
+/* ── Regions Page ─────────────────────────────── */
+.rg-page{max-width:1400px;margin:0 auto;padding:16px 20px 40px}
+.rg-title{font-size:18px;font-weight:700;color:var(--text-main);margin:0 0 2px}
+.rg-subtitle{font-size:12px;color:var(--text-muted)}
+.rg-pills{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.rg-pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;background:var(--bg-card);border:1px solid var(--border);color:var(--text-sub);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.rg-pill:hover{border-color:var(--mint);color:var(--mint)}
+.rg-pill.active{background:var(--mint-soft);border-color:var(--mint);color:var(--mint)}
+.rg-pill-ci{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rg-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 12px}
+.rg-kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 16px}
+.rg-kpi-label{font-size:11px;color:var(--text-muted);margin-bottom:6px;font-weight:500}
+.rg-kpi-val{font-size:22px;font-weight:700;line-height:1}
+.rg-kpi-sub{font-size:10px;color:var(--text-muted);margin-top:4px}
+.rg-narrative{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--mint);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text-sub);margin-bottom:14px;line-height:1.6}
+.rg-charts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rg-chart-box{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.rg-chart-hdr{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.rg-chart-title{font-size:13px;font-weight:600;color:var(--text-main)}
+.rg-chart-sub{font-size:10px;color:var(--text-muted)}
+.rg-chart-body{position:relative;height:220px}
+.rg-no-data{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px;gap:6px}
+.rg-no-data i{font-size:26px;color:var(--border)}
+@media(max-width:1000px){.rg-kpi-row{grid-template-columns:repeat(2,1fr)}.rg-charts{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -871,29 +895,6 @@ button { cursor: pointer; font-family: inherit; }
         </div>
       </div>
 
-      <!-- 9-B. Lane Performance — placeholder -->
-      <div class="panel dashed" id="lane-panel">
-        <div class="panel-hdr">
-          <span class="panel-title" data-i18n="lp_title">Lane Performance</span>
-        </div>
-        <div class="panel-placeholder panel-body">
-          <i class="ti ti-chart-bar"></i>
-          <p data-i18n="lp_pending">Data pending</p>
-          <p class="ph-sub" data-i18n="lp_sub">Lane performance data is being aggregated. Check back soon.</p>
-        </div>
-      </div>
-
-      <!-- 9-C. Schedule Reliability — placeholder -->
-      <div class="panel dashed" id="sched-panel">
-        <div class="panel-hdr">
-          <span class="panel-title" data-i18n="sr_title">Schedule Reliability</span>
-        </div>
-        <div class="panel-placeholder panel-body">
-          <i class="ti ti-calendar-stats"></i>
-          <p data-i18n="sr_soon">Coming soon</p>
-          <p class="ph-sub" data-i18n="sr_sub">Detailed schedule reliability metrics will be available soon.</p>
-        </div>
-      </div>
 
       <!-- 9-D. Intelligence Highlights -->
       <div class="panel" id="intel-panel">
@@ -1070,7 +1071,33 @@ button { cursor: pointer; font-family: inherit; }
        ║  TAB: Coming Soon (공통 템플릿)  ║
        ╚══════════════════════════════════╝ -->
   <div class="tab-view tab-scroll" id="tab-regions">
-    <div class="coming-soon"><i class="ti ti-world"></i><h2>Regions</h2><p>Regional drill-down analytics coming soon. Track congestion, vessel flow, and trade patterns by shipping region.</p></div>
+    <div class="rg-page">
+      <div style="margin-bottom:12px">
+        <div class="rg-title">Regional Maritime Analysis</div>
+        <div class="rg-subtitle">Yard congestion · Blank sailing · Schedule performance by shipping region · Source: EconDB</div>
+      </div>
+      <div class="rg-pills" id="rg-pills"><div class="loading"><div class="spin"></div></div></div>
+      <div class="rg-kpi-row" id="rg-kpi-row"><div class="loading" style="grid-column:1/-1"><div class="spin"></div></div></div>
+      <div class="rg-narrative" id="rg-narrative" style="display:none"></div>
+      <div class="rg-charts">
+        <div class="rg-chart-box">
+          <div class="rg-chart-hdr"><span class="rg-chart-title">Congestion Index Trend</span><span class="rg-chart-sub">26-week · 0–100</span></div>
+          <div class="rg-chart-body" id="rg-ci-wrap"><div class="loading"><div class="spin"></div></div></div>
+        </div>
+        <div class="rg-chart-box">
+          <div class="rg-chart-hdr"><span class="rg-chart-title">Yard Dwell by Port</span><span class="rg-chart-sub">thou. TEU · stacked weekly</span></div>
+          <div class="rg-chart-body" id="rg-yard-wrap"><div class="loading"><div class="spin"></div></div></div>
+        </div>
+        <div class="rg-chart-box">
+          <div class="rg-chart-hdr"><span class="rg-chart-title">Blank Sailing Rate</span><span class="rg-chart-sub">% of total scheduled capacity</span></div>
+          <div class="rg-chart-body" id="rg-omit-wrap"><div class="loading"><div class="spin"></div></div></div>
+        </div>
+        <div class="rg-chart-box">
+          <div class="rg-chart-hdr"><span class="rg-chart-title">Scheduled Berth Occupancy</span><span class="rg-chart-sub">Current year vs previous year TEU</span></div>
+          <div class="rg-chart-body" id="rg-sched-wrap"><div class="loading"><div class="spin"></div></div></div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="tab-view tab-scroll" id="tab-lanes">
     <div class="coming-soon"><i class="ti ti-route"></i><h2>Lanes</h2><p>Lane performance data is being aggregated. Expected transit times and reliability scores by route.</p></div>
@@ -1427,6 +1454,16 @@ function toggleTheme(){
 function rebuildCharts(){
   if(window._snaps){renderKPI(window._snaps);renderRegionalChart(window._snaps);renderOpKPIs(window._snaps);}
   if(window._macroLatest){renderRegionalMacro(window._macroLatest);}
+  // Regions 차트 재빌드 (테마 변경 시)
+  if(window._regLoaded&&window._activeRegion){
+    const reg=window._activeRegion;
+    Promise.all([
+      fetchRegionCongestion(reg),fetchRegionYard(reg),
+      fetchRegionOmissions(reg),fetchRegionSchedule(reg)
+    ]).then(([cong,yard,omit,sched])=>{
+      drawRgCI(cong);drawRgYard(yard);drawRgOmit(omit);drawRgSched(sched);
+    });
+  }
 }
 
 /* §H  TAB SWITCHING */
@@ -1439,6 +1476,8 @@ function setTab(name){
   if(ni)ni.classList.add('active');
   // Straits 탭 lazy load
   if(name==='straits'&&!window._cpLoaded){window._cpLoaded=true;loadChokepoints();}
+  // Regions 탭 lazy load
+  if(name==='regions')initRegionsTab();
   // 지도 resize
   if(name==='overview')setTimeout(()=>{if(_mapSvg)redrawMap();},50);
 }
@@ -2275,6 +2314,302 @@ function showFallback(code,etd,nm){
   const etdD=new Date(etd),p50=new Date(etdD.getTime()+tot*36e5);
   const p10=new Date(p50.getTime()-1.28*sig*36e5),p90=new Date(p50.getTime()+1.28*sig*36e5);
   showResult({p10:p10.toISOString(),p50:p50.toISOString(),p90:p90.toISOString(),breakdown:{mpci_score:mpci}},code,true);
+}
+
+/* ══════════════════════════════════════════════════════
+   §W  REGIONS PAGE
+══════════════════════════════════════════════════════ */
+const ECONDB_REGIONS=[
+  'East Asia','Middle East','Indian Subcontinent',
+  'Mediterranean','East Med','West Med',
+  'Northwest Europe','Baltic',
+  'West Africa','East Africa','South Africa',
+  'North America East','North America West','US GOM',
+  'East South America','West South America',
+  'Central America','Oceania'
+];
+const PORT_PALETTE=[
+  '#14b8a6','#22d3ee','#3b82f6','#8b5cf6','#f59e0b',
+  '#ef4444','#22c55e','#f97316','#ec4899','#94a3b8'
+];
+
+async function fetchRegionCongestion(region){
+  const{data,error}=await sb.from('region_congestion_weekly')
+    .select('week_start,congestion_index,total_dwell_k,band_min_k,band_max_k,is_partial')
+    .eq('region',region).order('week_start',{ascending:true}).limit(52);
+  if(error){console.warn('fetchRegionCongestion',error);return[];}
+  return data||[];
+}
+async function fetchRegionYard(region){
+  const{data,error}=await sb.from('region_yard_dwell_weekly')
+    .select('week_start,locode,dwell_teu_k,is_partial')
+    .eq('region',region).neq('locode','OTHERS')
+    .order('week_start',{ascending:true}).limit(300);
+  if(error){console.warn('fetchRegionYard',error);return[];}
+  return data||[];
+}
+async function fetchRegionOmissions(region){
+  const{data,error}=await sb.from('region_omissions_weekly')
+    .select('week_start,blank_pct,blanked_teu,actual_teu,is_forecast')
+    .eq('region',region).order('week_start',{ascending:true}).limit(120);
+  if(error){console.warn('fetchRegionOmissions',error);return[];}
+  return data||[];
+}
+async function fetchRegionSchedule(region){
+  const{data,error}=await sb.from('region_schedule_profile')
+    .select('ts,teu,teu_last_year,yoy_ratio,is_forecast')
+    .eq('region',region).order('ts',{ascending:true}).limit(400);
+  if(error){console.warn('fetchRegionSchedule',error);return[];}
+  return data||[];
+}
+
+function rgChartOpts(th){
+  return{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:th.muted,boxWidth:10,font:{size:10}}}},
+    scales:{
+      x:{ticks:{color:th.muted,maxTicksLimit:10},grid:{color:th.gridLine}},
+      y:{ticks:{color:th.muted},grid:{color:th.gridLine}}
+    }
+  };
+}
+function rgWrap(id,html){
+  const el=document.getElementById(id);
+  if(el)el.innerHTML=html;
+}
+function rgCanvas(wrapId,canvasId){
+  const wrap=document.getElementById(wrapId);
+  if(!wrap)return null;
+  wrap.innerHTML='';
+  const c=document.createElement('canvas');
+  c.id=canvasId;c.style.cssText='position:absolute;inset:0;width:100%!important;height:100%!important';
+  wrap.appendChild(c);
+  return c;
+}
+
+function drawRgCI(rows){
+  const th=THEME[_isDark?'dark':'light'];
+  const complete=rows.filter(r=>!r.is_partial&&r.congestion_index!=null);
+  if(!complete.length){
+    rgWrap('rg-ci-wrap','<div class="rg-no-data"><i class="ti ti-chart-line"></i><span>데이터 수집 중</span></div>');
+    return;
+  }
+  const show=complete.slice(-26);
+  const c=rgCanvas('rg-ci-wrap','rg-ci-chart');
+  if(!c)return;
+  if(_charts['rg-ci'])_charts['rg-ci'].destroy();
+  _charts['rg-ci']=new Chart(c,{
+    type:'line',
+    data:{
+      labels:show.map(r=>r.week_start.slice(5)),
+      datasets:[{
+        label:'Congestion Index',data:show.map(r=>r.congestion_index),
+        borderColor:th.mint,backgroundColor:'rgba(20,184,166,.1)',
+        fill:true,tension:0.35,pointRadius:2,pointHoverRadius:4
+      }]
+    },
+    options:{...rgChartOpts(th),scales:{
+      x:{ticks:{color:th.muted,maxTicksLimit:10},grid:{color:th.gridLine}},
+      y:{min:0,max:100,ticks:{color:th.muted},grid:{color:th.gridLine}}
+    }}
+  });
+}
+
+function drawRgYard(rows){
+  const th=THEME[_isDark?'dark':'light'];
+  if(!rows.length){
+    rgWrap('rg-yard-wrap','<div class="rg-no-data"><i class="ti ti-chart-bar"></i><span>데이터 수집 중</span></div>');
+    return;
+  }
+  const weeks=[...new Set(rows.map(r=>r.week_start))].sort().slice(-12);
+  const locodes=[...new Set(rows.map(r=>r.locode))];
+  const lookup={};
+  rows.forEach(r=>{if(!lookup[r.week_start])lookup[r.week_start]={};lookup[r.week_start][r.locode]=r.dwell_teu_k;});
+  const c=rgCanvas('rg-yard-wrap','rg-yard-chart');
+  if(!c)return;
+  if(_charts['rg-yard'])_charts['rg-yard'].destroy();
+  _charts['rg-yard']=new Chart(c,{
+    type:'bar',
+    data:{
+      labels:weeks.map(w=>w.slice(5)),
+      datasets:locodes.map((loc,i)=>({
+        label:loc,
+        data:weeks.map(w=>lookup[w]?.[loc]||0),
+        backgroundColor:PORT_PALETTE[i%PORT_PALETTE.length]+'cc',
+        stack:'yard',borderRadius:1
+      }))
+    },
+    options:{...rgChartOpts(th),scales:{
+      x:{stacked:true,ticks:{color:th.muted,maxTicksLimit:8},grid:{color:th.gridLine}},
+      y:{stacked:true,ticks:{color:th.muted},grid:{color:th.gridLine}}
+    }}
+  });
+}
+
+function drawRgOmit(rows){
+  const th=THEME[_isDark?'dark':'light'];
+  if(!rows.length){
+    rgWrap('rg-omit-wrap','<div class="rg-no-data"><i class="ti ti-chart-bar"></i><span>데이터 수집 중</span></div>');
+    return;
+  }
+  const hist=rows.filter(r=>!r.is_forecast);
+  const fwd=rows.filter(r=>r.is_forecast).slice(0,8);
+  const all=[...hist.slice(-44),...fwd];
+  const c=rgCanvas('rg-omit-wrap','rg-omit-chart');
+  if(!c)return;
+  if(_charts['rg-omit'])_charts['rg-omit'].destroy();
+  _charts['rg-omit']=new Chart(c,{
+    type:'bar',
+    data:{
+      labels:all.map(r=>r.week_start.slice(5)),
+      datasets:[{
+        label:'Blank Sailing %',
+        data:all.map(r=>r.blank_pct),
+        backgroundColor:all.map(r=>r.is_forecast?th.warning+'55':th.danger+'99'),
+        borderRadius:2
+      }]
+    },
+    options:{...rgChartOpts(th),
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${(ctx.raw||0).toFixed(1)}%`}}
+      },
+      scales:{
+        x:{ticks:{color:th.muted,maxTicksLimit:10},grid:{color:th.gridLine}},
+        y:{ticks:{color:th.muted,callback:v=>v+'%'},grid:{color:th.gridLine}}
+      }
+    }
+  });
+}
+
+function drawRgSched(rows){
+  const th=THEME[_isDark?'dark':'light'];
+  if(!rows.length){
+    rgWrap('rg-sched-wrap','<div class="rg-no-data"><i class="ti ti-chart-line"></i><span>데이터 수집 중</span></div>');
+    return;
+  }
+  // aggregate to daily
+  const dayMap={};
+  rows.forEach(r=>{
+    const day=r.ts.slice(0,10);
+    if(!dayMap[day])dayMap[day]={teu:0,teuLy:0};
+    dayMap[day].teu+=(r.teu||0);
+    dayMap[day].teuLy+=(r.teu_last_year||0);
+  });
+  const days=Object.keys(dayMap).sort();
+  const c=rgCanvas('rg-sched-wrap','rg-sched-chart');
+  if(!c)return;
+  if(_charts['rg-sched'])_charts['rg-sched'].destroy();
+  _charts['rg-sched']=new Chart(c,{
+    type:'line',
+    data:{
+      labels:days.map(d=>d.slice(5)),
+      datasets:[
+        {label:LANG==='ko'?'금년':'Current Year',data:days.map(d=>Math.round(dayMap[d].teu)),
+          borderColor:th.mint,backgroundColor:'rgba(20,184,166,.08)',fill:true,tension:0.3,pointRadius:1},
+        {label:LANG==='ko'?'전년':'Prev Year',data:days.map(d=>Math.round(dayMap[d].teuLy)),
+          borderColor:th.muted,borderDash:[4,3],fill:false,tension:0.3,pointRadius:1}
+      ]
+    },
+    options:rgChartOpts(th)
+  });
+}
+
+function renderRgKPIs(ri,region){
+  const el=document.getElementById('rg-kpi-row');
+  if(!el)return;
+  const r=(ri||[]).find(x=>x.region===region);
+  if(!r){
+    el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:12px;padding:20px">데이터 수집 중...</div>';
+    return;
+  }
+  const ci=r.congestion_index;
+  const bp=r.blank_sailing_pct;
+  const yoy=r.schedule_yoy_pct;
+  const ciC=ci==null?'var(--text-muted)':ci>=70?'var(--danger)':ci>=40?'var(--warning)':'var(--success)';
+  const bpC=bp==null?'var(--text-muted)':bp>=15?'var(--danger)':bp>=5?'var(--warning)':'var(--success)';
+  const yoyC=yoy==null?'var(--text-muted)':yoy>=-5?'var(--success)':yoy>=-15?'var(--warning)':'var(--danger)';
+  const drC=r.delay_risk==='elevated'?'var(--danger)':r.delay_risk==='moderate'?'var(--warning)':'var(--success)';
+  const drLbl=r.delay_risk==='elevated'?'↑ '+(LANG==='ko'?'높음':'Elevated'):r.delay_risk==='moderate'?'→ '+(LANG==='ko'?'중간':'Moderate'):'✓ '+(LANG==='ko'?'낮음':'Low');
+  const fpLbl=r.freight_pressure==='building'?'🔴 '+t('fp_building'):r.freight_pressure==='easing'?'🟢 '+t('fp_easing'):'⚪ '+t('fp_neutral');
+  el.innerHTML=`
+    <div class="rg-kpi">
+      <div class="rg-kpi-label">${LANG==='ko'?'야드 적체 지수':'Yard Congestion'}</div>
+      <div class="rg-kpi-val" style="color:${ciC}">${ci!=null?ci.toFixed(0):'--'}<span style="font-size:13px;font-weight:400;color:var(--text-muted)"> /100</span></div>
+      <div class="rg-kpi-sub">${r.congestion_trend_pct!=null?(r.congestion_trend_pct>=0?'↑':'↓')+Math.abs(r.congestion_trend_pct).toFixed(1)+'% vs prev':r.data_week||''}</div>
+    </div>
+    <div class="rg-kpi">
+      <div class="rg-kpi-label">${LANG==='ko'?'블랭크세일링':'Blank Sailing'}</div>
+      <div class="rg-kpi-val" style="color:${bpC}">${bp!=null?bp.toFixed(1):'--'}<span style="font-size:13px;font-weight:400;color:var(--text-muted)">%</span></div>
+      <div class="rg-kpi-sub">${r.blank_sailing_fwd_pct!=null?'Fwd: '+r.blank_sailing_fwd_pct.toFixed(1)+'%':''}</div>
+    </div>
+    <div class="rg-kpi">
+      <div class="rg-kpi-label">${LANG==='ko'?'선석 점유 YoY':'Berth Occupancy YoY'}</div>
+      <div class="rg-kpi-val" style="color:${yoyC}">${yoy!=null?(yoy>=0?'+':'')+yoy.toFixed(1):'--'}<span style="font-size:13px;font-weight:400;color:var(--text-muted)">%</span></div>
+      <div class="rg-kpi-sub">${LANG==='ko'?'전년 동기 대비':'vs same period last year'}</div>
+    </div>
+    <div class="rg-kpi">
+      <div class="rg-kpi-label">${LANG==='ko'?'지연 위험':'Delay Risk'}</div>
+      <div class="rg-kpi-val" style="color:${drC};font-size:16px;padding-top:6px">${drLbl}</div>
+      <div class="rg-kpi-sub">${fpLbl}</div>
+    </div>`;
+}
+
+function renderRgPills(ri){
+  const el=document.getElementById('rg-pills');
+  if(!el)return;
+  el.innerHTML=ECONDB_REGIONS.map(reg=>{
+    const r=(ri||[]).find(x=>x.region===reg);
+    const ci=r?.congestion_index;
+    const dotC=ci==null?'var(--border)':ci>=70?'var(--danger)':ci>=40?'var(--warning)':'var(--success)';
+    return`<button class="rg-pill${reg===window._activeRegion?' active':''}" onclick="selectRegion('${reg}')"><span class="rg-pill-ci" style="background:${dotC}"></span>${reg}</button>`;
+  }).join('');
+}
+
+async function loadRegionDetail(region){
+  // KPI
+  renderRgKPIs(window._ri||[],region);
+  // Narrative
+  const narEl=document.getElementById('rg-narrative');
+  const r=(window._ri||[]).find(x=>x.region===region);
+  if(narEl&&r){narEl.textContent=LANG==='ko'?r.narrative_ko:r.narrative_en;narEl.style.display='block';}
+  else if(narEl)narEl.style.display='none';
+  // Reset wraps
+  ['rg-ci-wrap','rg-yard-wrap','rg-omit-wrap','rg-sched-wrap'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML='<div class="loading"><div class="spin"></div></div>';
+  });
+  // Fetch & draw
+  const[cong,yard,omit,sched]=await Promise.all([
+    fetchRegionCongestion(region),
+    fetchRegionYard(region),
+    fetchRegionOmissions(region),
+    fetchRegionSchedule(region)
+  ]);
+  drawRgCI(cong);
+  drawRgYard(yard);
+  drawRgOmit(omit);
+  drawRgSched(sched);
+}
+
+function selectRegion(region){
+  window._activeRegion=region;
+  document.querySelectorAll('.rg-pill').forEach(p=>{
+    p.classList.toggle('active',p.textContent.trim()===region);
+  });
+  loadRegionDetail(region);
+}
+
+async function initRegionsTab(){
+  if(window._regLoaded)return;
+  window._regLoaded=true;
+  // ri might already be loaded from init()
+  if(!window._ri||!window._ri.length){
+    window._ri=await fetchRegionIndex();
+  }
+  window._activeRegion='East Asia';
+  renderRgPills(window._ri);
+  await loadRegionDetail('East Asia');
 }
 
 /* ══════════════════════════════════════════════════════
