@@ -49,6 +49,17 @@ https://www.econdb.com/widgets/weekly-schedule-profile/data/?region=East+Asia&me
 Top container port20
 https://www.econdb.com/maritime/search/ports/?page_size=20&page=1&s=&fl=rank%2Cname%2Clocode%2Clast_import_teu%2Clast_export_teu%2Cimport_dwell_time%2Cexport_dwell_time%2Cts_dwell_time%2Cschedule%2Ctransshipments%2Cid%2Crank
 
+미국철도
+https://www.econdb.com/maritime/rail_nw/list_nodes/?region=West+coast&is_port=1
+https://www.econdb.com/maritime/rail_nw/graph/?region_a=West+coast&is_export=0
+https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=volume&split_by=operator&is_export=0
+https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=volume&split_by=service&is_export=0
+https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=volume&split_by=origin&is_export=0
+https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=volume&split_by=destination&is_export=0
+https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=volume&split_by=alliance&is_export=0
+https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=lead-time&is_export=0
+
+
 Choke_Point
 
 https://www.econdb.com/maritime/chokepoints_list/
@@ -77,17 +88,6 @@ https://www.econdb.com/widgets/chokepoint-pass/data/?unit=teu&group_by=direction
 Bosphorus
 https://www.econdb.com/maritime/latest_crossings/?chokepoint_name=Bosphorus
 https://www.econdb.com/widgets/chokepoint-pass/data/?unit=teu&group_by=direction&chokepoint_name=Bosphorus
-
-
-미국철도
-https://www.econdb.com/maritime/rail_nw/list_nodes/?region=West+coast&is_port=1
-https://www.econdb.com/maritime/rail_nw/graph/?region_a=West+coast&is_export=0
-https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=volume&split_by=operator&is_export=0
-https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=volume&split_by=service&is_export=0
-https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=volume&split_by=origin&is_export=0
-https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=volume&split_by=destination&is_export=0
-https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=volume&split_by=alliance&is_export=0
-https://www.econdb.com/widgets/rail-volume/data/?region_reference=West+coast&plot_type=lead-time&is_export=0
 
 services
 https://www.econdb.com/maritime/search/routes/?page_size=20&page=1&s=&active=true&is_regular=true&is_empty=false

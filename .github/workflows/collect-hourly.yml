@@ -1,0 +1,23 @@
+name: Collect — Hourly (EconDB Ports)
+
+# 매 시간 :05 — EconDB per-port 3개 endpoint 수집 (100개씩)
+# 하루 24회 × 100개 = 2,400개 처리 → 전체 ~750개 항만 매일 갱신
+
+on:
+  schedule:
+    - cron: '5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ports:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -r requirements.txt
+      - run: python scripts/fetch_econdb.py --job ports
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

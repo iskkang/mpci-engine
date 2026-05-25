@@ -1,0 +1,97 @@
+name: Collect — Daily
+
+# UTC 02:00 (KST 11:00) 매일 실행
+# 4개 데이터 수집 잡 병렬 → 완료 후 anomaly detection 순서로 실행
+#
+# 병렬 잡:
+#   portwatch     — PortWatch 지수 + 항만별 AIS 보완
+#   econdb-meta   — EconDB region 지표 + Top-20 스냅샷
+#   chokepoints   — EconDB 해협 + ShipFinder Hormuz (독립 실패 허용)
+# 직렬 (anomaly):
+#   anomaly       — 전체 데이터 수집 완료 후 이상 탐지
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+# ─────────────────────────────────────────────────────────
+jobs:
+  portwatch:
+    name: PortWatch Daily
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -r requirements.txt
+      - name: PortWatch 지수
+        run: python scripts/fetch_portwatch.py
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      - name: PortWatch 항만별
+        run: python scripts/fetch_portwatch_ports.py
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PORTWATCH_PORT_MAP:   ${{ secrets.PORTWATCH_PORT_MAP }}
+
+  econdb-meta:
+    name: EconDB Region Metrics + Snapshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -r requirements.txt
+      - name: EconDB Region 지표
+        run: python scripts/fetch_econdb_regions.py
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      - name: EconDB Top-20 스냅샷
+        run: python scripts/fetch_econdb.py --job snapshots
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+  chokepoints:
+    name: Chokepoints (EconDB + ShipFinder)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -r requirements.txt
+      - name: EconDB 해협 수집
+        run: python scripts/fetch_econdb_chokepoints.py
+        continue-on-error: true   # ShipFinder 실패가 EconDB를 막지 않도록
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      - name: ShipFinder Hormuz 수집
+        run: python scripts/fetch_shipfinder_hormuz.py
+        continue-on-error: true
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+  anomaly:
+    name: Anomaly Detection
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [portwatch, econdb-meta, chokepoints]   # 전체 데이터 수집 후 실행
+    if: always()   # 일부 잡 실패해도 탐지는 실행
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -r requirements.txt
+      - run: python scripts/anomaly_detector.py
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
