@@ -1,0 +1,83 @@
+name: EconDB Port Congestion Collector
+
+# 매 시간 17분: due job 10개씩 처리
+# 수동 실행: sync-ports / create-jobs / run-jobs 선택 가능
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Command to run"
+        required: true
+        default: "run-jobs"
+        type: choice
+        options:
+          - sync-ports
+          - create-jobs
+          - run-jobs
+      max_jobs:
+        description: "Max jobs per run (run-jobs only)"
+        required: false
+        default: "10"
+      hours_to_spread:
+        description: "Hours to spread jobs (create-jobs only)"
+        required: false
+        default: "72"
+      max_ports:
+        description: "Max ports for testing (create-jobs only, blank = all)"
+        required: false
+        default: ""
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine command
+        id: cmd
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "command=${{ github.event.inputs.command }}" >> $GITHUB_OUTPUT
+          else
+            echo "command=run-jobs" >> $GITHUB_OUTPUT
+          fi
+
+      - name: sync-ports
+        if: steps.cmd.outputs.command == 'sync-ports'
+        run: python scripts/econdb_collector.py sync-ports
+        env:
+          SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: create-jobs
+        if: steps.cmd.outputs.command == 'create-jobs'
+        run: |
+          ARGS="--hours-to-spread ${{ github.event.inputs.hours_to_spread || '72' }}"
+          if [ -n "${{ github.event.inputs.max_ports }}" ]; then
+            ARGS="$ARGS --max-ports ${{ github.event.inputs.max_ports }}"
+          fi
+          python scripts/econdb_collector.py create-jobs $ARGS
+        env:
+          SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: run-jobs
+        if: steps.cmd.outputs.command == 'run-jobs'
+        run: |
+          python scripts/econdb_collector.py run-jobs \
+            --max-jobs ${{ github.event.inputs.max_jobs || '10' }} \
+            --sleep-seconds 3
+        env:
+          SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
